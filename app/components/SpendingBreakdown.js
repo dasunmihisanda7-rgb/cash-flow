@@ -12,16 +12,27 @@ const CATEGORY_COLORS = {
 const fmt = (n) =>
   `Rs. ${new Intl.NumberFormat("en-LK", { minimumFractionDigits: 0 }).format(n)}`;
 
-// ── 2. CUSTOM TOOLTIP DESIGN ─────────────────────
+// ── 2. 🚀 CUSTOM TOOLTIP DESIGN (FIXED & PREMIUM) ─────────────────────
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
+    const data = payload[0];
+    const categoryColor = CATEGORY_COLORS[data.name] || "#ffffff"; // අදාල කැටගරි පාට ගන්නවා
+
     return (
-      <div className="rounded-2xl border border-white/10 bg-[#0b0d13]/95 p-4 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-50">
-        <p className="text-[9px] font-black italic text-slate-500 uppercase tracking-[0.3em] mb-1">
-          {payload[0].name}
-        </p>
-        <p className="text-sm font-black text-white italic tracking-widest">
-          {fmt(payload[0].value)}
+      // pointer-events-none එකෙන් Tooltip එක මවුස් එකට බාධා කරන එක නවත්තනවා
+      <div className="pointer-events-none flex flex-col justify-center rounded-xl sm:rounded-2xl border border-white/10 bg-[#0f172a]/95 px-3 py-2 sm:px-4 sm:py-3 shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl outline-none">
+        <div className="flex items-center gap-2 mb-1">
+          {/* Glowing Neon Dot එක */}
+          <div
+            className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full"
+            style={{ backgroundColor: categoryColor, boxShadow: `0 0 10px ${categoryColor}` }}
+          />
+          <p className="text-[8px] sm:text-[10px] font-black italic text-slate-400 uppercase tracking-[0.2em] sm:tracking-[0.3em]">
+            {data.name}
+          </p>
+        </div>
+        <p className="text-[12px] sm:text-[14px] font-black text-white italic tracking-widest pl-3 sm:pl-4">
+          {fmt(data.value)}
         </p>
       </div>
     );
@@ -49,11 +60,9 @@ export default function SpendingBreakdown({ transactions }) {
   const totalInc = incomeData.reduce((s, d) => s + d.value, 0);
 
   return (
-    // 🔥 වෙනස් කරපු තැන: grid-cols-2 කරලා gap අඩු කළා පෝන් එකට ගැලපෙන්න
     <section className="grid grid-cols-2 gap-3 sm:gap-8">
 
       {/* ── EXPENSE BREAKDOWN (CASH OUT) ── */}
-      {/* Padding අඩු කළා (p-4), border-radius අඩු කළා (rounded-[24px]) */}
       <div className="group relative overflow-hidden rounded-[24px] sm:rounded-[32px] border border-white/5 bg-[#161b27]/30 p-4 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500 hover:border-rose-500/30 hover:bg-white/[0.02] flex flex-col">
 
         {/* Header Section */}
@@ -68,13 +77,13 @@ export default function SpendingBreakdown({ transactions }) {
           </div>
         </div>
 
-        {/* Chart Section - Height අඩු කළා පෝන් එකට (h-[120px]) */}
+        {/* Chart Section */}
         <div className="relative h-[120px] sm:h-[250px] w-full mb-4 sm:mb-6 flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={expenseData}
-                innerRadius="60%"  // Responsive radius
+                innerRadius="60%"
                 outerRadius="90%"
                 paddingAngle={4}
                 dataKey="value"
@@ -86,7 +95,8 @@ export default function SpendingBreakdown({ transactions }) {
                   <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[entry.name] || "#e11d48"} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} cursor={false} />
+              {/* Tooltip එකේ wrapperStyle එකෙන් extra styling දෙනවා */}
+              <Tooltip content={<CustomTooltip />} cursor={false} wrapperStyle={{ outline: 'none', zIndex: 100 }} />
             </PieChart>
           </ResponsiveContainer>
 
@@ -96,7 +106,7 @@ export default function SpendingBreakdown({ transactions }) {
           </div>
         </div>
 
-        {/* Dynamic Legend - පෝන් එකේදී list එක 1 column වෙනවා */}
+        {/* Dynamic Legend */}
         {expenseData.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto">
             {expenseData.slice(0, 4).map((item, i) => (
@@ -149,7 +159,8 @@ export default function SpendingBreakdown({ transactions }) {
                   <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[entry.name] || "#10b981"} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} cursor={false} />
+              {/* Tooltip එකේ wrapperStyle එකෙන් extra styling දෙනවා */}
+              <Tooltip content={<CustomTooltip />} cursor={false} wrapperStyle={{ outline: 'none', zIndex: 100 }} />
             </PieChart>
           </ResponsiveContainer>
 

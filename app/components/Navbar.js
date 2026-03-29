@@ -71,18 +71,26 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
           {/* Native Month Picker */}
           <div className={`relative flex items-center rounded-full px-3 py-1 transition-all duration-300 ${selectedMonth !== "ALL"
             ? "bg-sky-500/20 text-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.2)]"
-            : "text-slate-500/40 hover:text-slate-400" // ALL TIME තේරුවාම මේක අඳුරු වෙනවා
+            : "text-slate-500/40 hover:text-slate-400 cursor-pointer"
             }`}
           >
+            {/* 🚀 මේක තමයි අපේ Magic Trick එක! (Invisible Overlay) 🚀 */}
+            {selectedMonth === "ALL" && (
+              <div
+                className="absolute inset-0 z-10 rounded-full cursor-pointer"
+                onClick={() => setSelectedMonth(getCurrentMonthStr())}
+                title="Click to go back to Current Month"
+              />
+            )}
+
             <input
               type="month"
-              // 🔥 වෙනස් කරපු තැන: ALL TIME තේරුවාම හිස් කරන්නේ නැතුව Current Month එක පෙන්නනවා
               value={selectedMonth === "ALL" ? getCurrentMonthStr() : selectedMonth}
               onChange={(e) => {
                 setSelectedMonth(e.target.value || "ALL");
               }}
               className={`bg-transparent outline-none text-[12px] font-bold italic tracking-widest cursor-pointer uppercase transition-all
-                ${selectedMonth === "ALL" ? "opacity-50" : "opacity-100"} 
+                ${selectedMonth === "ALL" ? "opacity-50 pointer-events-none" : "opacity-100"} 
                 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:h-4 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-2 hover:[&::-webkit-calendar-picker-indicator]:opacity-80`}
             />
           </div>
