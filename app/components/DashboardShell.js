@@ -8,7 +8,6 @@ import SummaryCards from "@/app/components/SummaryCards";
 import AddTransactionForm from "@/app/components/AddTransactionForm";
 import TransactionTable from "@/app/components/TransactionTable";
 import SpendingBreakdown from "@/app/components/SpendingBreakdown";
-// 🚀 අලුත් Chart එක Import කළා
 import CashFlowTrend from "@/app/components/CashFlowTrend";
 
 // ── HOLOGRAPHIC ICONS ──────────────────────────────────────────────────────────
@@ -132,14 +131,7 @@ export default function DashboardShell({ transactions }) {
         setSelectedMonth={setSelectedMonth}
       />
 
-      <button
-        onClick={handleLogout}
-        className="fixed bottom-8 right-8 z-[100] rounded-full border border-white/5 bg-[#161b27]/80 p-4 text-slate-500 backdrop-blur-xl transition-all hover:border-rose-500/50 hover:text-rose-400 group shadow-2xl"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5 group-hover:scale-110 transition-transform">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-        </svg>
-      </button>
+      {/* 🧹 Floating Logout Button එක සම්පූර්ණයෙන්ම අයින් කළා */}
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6">
         <div className="space-y-10">
@@ -149,7 +141,6 @@ export default function DashboardShell({ transactions }) {
 
               {/* DASUN & KAVINDYA CARDS */}
               <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16">
-
                 <article
                   onClick={() => setCurrentUser("DASUN")}
                   className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-4 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'bg-[#161b27]/80 border-sky-500/60 shadow-[0_15px_50px_-20px_rgba(14,165,233,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}
@@ -190,7 +181,6 @@ export default function DashboardShell({ transactions }) {
                     </div>
                   </div>
                 </article>
-
               </div>
 
               <div className="space-y-10">
@@ -202,10 +192,7 @@ export default function DashboardShell({ transactions }) {
                   currentUser={currentUser}
                   selectedMonth={selectedMonth}
                 />
-
-                {/* 🚀 අපේ අලුත් Area Chart එක මෙතනට දැම්මා */}
                 <CashFlowTrend transactions={userFilteredTransactions} />
-
                 <div className="pt-8">
                   <SpendingBreakdown transactions={userFilteredTransactions} />
                 </div>
@@ -220,8 +207,27 @@ export default function DashboardShell({ transactions }) {
           )}
 
           {activeTab === "CONTROL" && (
-            <div key={`control-${currentUser}`} className="animate-vibe py-6 max-w-4xl mx-auto">
+            <div key={`control-${currentUser}`} className="animate-vibe py-6 max-w-4xl mx-auto flex flex-col gap-10">
               <AddTransactionForm currentUser={currentUser} />
+
+              {/* 🚀 අලුත් PREMIUM SYSTEM CONTROL (LOGOUT) SECTION එක */}
+              <div className="w-full rounded-[32px] border border-rose-500/20 bg-rose-500/5 p-6 sm:p-8 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)]">
+                <div>
+                  <h3 className="text-[14px] sm:text-[16px] font-black italic tracking-widest text-white uppercase">System Disconnect</h3>
+                  <p className="text-[10px] sm:text-[12px] font-bold italic text-slate-400 uppercase tracking-widest mt-1">Safely terminate current session</p>
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="group relative flex w-full sm:w-auto items-center justify-center gap-3 overflow-hidden rounded-2xl bg-rose-500/10 px-8 py-4 border border-rose-500/30 transition-all duration-300 hover:bg-rose-500/20 hover:border-rose-500/50 hover:shadow-[0_0_20px_rgba(244,63,94,0.3)]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5 text-rose-500 transition-transform group-hover:-translate-x-1">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                  </svg>
+                  <span className="text-[11px] font-black italic tracking-[0.2em] text-rose-400 uppercase">Logout</span>
+                </button>
+              </div>
+
             </div>
           )}
 

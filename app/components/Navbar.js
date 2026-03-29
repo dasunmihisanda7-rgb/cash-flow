@@ -1,10 +1,5 @@
 "use client"; // This is a must!
 
-// 🚀 අලුතින් Import කරපු කෑලි (Logout වැඩ කරන්න)
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
-
 // දැනට තියෙන මාසය ගන්න පොඩි Function එකක්
 const getCurrentMonthStr = () => {
   const date = new Date();
@@ -15,21 +10,10 @@ const getCurrentMonthStr = () => {
 
 export default function Navbar({ activeTab, setActiveTab, currentUser, setCurrentUser, selectedMonth, setSelectedMonth }) {
   const tabs = ["OVERVIEW", "LOG", "CONTROL"];
-  const router = useRouter(); // Router එක අරගන්නවා
 
   // User මාරු කරන Function එක
   const toggleUser = () => {
     setCurrentUser(currentUser === "DASUN" ? "KAVINDYA" : "DASUN");
-  };
-
-  // 🚀 අලුත් Logout Function එක
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout Error:", error);
-    }
   };
 
   return (
@@ -111,17 +95,6 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
             />
           </div>
         </div>
-
-        {/* ── 4. 🚀 අලුත් PREMIUM LOGOUT BUTTON එක ── */}
-        <button
-          onClick={handleLogout}
-          title="Secure Logout"
-          className="group flex h-[34px] w-[34px] items-center justify-center rounded-full border border-rose-500/20 bg-rose-500/10 text-rose-500 transition-all duration-300 hover:bg-rose-500/20 hover:text-rose-400 hover:shadow-[0_0_15px_rgba(244,63,94,0.4)] backdrop-blur-md"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-[14px] h-[14px] transition-transform duration-300 group-hover:scale-110">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-          </svg>
-        </button>
 
       </div>
     </div>
