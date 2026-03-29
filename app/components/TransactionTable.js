@@ -1,13 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
-import { deleteTransaction } from "@/app/actions";
+// 🔥 වෙනස් කළා: updateTransaction කියන එකත් import කළා
+import { deleteTransaction, updateTransaction } from "@/app/actions";
 import { useRouter } from "next/navigation";
 
 const CATEGORY_EMOJI = {
-  Salary: "💼", Freelance: "🖊️", Investments: "📈",
+  Salary: "💼", Freelance: "🖊️", Investments: "📈", Business: "🏢", Bonus: "🎁",
   Food: "🍔", Transport: "🚌", Utilities: "⚡",
   Health: "🏥", Entertainment: "🎬", Education: "📚", Other: "📦",
 };
+
+const CATEGORIES = Object.keys(CATEGORY_EMOJI);
 
 const fmt = (n) =>
   `Rs. ${new Intl.NumberFormat("en-LK", {
@@ -26,9 +29,15 @@ export default function TransactionTable({ transactions }) {
   const [localTransactions, setLocalTransactions] = useState(transactions);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+
+  // Delete States
   const [deletingId, setDeletingId] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [idToDelete, setIdToDelete] = useState(null);
+
+  // 🚀 අලුත් Edit States
+  const [editingTxn, setEditingTxn] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     setLocalTransactions(transactions);
@@ -42,6 +51,7 @@ export default function TransactionTable({ transactions }) {
     return matchType && matchSearch;
   });
 
+  // ── DELETE LOGIC ──
   const askDelete = (id) => {
     setIdToDelete(id);
     setShowConfirm(true);
@@ -49,11 +59,9 @@ export default function TransactionTable({ transactions }) {
 
   async function confirmDelete() {
     if (!idToDelete) return;
-
     const targetId = idToDelete;
     setDeletingId(targetId);
     setShowConfirm(false);
-
     setLocalTransactions(prev => prev.filter(t => t.id !== targetId));
 
     const fd = new FormData();
@@ -64,17 +72,54 @@ export default function TransactionTable({ transactions }) {
       router.refresh();
     } catch (error) {
       alert("Error deleting: " + error.message);
-      setLocalTransactions(transactions);
+      setLocalTransactions(transactions); // Revert on error
     } finally {
       setDeletingId(null);
       setIdToDelete(null);
     }
   }
 
+  // ── 🚀 EDIT LOGIC ──
+  const openEdit = (txn) => {
+    setEditingTxn(txn);
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setIsUpdating(true);
+
+    const formData = new FormData(e.target);
+    const updatedId = editingTxn.id;
+    formData.set("id", updatedId);
+
+    // Optimistic UI Update (ක්ෂණිකව පේන්න හදනවා)
+    const updatedTxnObj = {
+      ...editingTxn,
+      type: formData.get("type"),
+      amount: Number(formData.get("amount")),
+      category: formData.get("category"),
+      description: formData.get("description"),
+      date: formData.get("date"),
+    };
+
+    setLocalTransactions(prev => prev.map(t => t.id === updatedId ? updatedTxnObj : t));
+    setEditingTxn(null); // Close Modal
+
+    try {
+      await updateTransaction(formData);
+      router.refresh();
+    } catch (error) {
+      alert("Error updating: " + error.message);
+      setLocalTransactions(transactions); // Revert on error
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <section className="flex flex-col gap-6 relative w-full">
 
-      {/* ── CUSTOM CONFIRMATION MODAL ── */}
+      {/* ── CUSTOM CONFIRMATION MODAL (DELETE) ── */}
       {showConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
           <div className="w-full max-w-sm rounded-[32px] border border-white/10 bg-[#161b27]/95 p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl ring-1 ring-white/20">
@@ -90,19 +135,70 @@ export default function TransactionTable({ transactions }) {
               </p>
             </div>
             <div className="flex gap-3">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="flex-1 rounded-2xl border border-white/5 bg-white/5 py-3.5 text-[10px] font-black italic tracking-widest text-slate-400 uppercase transition-all"
-              >
-                Abort
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="flex-1 rounded-2xl bg-rose-600/20 border border-rose-500/50 py-3.5 text-[10px] font-black italic tracking-widest text-rose-400 uppercase transition-all shadow-[0_0_20px_rgba(244,63,94,0.2)]"
-              >
-                Delete
-              </button>
+              <button onClick={() => setShowConfirm(false)} className="flex-1 rounded-2xl border border-white/5 bg-white/5 py-3.5 text-[10px] font-black italic tracking-widest text-slate-400 uppercase transition-all">Abort</button>
+              <button onClick={confirmDelete} className="flex-1 rounded-2xl bg-rose-600/20 border border-rose-500/50 py-3.5 text-[10px] font-black italic tracking-widest text-rose-400 uppercase transition-all shadow-[0_0_20px_rgba(244,63,94,0.2)]">Delete</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 🚀 EDIT MODAL (GLASSMORPHISM) ── */}
+      {editingTxn && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-md rounded-[32px] border border-white/10 bg-[#161b27]/95 p-6 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl ring-1 ring-white/20">
+            <div className="mb-6 flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-400 border border-sky-500/20 shadow-[0_0_15px_rgba(56,189,248,0.3)]">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-[14px] font-black italic tracking-widest text-white uppercase">Edit Record</h3>
+                <p className="text-[9px] font-bold italic text-slate-400 uppercase tracking-widest">Update Data Values</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleUpdate} className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Type</label>
+                  <select name="type" defaultValue={editingTxn.type} className="rounded-xl border border-white/5 bg-black/40 p-3 text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase">
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Date</label>
+                  <input type="date" name="date" defaultValue={editingTxn.date} required className="rounded-xl border border-white/5 bg-black/40 p-3 text-xs font-bold italic text-white outline-none focus:border-sky-500/50 [color-scheme:dark] uppercase" />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Amount (Rs.)</label>
+                <input type="number" step="0.01" name="amount" defaultValue={editingTxn.amount} required className="rounded-xl border border-white/5 bg-black/40 p-3 text-lg font-black italic text-white outline-none focus:border-sky-500/50" />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Category</label>
+                <select name="category" defaultValue={editingTxn.category} className="rounded-xl border border-white/5 bg-black/40 p-3 text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase">
+                  {CATEGORIES.map(cat => (
+                    <option key={cat} value={cat}>{CATEGORY_EMOJI[cat]} {cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Description</label>
+                <input type="text" name="description" defaultValue={editingTxn.description} required className="rounded-xl border border-white/5 bg-black/40 p-3 text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase" />
+              </div>
+
+              <div className="flex gap-3 mt-4">
+                <button type="button" onClick={() => setEditingTxn(null)} className="flex-1 rounded-2xl border border-white/5 bg-white/5 py-3.5 text-[10px] font-black italic tracking-widest text-slate-400 uppercase transition-all hover:bg-white/10">Cancel</button>
+                <button type="submit" disabled={isUpdating} className="flex-1 rounded-2xl bg-sky-600/20 border border-sky-500/50 py-3.5 text-[10px] font-black italic tracking-widest text-sky-400 uppercase transition-all shadow-[0_0_20px_rgba(56,189,248,0.2)] hover:bg-sky-500/30">
+                  {isUpdating ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -137,11 +233,7 @@ export default function TransactionTable({ transactions }) {
 
           <div className="flex gap-1.5 sm:gap-2 bg-[#161b27]/30 backdrop-blur-md p-1 rounded-2xl border border-white/5 w-full sm:w-auto">
             {["all", "income", "expense"].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`flex-1 sm:flex-none rounded-xl px-2 sm:px-4 py-1.5 sm:py-2 text-[8px] sm:text-[10px] font-black italic tracking-widest uppercase transition-all ${filter === f ? 'bg-sky-500/20 text-sky-400' : 'text-slate-500'}`}
-              >
+              <button key={f} onClick={() => setFilter(f)} className={`flex-1 sm:flex-none rounded-xl px-2 sm:px-4 py-1.5 sm:py-2 text-[8px] sm:text-[10px] font-black italic tracking-widest uppercase transition-all ${filter === f ? 'bg-sky-500/20 text-sky-400' : 'text-slate-500'}`}>
                 {f}
               </button>
             ))}
@@ -151,15 +243,13 @@ export default function TransactionTable({ transactions }) {
 
       {/* Data Table */}
       <div className="rounded-[24px] sm:rounded-[40px] border border-white/5 bg-[#161b27]/30 backdrop-blur-2xl shadow-2xl overflow-hidden w-full">
-        {/* overflow-x-auto අයින් කළා, table-layout fixed දුන්නා */}
         <div className="w-full">
           <table className="w-full text-left border-collapse table-fixed">
             <thead>
-              {/* px-8 වෙනුවට px-3 සහ px-6 දුන්නා */}
               <tr className="border-b border-white/5 bg-black/20 text-[7px] sm:text-[10px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] text-slate-500 uppercase">
                 <th className="px-3 sm:px-6 py-3 sm:py-5 w-[45%] sm:w-1/2">Entity</th>
-                <th className="px-1 sm:px-6 py-3 sm:py-5 text-right w-[40%] sm:w-auto">Value</th>
-                <th className="px-2 sm:px-6 py-3 sm:py-5 text-center w-[15%] sm:w-[100px]">DEL</th>
+                <th className="px-1 sm:px-6 py-3 sm:py-5 text-right w-[35%] sm:w-auto">Value</th>
+                <th className="px-2 sm:px-6 py-3 sm:py-5 text-center w-[20%] sm:w-[120px]">Act</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -171,7 +261,6 @@ export default function TransactionTable({ transactions }) {
                         {CATEGORY_EMOJI[txn.category] ?? "📦"}
                       </div>
                       <div className="min-w-0">
-                        {/* truncate දාලා දිග නම් කපන්න දුන්නා */}
                         <p className="text-[10px] sm:text-[14px] font-bold text-slate-200 uppercase truncate">{txn.description}</p>
                         <p className="text-[7px] sm:text-[9px] font-bold italic text-slate-500 uppercase truncate">{txn.category} <span className="hidden sm:inline">•</span> {fmtDate(txn.date)}</p>
                       </div>
@@ -180,20 +269,37 @@ export default function TransactionTable({ transactions }) {
                   <td className={`px-1 sm:px-6 py-3 sm:py-5 text-right text-[11px] sm:text-[16px] font-black italic truncate ${txn.type === "income" ? "text-emerald-400" : "text-rose-400"}`}>
                     {txn.type === "income" ? "+ " : "- "} {fmt(txn.amount)}
                   </td>
+
+                  {/* 🚀 වෙනස් කළ තැන: Edit & Delete බට්න් දෙකම දාලා තියෙනවා */}
                   <td className="px-2 sm:px-6 py-3 sm:py-5 text-center">
-                    <button
-                      disabled={deletingId === txn.id}
-                      onClick={() => askDelete(txn.id)}
-                      className="inline-flex items-center justify-center h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-white/5 text-slate-500 hover:text-rose-400 transition-all mx-auto"
-                    >
-                      {deletingId === txn.id ? (
-                        <div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-rose-500 border-t-transparent"></div>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" strokeWidth="2" stroke="currentColor" className="h-3 w-3 sm:h-4 sm:w-4">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    <div className="flex items-center justify-center gap-1 sm:gap-2">
+                      {/* EDIT BUTTON */}
+                      <button
+                        onClick={() => openEdit(txn)}
+                        className="inline-flex items-center justify-center h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-sky-500/5 text-sky-500/50 hover:bg-sky-500/10 hover:text-sky-400 border border-transparent hover:border-sky-500/20 transition-all"
+                        title="Edit Record"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3 sm:w-4 sm:h-4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
                         </svg>
-                      )}
-                    </button>
+                      </button>
+
+                      {/* DELETE BUTTON */}
+                      <button
+                        disabled={deletingId === txn.id}
+                        onClick={() => askDelete(txn.id)}
+                        className="inline-flex items-center justify-center h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-rose-500/5 text-rose-500/50 hover:bg-rose-500/10 hover:text-rose-400 border border-transparent hover:border-rose-500/20 transition-all"
+                        title="Delete Record"
+                      >
+                        {deletingId === txn.id ? (
+                          <div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-rose-500 border-t-transparent"></div>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" strokeWidth="2" stroke="currentColor" className="h-3 w-3 sm:h-4 sm:w-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
