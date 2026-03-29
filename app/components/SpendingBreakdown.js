@@ -16,7 +16,7 @@ const fmt = (n) =>
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-[#0b0d13]/95 p-4 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+      <div className="rounded-2xl border border-white/10 bg-[#0b0d13]/95 p-4 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-50">
         <p className="text-[9px] font-black italic text-slate-500 uppercase tracking-[0.3em] mb-1">
           {payload[0].name}
         </p>
@@ -49,33 +49,33 @@ export default function SpendingBreakdown({ transactions }) {
   const totalInc = incomeData.reduce((s, d) => s + d.value, 0);
 
   return (
-    // Gap 12 ඉඳන් 8 ට අඩු කළා
-    <section className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+    // 🔥 වෙනස් කරපු තැන: grid-cols-2 කරලා gap අඩු කළා පෝන් එකට ගැලපෙන්න
+    <section className="grid grid-cols-2 gap-3 sm:gap-8">
 
       {/* ── EXPENSE BREAKDOWN (CASH OUT) ── */}
-      {/* Padding p-12 ඉඳන් p-8 ට අඩු කළා, Rounded 32px කළා */}
-      <div className="group relative overflow-hidden rounded-[32px] border border-white/5 bg-[#161b27]/30 p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500 hover:border-rose-500/30 hover:bg-white/[0.02]">
+      {/* Padding අඩු කළා (p-4), border-radius අඩු කළා (rounded-[24px]) */}
+      <div className="group relative overflow-hidden rounded-[24px] sm:rounded-[32px] border border-white/5 bg-[#161b27]/30 p-4 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500 hover:border-rose-500/30 hover:bg-white/[0.02] flex flex-col">
 
         {/* Header Section */}
-        <div className="relative z-10 flex items-start justify-between mb-8">
-          <div className="flex items-center gap-3 mt-1">
-            <div className="h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,1)] animate-pulse" />
-            <h2 className="text-[12px] font-black italic tracking-[0.3em] text-white uppercase">Cash Out Analytics</h2>
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between mb-4 sm:mb-8 gap-2 sm:gap-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 mt-1">
+            <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,1)] animate-pulse" />
+            <h2 className="text-[8px] sm:text-[12px] font-black italic tracking-widest sm:tracking-[0.3em] text-white uppercase truncate">Cash Out Analytics</h2>
           </div>
-          <div className="text-right">
-            <p className="text-[9px] font-bold text-slate-500 italic uppercase tracking-widest">Total Outflow</p>
-            <p className="text-lg font-black text-rose-500 italic mt-0.5">{fmt(totalExp)}</p>
+          <div className="text-left sm:text-right">
+            <p className="text-[6px] sm:text-[9px] font-bold text-slate-500 italic uppercase tracking-widest hidden sm:block">Total Outflow</p>
+            <p className="text-[12px] sm:text-lg font-black text-rose-500 italic mt-0.5 truncate">{fmt(totalExp)}</p>
           </div>
         </div>
 
-        {/* Chart Section - Height 400px ඉඳන් 250px ට අඩු කළා */}
-        <div className="relative h-[250px] w-full mb-6">
+        {/* Chart Section - Height අඩු කළා පෝන් එකට (h-[120px]) */}
+        <div className="relative h-[120px] sm:h-[250px] w-full mb-4 sm:mb-6 flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={expenseData}
-                innerRadius={70}  // Radius අඩු කළා
-                outerRadius={95}
+                innerRadius="60%"  // Responsive radius
+                outerRadius="90%"
                 paddingAngle={4}
                 dataKey="value"
                 stroke="none"
@@ -91,52 +91,54 @@ export default function SpendingBreakdown({ transactions }) {
           </ResponsiveContainer>
 
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-[9px] font-bold text-slate-600 italic tracking-[0.4em] uppercase">Overview</p>
-            <p className="text-lg font-black text-rose-500/80 italic tracking-widest mt-1">OUTFLOW</p>
+            <p className="text-[6px] sm:text-[9px] font-bold text-slate-600 italic tracking-[0.2em] sm:tracking-[0.4em] uppercase">Overview</p>
+            <p className="text-[10px] sm:text-lg font-black text-rose-500/80 italic tracking-widest mt-0.5 sm:mt-1">OUTFLOW</p>
           </div>
         </div>
 
-        {/* Dynamic Legend */}
+        {/* Dynamic Legend - පෝන් එකේදී list එක 1 column වෙනවා */}
         {expenseData.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 pt-6 border-t border-white/5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto">
             {expenseData.slice(0, 4).map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-black/20 border border-white/5">
-                <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[item.name] || "#e11d48" }} />
-                  <span className="text-[10px] font-bold text-slate-400 italic uppercase tracking-wider truncate max-w-[60px]" title={item.name}>{item.name}</span>
+              <div key={i} className="flex items-center justify-between p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl bg-black/20 border border-white/5">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[item.name] || "#e11d48" }} />
+                  <span className="text-[7px] sm:text-[10px] font-bold text-slate-400 italic uppercase tracking-wider truncate max-w-[40px] sm:max-w-[60px]" title={item.name}>{item.name}</span>
                 </div>
-                <span className="text-[10px] font-black text-white italic">{((item.value / totalExp) * 100).toFixed(0)}%</span>
+                <span className="text-[7px] sm:text-[10px] font-black text-white italic">{((item.value / totalExp) * 100).toFixed(0)}%</span>
               </div>
             ))}
           </div>
         ) : (
-          <div className="pt-6 border-t border-white/5 text-center">
-            <p className="text-[10px] font-bold italic tracking-widest text-slate-600 uppercase">NO OUTFLOW DATA</p>
+          <div className="pt-4 sm:pt-6 border-t border-white/5 text-center mt-auto">
+            <p className="text-[7px] sm:text-[10px] font-bold italic tracking-widest text-slate-600 uppercase">NO OUTFLOW DATA</p>
           </div>
         )}
       </div>
 
       {/* ── INCOME SOURCES (CASH IN) ── */}
-      <div className="group relative overflow-hidden rounded-[32px] border border-white/5 bg-[#161b27]/30 p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500 hover:border-emerald-500/30 hover:bg-white/[0.02]">
+      <div className="group relative overflow-hidden rounded-[24px] sm:rounded-[32px] border border-white/5 bg-[#161b27]/30 p-4 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500 hover:border-emerald-500/30 hover:bg-white/[0.02] flex flex-col">
 
-        <div className="relative z-10 flex items-start justify-between mb-8">
-          <div className="flex items-center gap-3 mt-1">
-            <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,1)] animate-pulse" />
-            <h2 className="text-[12px] font-black italic tracking-[0.3em] text-white uppercase">Cash In Analytics</h2>
+        {/* Header Section */}
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between mb-4 sm:mb-8 gap-2 sm:gap-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 mt-1">
+            <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,1)] animate-pulse" />
+            <h2 className="text-[8px] sm:text-[12px] font-black italic tracking-widest sm:tracking-[0.3em] text-white uppercase truncate">Cash In Analytics</h2>
           </div>
-          <div className="text-right">
-            <p className="text-[9px] font-bold text-slate-500 italic uppercase tracking-widest">Total Inflow</p>
-            <p className="text-lg font-black text-emerald-500 italic mt-0.5">{fmt(totalInc)}</p>
+          <div className="text-left sm:text-right">
+            <p className="text-[6px] sm:text-[9px] font-bold text-slate-500 italic uppercase tracking-widest hidden sm:block">Total Inflow</p>
+            <p className="text-[12px] sm:text-lg font-black text-emerald-500 italic mt-0.5 truncate">{fmt(totalInc)}</p>
           </div>
         </div>
 
-        <div className="relative h-[250px] w-full mb-6">
+        {/* Chart Section */}
+        <div className="relative h-[120px] sm:h-[250px] w-full mb-4 sm:mb-6 flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={incomeData}
-                innerRadius={70}
-                outerRadius={95}
+                innerRadius="60%"
+                outerRadius="90%"
                 paddingAngle={4}
                 dataKey="value"
                 stroke="none"
@@ -152,26 +154,27 @@ export default function SpendingBreakdown({ transactions }) {
           </ResponsiveContainer>
 
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-[9px] font-bold text-slate-600 italic tracking-[0.4em] uppercase">Sources</p>
-            <p className="text-lg font-black text-emerald-500/80 italic tracking-widest mt-1">INFLOW</p>
+            <p className="text-[6px] sm:text-[9px] font-bold text-slate-600 italic tracking-[0.2em] sm:tracking-[0.4em] uppercase">Sources</p>
+            <p className="text-[10px] sm:text-lg font-black text-emerald-500/80 italic tracking-widest mt-0.5 sm:mt-1">INFLOW</p>
           </div>
         </div>
 
+        {/* Dynamic Legend */}
         {incomeData.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 pt-6 border-t border-white/5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto">
             {incomeData.slice(0, 4).map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-black/20 border border-white/5">
-                <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[item.name] || "#10b981" }} />
-                  <span className="text-[10px] font-bold text-slate-400 italic uppercase tracking-wider truncate max-w-[60px]" title={item.name}>{item.name}</span>
+              <div key={i} className="flex items-center justify-between p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl bg-black/20 border border-white/5">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[item.name] || "#10b981" }} />
+                  <span className="text-[7px] sm:text-[10px] font-bold text-slate-400 italic uppercase tracking-wider truncate max-w-[40px] sm:max-w-[60px]" title={item.name}>{item.name}</span>
                 </div>
-                <span className="text-[10px] font-black text-white italic">{((item.value / totalInc) * 100).toFixed(0)}%</span>
+                <span className="text-[7px] sm:text-[10px] font-black text-white italic">{((item.value / totalInc) * 100).toFixed(0)}%</span>
               </div>
             ))}
           </div>
         ) : (
-          <div className="pt-6 border-t border-white/5 text-center">
-            <p className="text-[10px] font-bold italic tracking-widest text-slate-600 uppercase">NO INFLOW DATA</p>
+          <div className="pt-4 sm:pt-6 border-t border-white/5 text-center mt-auto">
+            <p className="text-[7px] sm:text-[10px] font-bold italic tracking-widest text-slate-600 uppercase">NO INFLOW DATA</p>
           </div>
         )}
       </div>

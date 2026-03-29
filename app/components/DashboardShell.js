@@ -145,41 +145,51 @@ export default function DashboardShell({ transactions }) {
           {activeTab === "OVERVIEW" && (
             <div key={`overview-${currentUser}-${selectedMonth}`} className="animate-vibe space-y-10">
 
-              {/* 🔥 වෙනස් කරපු කොටස: grid-cols-2 කරලා පෝන් එකෙත් පැත්තෙන් පැත්තට හැදුවා */}
+              {/* DASUN & KAVINDYA CARDS */}
               <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16">
 
                 <article
                   onClick={() => setCurrentUser("DASUN")}
-                  className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-5 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'bg-[#161b27]/80 border-sky-500/60 shadow-[0_15px_50px_-20px_rgba(14,165,233,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}
+                  // 🔥 වෙනස් කළා: overflow-hidden තිබුණත් අකුරු කපන්න එපා කියලා text-clip වගේ දේවල් හැදුවා. padding එක පෝන් එකට p-4 කළා.
+                  className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-4 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'bg-[#161b27]/80 border-sky-500/60 shadow-[0_15px_50px_-20px_rgba(14,165,233,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}
                 >
-                  <div className={`absolute right-2 bottom-2 sm:right-4 sm:bottom-4 h-16 w-16 sm:h-32 sm:w-32 transition-all duration-700 ${isDasun ? 'opacity-10 text-sky-400' : 'opacity-5 text-slate-500'}`}>
+                  {/* Icon එකේ opacity එක සහ position එක හැදුවා අකුරු වලට බාධා නොවන විදිහට */}
+                  <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? 'opacity-[0.07] text-sky-400' : 'opacity-[0.03] text-slate-500'}`}>
                     <WalletOutlineIcon />
                   </div>
-                  <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0">
+
+                  {/* අකුරු ටික z-10 නිසා හැමවෙලේම උඩින් තියෙන්නේ */}
+                  <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
                     <div>
                       <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? 'text-white' : 'text-slate-500'}`}>DASUN</p>
                     </div>
-                    <div className="flex items-baseline gap-1.5 flex-wrap">
-                      <span className={`text-[9px] sm:text-[11px] font-bold italic ${isDasun ? 'text-sky-400' : 'text-slate-500'}`}>Rs.</span>
-                      <p className={`text-xl sm:text-4xl font-black italic tracking-tighter truncate ${isDasun ? 'text-white' : 'text-slate-300'}`}>{fmtNum(dasunStats.balance)}</p>
+                    {/* flex-wrap අයින් කරලා, අකුරු වල සයිස් එක පෝන් එකේදී text-2xl කළා */}
+                    <div className="flex items-baseline gap-1.5 w-full">
+                      <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isDasun ? 'text-sky-400' : 'text-slate-500'}`}>Rs.</span>
+                      {/* break-all දාලා ගාණ දිග වැඩි වුණොත් කඩලා පෙන්වන්න හැදුවා, හැංගෙන්නේ නෑ */}
+                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? 'text-white' : 'text-slate-300'}`}>
+                        {fmtNum(dasunStats.balance)}
+                      </p>
                     </div>
                   </div>
                 </article>
 
                 <article
                   onClick={() => setCurrentUser("KAVINDYA")}
-                  className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-5 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? 'bg-[#161b27]/80 border-purple-500/60 shadow-[0_15px_50px_-20px_rgba(168,85,247,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}
+                  className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-4 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? 'bg-[#161b27]/80 border-purple-500/60 shadow-[0_15px_50px_-20px_rgba(168,85,247,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}
                 >
-                  <div className={`absolute right-2 bottom-2 sm:right-4 sm:bottom-4 h-16 w-16 sm:h-32 sm:w-32 transition-all duration-700 ${isKavindya ? 'opacity-10 text-purple-400' : 'opacity-5 text-slate-500'}`}>
+                  <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isKavindya ? 'opacity-[0.07] text-purple-400' : 'opacity-[0.03] text-slate-500'}`}>
                     <BankOutlineIcon />
                   </div>
-                  <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0">
+                  <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
                     <div>
                       <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isKavindya ? 'text-white' : 'text-slate-500'}`}>KAVINDYA</p>
                     </div>
-                    <div className="flex items-baseline gap-1.5 flex-wrap">
-                      <span className={`text-[9px] sm:text-[11px] font-bold italic ${isKavindya ? 'text-purple-400' : 'text-slate-500'}`}>Rs.</span>
-                      <p className={`text-xl sm:text-4xl font-black italic tracking-tighter truncate ${isKavindya ? 'text-white' : 'text-slate-300'}`}>{fmtNum(kavindyaStats.balance)}</p>
+                    <div className="flex items-baseline gap-1.5 w-full">
+                      <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isKavindya ? 'text-purple-400' : 'text-slate-500'}`}>Rs.</span>
+                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? 'text-white' : 'text-slate-300'}`}>
+                        {fmtNum(kavindyaStats.balance)}
+                      </p>
                     </div>
                   </div>
                 </article>
