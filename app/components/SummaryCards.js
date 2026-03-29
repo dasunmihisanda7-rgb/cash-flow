@@ -21,20 +21,52 @@ const IconBalance = () => (
   </svg>
 );
 
-export default function SummaryCards({ totalIncome, totalExpenses, balance }) {
+export default function SummaryCards({ totalIncome, totalExpenses, balance, transactions = [], currentUser = "", selectedMonth = "ALL" }) {
   const fmt = (n) =>
     `Rs. ${new Intl.NumberFormat("en-LK", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(n)}`;
 
+  let incStr = "";
+  let expStr = "";
+  let incChange = 0;
+  let expChange = 0;
+
+  // ── PERCENTAGE LOGIC ──
+  if (selectedMonth === "ALL") {
+    incStr = "LIFETIME TOTAL";
+    expStr = "LIFETIME TOTAL";
+  } else {
+    // ගිය මාසය ගණනය කිරීම
+    const [y, m] = selectedMonth.split('-');
+    let prevDate = new Date(parseInt(y), parseInt(m) - 2, 1);
+    const prevY = prevDate.getFullYear();
+    const prevM = String(prevDate.getMonth() + 1).padStart(2, "0");
+    const prevMonthStr = `${prevY}-${prevM}`;
+
+    // ගිය මාසයේ දත්ත පෙරීම
+    const prevT = transactions.filter(t => t.date?.startsWith(prevMonthStr) && t.user?.toUpperCase() === currentUser.toUpperCase());
+    const prevInc = prevT.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const prevExp = prevT.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+
+    // ප්‍රතිශතය සෙවීම
+    incChange = prevInc === 0 ? (totalIncome > 0 ? 100 : 0) : ((totalIncome - prevInc) / prevInc) * 100;
+    expChange = prevExp === 0 ? (totalExpenses > 0 ? 100 : 0) : ((totalExpenses - prevExp) / prevExp) * 100;
+
+    // පෝන් එකේ ඉඩ මදි නිසා "VS LAST MONTH" කෑල්ල "VS PREV" විදිහට ටිකක් කොට කළා
+    incStr = `${Math.abs(incChange).toFixed(1)}% VS PREV`;
+    expStr = `${Math.abs(expChange).toFixed(1)}% VS PREV`;
+  }
+
   const cards = [
     {
       id: "card-total-income",
       label: "CASH IN",
       value: fmt(totalIncome),
-      change: "+12.4% vs last month",
-      positive: true,
+      change: incStr,
+      arrow: selectedMonth === "ALL" ? "●" : (incChange >= 0 ? "▲" : "▼"),
+      isGood: selectedMonth === "ALL" ? true : (incChange >= 0),
       color: "emerald",
       icon: <IconIn />,
     },
@@ -42,17 +74,19 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance }) {
       id: "card-total-expenses",
       label: "CASH OUT",
       value: fmt(totalExpenses),
-      change: "-3.1% vs last month",
-      positive: false,
+      change: expStr,
+      arrow: selectedMonth === "ALL" ? "●" : (expChange >= 0 ? "▲" : "▼"),
+      isGood: selectedMonth === "ALL" ? false : (expChange <= 0), // වියදම අඩුවෙන එක හොඳයි
       color: "rose",
       icon: <IconOut />,
     },
     {
       id: "card-current-balance",
-      label: "BALANCE", // Text එක ටිකක් කොට කළා පෝන් එකට ලේසි වෙන්න
+      label: "BALANCE",
       value: fmt(balance),
-      change: balance >= 0 ? "Healthy surplus" : "In deficit",
-      positive: balance >= 0,
+      change: balance > 0 ? "HEALTHY SURPLUS" : balance < 0 ? "IN DEFICIT" : "ZERO BALANCE",
+      arrow: balance >= 0 ? "▲" : "▼",
+      isGood: balance >= 0,
       color: "sky",
       icon: <IconBalance />,
     },
@@ -99,10 +133,10 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance }) {
 
               <div className="flex items-center">
                 <span className={`inline-flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg text-[6px] sm:text-[10px] font-bold italic border transition-colors duration-500 w-full sm:w-auto overflow-hidden
-                  ${card.positive ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/20' :
+                  ${card.isGood ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/20' :
                     'bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:bg-rose-500/20'}`}
                 >
-                  <span className="shrink-0">{card.positive ? "▲" : "▼"}</span>
+                  <span className="shrink-0">{card.arrow}</span>
                   <span className="ml-0.5 sm:ml-1 tracking-wider uppercase truncate">{card.change}</span>
                 </span>
               </div>

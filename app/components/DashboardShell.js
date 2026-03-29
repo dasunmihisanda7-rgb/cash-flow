@@ -150,23 +150,18 @@ export default function DashboardShell({ transactions }) {
 
                 <article
                   onClick={() => setCurrentUser("DASUN")}
-                  // 🔥 වෙනස් කළා: overflow-hidden තිබුණත් අකුරු කපන්න එපා කියලා text-clip වගේ දේවල් හැදුවා. padding එක පෝන් එකට p-4 කළා.
                   className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-4 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'bg-[#161b27]/80 border-sky-500/60 shadow-[0_15px_50px_-20px_rgba(14,165,233,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}
                 >
-                  {/* Icon එකේ opacity එක සහ position එක හැදුවා අකුරු වලට බාධා නොවන විදිහට */}
                   <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? 'opacity-[0.07] text-sky-400' : 'opacity-[0.03] text-slate-500'}`}>
                     <WalletOutlineIcon />
                   </div>
 
-                  {/* අකුරු ටික z-10 නිසා හැමවෙලේම උඩින් තියෙන්නේ */}
                   <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
                     <div>
                       <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? 'text-white' : 'text-slate-500'}`}>DASUN</p>
                     </div>
-                    {/* flex-wrap අයින් කරලා, අකුරු වල සයිස් එක පෝන් එකේදී text-2xl කළා */}
                     <div className="flex items-baseline gap-1.5 w-full">
                       <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isDasun ? 'text-sky-400' : 'text-slate-500'}`}>Rs.</span>
-                      {/* break-all දාලා ගාණ දිග වැඩි වුණොත් කඩලා පෙන්වන්න හැදුවා, හැංගෙන්නේ නෑ */}
                       <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? 'text-white' : 'text-slate-300'}`}>
                         {fmtNum(dasunStats.balance)}
                       </p>
@@ -197,7 +192,15 @@ export default function DashboardShell({ transactions }) {
               </div>
 
               <div className="space-y-10">
-                <SummaryCards totalIncome={currentStats.income} totalExpenses={currentStats.expense} balance={currentStats.balance} />
+                {/* 🔥 වෙනස් කරපු තැන: SummaryCards වලට අලුත් දත්ත ටික යැව්වා */}
+                <SummaryCards
+                  totalIncome={currentStats.income}
+                  totalExpenses={currentStats.expense}
+                  balance={currentStats.balance}
+                  transactions={transactions}
+                  currentUser={currentUser}
+                  selectedMonth={selectedMonth}
+                />
                 <div className="pt-8"><SpendingBreakdown transactions={userFilteredTransactions} /></div>
               </div>
             </div>
