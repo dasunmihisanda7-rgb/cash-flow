@@ -1,5 +1,13 @@
 "use client"; // This is a must!
 
+// දැනට තියෙන මාසය ගන්න පොඩි Function එකක්
+const getCurrentMonthStr = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
+};
+
 export default function Navbar({ activeTab, setActiveTab, currentUser, setCurrentUser, selectedMonth, setSelectedMonth }) {
   const tabs = ["OVERVIEW", "LOG", "CONTROL"];
 
@@ -46,12 +54,10 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
           {currentUser}
         </button>
 
-        {/* ── 3. NEW HYBRID MONTH PICKER (LARGER SIZE) ── */}
-        {/* gap-2 එකතු කළා, p-1 වෙනුවට p-1.5 දැම්මා */}
+        {/* ── 3. HYBRID MONTH PICKER ── */}
         <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/40 p-1.5 backdrop-blur-md shadow-inner">
 
           {/* ALL TIME Button */}
-          {/* px-5 py-2 සහ text-[11px] දැම්මා */}
           <button
             onClick={() => setSelectedMonth("ALL")}
             className={`rounded-full px-3 py-1 text-[10px] font-black italic tracking-widest transition-all duration-300 ${selectedMonth === "ALL"
@@ -63,21 +69,21 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
           </button>
 
           {/* Native Month Picker */}
-          {/* px-4 py-2 දැම්මා */}
           <div className={`relative flex items-center rounded-full px-3 py-1 transition-all duration-300 ${selectedMonth !== "ALL"
             ? "bg-sky-500/20 text-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.2)]"
-            : "text-slate-500 hover:text-white"
+            : "text-slate-500/40 hover:text-slate-400" // ALL TIME තේරුවාම මේක අඳුරු වෙනවා
             }`}
           >
-            {/* text-[12px] දැම්මා */}
             <input
               type="month"
-              value={selectedMonth === "ALL" ? "" : selectedMonth}
+              // 🔥 වෙනස් කරපු තැන: ALL TIME තේරුවාම හිස් කරන්නේ නැතුව Current Month එක පෙන්නනවා
+              value={selectedMonth === "ALL" ? getCurrentMonthStr() : selectedMonth}
               onChange={(e) => {
                 setSelectedMonth(e.target.value || "ALL");
               }}
-              className="bg-transparent outline-none text-[12px] font-bold italic tracking-widest cursor-pointer uppercase [color-scheme:dark] 
-              [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:h-4 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-2 hover:[&::-webkit-calendar-picker-indicator]:opacity-80 transition-all"
+              className={`bg-transparent outline-none text-[12px] font-bold italic tracking-widest cursor-pointer uppercase transition-all
+                ${selectedMonth === "ALL" ? "opacity-50" : "opacity-100"} 
+                [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:h-4 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-2 hover:[&::-webkit-calendar-picker-indicator]:opacity-80`}
             />
           </div>
 

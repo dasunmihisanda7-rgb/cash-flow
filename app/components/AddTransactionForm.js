@@ -161,8 +161,16 @@ export default function AddTransactionForm({ currentUser }) {
           {activeCategories.map(cat => (
             <div key={cat} className="group flex items-center justify-between rounded-xl border border-white/5 bg-black/20 px-4 py-2.5 transition-all hover:border-white/10">
               <span className="text-[10px] font-bold italic tracking-widest text-slate-400 uppercase">{cat}</span>
-              <button onClick={() => deleteCat(cat)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-500 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+
+              {/* 🔥 වෙනස් කරපු තැන: opacity-0 අයින් කළා. දැන් පෝන් එකෙත් හැමවෙලේම පේනවා! */}
+              <button
+                type="button"
+                onClick={() => deleteCat(cat)}
+                className="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 p-1.5 rounded-md transition-all flex items-center justify-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
               </button>
             </div>
           ))}

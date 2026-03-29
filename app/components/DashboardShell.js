@@ -62,8 +62,6 @@ export default function DashboardShell({ transactions }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // Email එක අනුව User කවුද කියලා තීරණය කරනවා
-        // ඔයා Firebase එකේ දුන්න Email එක මෙතනට දාන්න (dasun@flow.com වගේ)
         if (user.email.toLowerCase().includes("dasun")) {
           setCurrentUser("DASUN");
         } else if (user.email.toLowerCase().includes("kavindya")) {
@@ -71,7 +69,6 @@ export default function DashboardShell({ transactions }) {
         }
         setLoading(false);
       } else {
-        // ලොග් වෙලා නැත්නම් පන්නනවා!
         router.push("/login");
       }
     });
@@ -84,7 +81,7 @@ export default function DashboardShell({ transactions }) {
     router.push("/login");
   };
 
-  // ── Loading Screen (Cyberpunk style) ──
+  // ── Loading Screen ──
   if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-[#0b0f1a] text-white">
@@ -133,7 +130,6 @@ export default function DashboardShell({ transactions }) {
         setSelectedMonth={setSelectedMonth}
       />
 
-      {/* Logout Button (Floating) */}
       <button
         onClick={handleLogout}
         className="fixed bottom-8 right-8 z-[100] rounded-full border border-white/5 bg-[#161b27]/80 p-4 text-slate-500 backdrop-blur-xl transition-all hover:border-rose-500/50 hover:text-rose-400 group shadow-2xl"
@@ -148,28 +144,46 @@ export default function DashboardShell({ transactions }) {
 
           {activeTab === "OVERVIEW" && (
             <div key={`overview-${currentUser}-${selectedMonth}`} className="animate-vibe space-y-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+
+              {/* 🔥 වෙනස් කරපු කොටස: grid-cols-2 කරලා පෝන් එකෙත් පැත්තෙන් පැත්තට හැදුවා */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16">
+
                 <article
                   onClick={() => setCurrentUser("DASUN")}
-                  className={`group relative overflow-hidden rounded-[60px] border p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl ${isDasun ? 'bg-[#161b27]/80 border-sky-500/60 shadow-[0_15px_50px_-20px_rgba(14,165,233,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}
+                  className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-5 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'bg-[#161b27]/80 border-sky-500/60 shadow-[0_15px_50px_-20px_rgba(14,165,233,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}
                 >
-                  <div className={`absolute right-4 bottom-4 h-32 w-32 transition-all duration-700 ${isDasun ? 'opacity-10 text-sky-400' : 'opacity-5 text-slate-500'}`}><WalletOutlineIcon /></div>
-                  <div className="relative z-10 flex flex-col h-full justify-between">
-                    <div><p className={`text-[18px] font-black italic tracking-[0.3em] uppercase mb-2 ${isDasun ? 'text-white' : 'text-slate-500'}`}>DASUN</p></div>
-                    <div className="flex items-baseline gap-1.5"><span className={`text-[11px] font-bold italic ${isDasun ? 'text-sky-400' : 'text-slate-500'}`}>Rs.</span><p className={`text-4xl font-black italic tracking-tighter ${isDasun ? 'text-white' : 'text-slate-300'}`}>{fmtNum(dasunStats.balance)}</p></div>
+                  <div className={`absolute right-2 bottom-2 sm:right-4 sm:bottom-4 h-16 w-16 sm:h-32 sm:w-32 transition-all duration-700 ${isDasun ? 'opacity-10 text-sky-400' : 'opacity-5 text-slate-500'}`}>
+                    <WalletOutlineIcon />
+                  </div>
+                  <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0">
+                    <div>
+                      <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? 'text-white' : 'text-slate-500'}`}>DASUN</p>
+                    </div>
+                    <div className="flex items-baseline gap-1.5 flex-wrap">
+                      <span className={`text-[9px] sm:text-[11px] font-bold italic ${isDasun ? 'text-sky-400' : 'text-slate-500'}`}>Rs.</span>
+                      <p className={`text-xl sm:text-4xl font-black italic tracking-tighter truncate ${isDasun ? 'text-white' : 'text-slate-300'}`}>{fmtNum(dasunStats.balance)}</p>
+                    </div>
                   </div>
                 </article>
 
                 <article
                   onClick={() => setCurrentUser("KAVINDYA")}
-                  className={`group relative overflow-hidden rounded-[60px] border p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl ${isKavindya ? 'bg-[#161b27]/80 border-purple-500/60 shadow-[0_15px_50px_-20px_rgba(168,85,247,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}
+                  className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-5 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? 'bg-[#161b27]/80 border-purple-500/60 shadow-[0_15px_50px_-20px_rgba(168,85,247,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}
                 >
-                  <div className={`absolute right-4 bottom-4 h-32 w-32 transition-all duration-700 ${isKavindya ? 'opacity-10 text-purple-400' : 'opacity-5 text-slate-500'}`}><BankOutlineIcon /></div>
-                  <div className="relative z-10 flex flex-col h-full justify-between">
-                    <div><p className={`text-[18px] font-black italic tracking-[0.3em] uppercase mb-2 ${isKavindya ? 'text-white' : 'text-slate-500'}`}>KAVINDYA</p></div>
-                    <div className="flex items-baseline gap-1.5"><span className={`text-[11px] font-bold italic ${isKavindya ? 'text-purple-400' : 'text-slate-500'}`}>Rs.</span><p className={`text-4xl font-black italic tracking-tighter ${isKavindya ? 'text-white' : 'text-slate-300'}`}>{fmtNum(kavindyaStats.balance)}</p></div>
+                  <div className={`absolute right-2 bottom-2 sm:right-4 sm:bottom-4 h-16 w-16 sm:h-32 sm:w-32 transition-all duration-700 ${isKavindya ? 'opacity-10 text-purple-400' : 'opacity-5 text-slate-500'}`}>
+                    <BankOutlineIcon />
+                  </div>
+                  <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0">
+                    <div>
+                      <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isKavindya ? 'text-white' : 'text-slate-500'}`}>KAVINDYA</p>
+                    </div>
+                    <div className="flex items-baseline gap-1.5 flex-wrap">
+                      <span className={`text-[9px] sm:text-[11px] font-bold italic ${isKavindya ? 'text-purple-400' : 'text-slate-500'}`}>Rs.</span>
+                      <p className={`text-xl sm:text-4xl font-black italic tracking-tighter truncate ${isKavindya ? 'text-white' : 'text-slate-300'}`}>{fmtNum(kavindyaStats.balance)}</p>
+                    </div>
                   </div>
                 </article>
+
               </div>
 
               <div className="space-y-10">
