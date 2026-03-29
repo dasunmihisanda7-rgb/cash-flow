@@ -8,6 +8,8 @@ import SummaryCards from "@/app/components/SummaryCards";
 import AddTransactionForm from "@/app/components/AddTransactionForm";
 import TransactionTable from "@/app/components/TransactionTable";
 import SpendingBreakdown from "@/app/components/SpendingBreakdown";
+// 🚀 අලුත් Chart එක Import කළා
+import CashFlowTrend from "@/app/components/CashFlowTrend";
 
 // ── HOLOGRAPHIC ICONS ──────────────────────────────────────────────────────────
 
@@ -192,7 +194,6 @@ export default function DashboardShell({ transactions }) {
               </div>
 
               <div className="space-y-10">
-                {/* 🔥 වෙනස් කරපු තැන: SummaryCards වලට අලුත් දත්ත ටික යැව්වා */}
                 <SummaryCards
                   totalIncome={currentStats.income}
                   totalExpenses={currentStats.expense}
@@ -201,7 +202,13 @@ export default function DashboardShell({ transactions }) {
                   currentUser={currentUser}
                   selectedMonth={selectedMonth}
                 />
-                <div className="pt-8"><SpendingBreakdown transactions={userFilteredTransactions} /></div>
+
+                {/* 🚀 අපේ අලුත් Area Chart එක මෙතනට දැම්මා */}
+                <CashFlowTrend transactions={userFilteredTransactions} />
+
+                <div className="pt-8">
+                  <SpendingBreakdown transactions={userFilteredTransactions} />
+                </div>
               </div>
             </div>
           )}
