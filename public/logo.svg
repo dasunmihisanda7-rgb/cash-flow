@@ -1,0 +1,84 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="sq">
+      <rect x="24" y="24" width="464" height="464" rx="104"/>
+    </clipPath>
+    <radialGradient id="bg" cx="35%" cy="25%" r="80%">
+      <stop offset="0%" stop-color="#0d1828"/>
+      <stop offset="100%" stop-color="#040810"/>
+    </radialGradient>
+    <linearGradient id="glHL" x1="0%" y1="0%" x2="68%" y2="68%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.07"/>
+    </linearGradient>
+    <linearGradient id="topBar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.52"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="leftBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.24"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="gArr" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#14532d"/>
+      <stop offset="42%" stop-color="#16a34a"/>
+      <stop offset="100%" stop-color="#4ade80"/>
+    </linearGradient>
+    <radialGradient id="gGlow" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#22c55e" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rArr" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7f1d1d"/>
+      <stop offset="42%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#f87171"/>
+    </linearGradient>
+    <radialGradient id="rGlow" cx="50%" cy="55%" r="50%">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.40"/>
+      <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.48"/>
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.22"/>
+    </linearGradient>
+    <radialGradient id="bottomGlow" cx="50%" cy="100%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.055"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="centerDepth" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#050c20" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#020508" stop-opacity="0.55"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="url(#bg)"/>
+
+  <g clip-path="url(#sq)">
+    <rect x="24" y="24" width="464" height="464" fill="url(#centerDepth)"/>
+    <ellipse cx="183" cy="200" rx="100" ry="120" fill="url(#gGlow)"/>
+    <ellipse cx="329" cy="312" rx="100" ry="120" fill="url(#rGlow)"/>
+    <polygon points="183,103 240,186 210,186 210,298 156,298 156,186 126,186" fill="url(#gArr)"/>
+    <polygon points="183,103 210,186 197,186 197,298 183,298 183,186 154,186" fill="rgba(255,255,255,0.13)"/>
+    <polygon points="298,216 360,216 360,328 387,328 329,409 271,328 298,328" fill="url(#rArr)"/>
+    <polygon points="298,216 313,216 313,328 329,328 329,409 318,396 298,328" fill="rgba(255,255,255,0.10)"/>
+    <rect x="24" y="24" width="464" height="464" fill="url(#glHL)"/>
+    <rect x="24" y="24" width="464" height="60" fill="url(#topBar)"/>
+    <rect x="24" y="24" width="58" height="464" fill="url(#leftBar)"/>
+    <ellipse cx="256" cy="482" rx="185" ry="36" fill="url(#bottomGlow)"/>
+    <circle cx="456" cy="52" r="44" fill="rgba(255,255,255,0.025)"/>
+    <path d="M128 28 Q256 25 384 29" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M28 128 Q25 256 29 384" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.8" stroke-linecap="round"/>
+  </g>
+
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="none" stroke="url(#borderGrad)" stroke-width="1.6"/>
+  <rect x="27" y="27" width="458" height="458" rx="101" fill="none" stroke="rgba(255,255,255,0.065)" stroke-width="1"/>
+
+  <circle cx="74" cy="74" r="5.5" fill="rgba(255,255,255,0.58)"/>
+  <circle cx="88" cy="60" r="2.6" fill="rgba(255,255,255,0.40)"/>
+  <circle cx="60" cy="86" r="1.9" fill="rgba(255,255,255,0.28)"/>
+  <circle cx="444" cy="68" r="2.2" fill="rgba(255,255,255,0.18)"/>
+  <circle cx="68" cy="444" r="1.8" fill="rgba(255,255,255,0.14)"/>
+  <circle cx="444" cy="444" r="2.5" fill="rgba(255,255,255,0.10)"/>
+</svg>
