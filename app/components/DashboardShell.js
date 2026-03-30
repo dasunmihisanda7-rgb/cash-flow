@@ -37,7 +37,6 @@ const fmtNum = (n) => new Intl.NumberFormat("en-LK").format(n);
 
 export default function DashboardShell({ transactions }) {
   const router = useRouter();
-  // 🚀 වෙනස් කළ තැන: Default Tab එක SUMMARY කළා
   const [activeTab, setActiveTab] = useState("SUMMARY");
   const [currentUser, setCurrentUser] = useState("DASUN");
   const [loading, setLoading] = useState(true);
@@ -84,11 +83,11 @@ export default function DashboardShell({ transactions }) {
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6">
         <div className="space-y-10">
 
-          {/* 🚀 1. SUMMARY TAB */}
           {activeTab === "SUMMARY" && (
             <div key={`summary-${currentUser}-${selectedMonth}`} className="animate-vibe space-y-10">
               <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16">
-                <article onClick={() => setCurrentUser("DASUN")} className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-4 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'bg-[#161b27]/80 border-sky-500/60 shadow-[0_15px_50px_-20px_rgba(14,165,233,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}>
+                {/* 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා */}
+                <article onClick={() => setCurrentUser("DASUN")} className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-4 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'premium-glass border-sky-500/60 shadow-[0_15px_50px_-20px_rgba(14,165,233,0.5)]' : 'premium-glass border-white/5 scale-[0.98]'}`}>
                   <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? 'opacity-[0.07] text-sky-400' : 'opacity-[0.03] text-slate-500'}`}><WalletOutlineIcon /></div>
                   <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
                     <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? 'text-white' : 'text-slate-500'}`}>DASUN</p>
@@ -98,7 +97,9 @@ export default function DashboardShell({ transactions }) {
                     </div>
                   </div>
                 </article>
-                <article onClick={() => setCurrentUser("KAVINDYA")} className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-4 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer backdrop-blur-2xl flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? 'bg-[#161b27]/80 border-purple-500/60 shadow-[0_15px_50px_-20px_rgba(168,85,247,0.5)]' : 'bg-[#161b27]/30 border-white/5 scale-[0.98]'}`}>
+
+                {/* 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා */}
+                <article onClick={() => setCurrentUser("KAVINDYA")} className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-4 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? 'premium-glass border-purple-500/60 shadow-[0_15px_50px_-20px_rgba(168,85,247,0.5)]' : 'premium-glass border-white/5 scale-[0.98]'}`}>
                   <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isKavindya ? 'opacity-[0.07] text-purple-400' : 'opacity-[0.03] text-slate-500'}`}><BankOutlineIcon /></div>
                   <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
                     <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isKavindya ? 'text-white' : 'text-slate-500'}`}>KAVINDYA</p>
@@ -113,33 +114,30 @@ export default function DashboardShell({ transactions }) {
             </div>
           )}
 
-          {/* 🚀 2. ANALYTICS TAB */}
           {activeTab === "ANALYTICS" && (
             <div key={`analytics-${currentUser}-${selectedMonth}`} className="animate-vibe py-6">
               <SpendingBreakdown transactions={userFilteredTransactions} />
             </div>
           )}
 
-          {/* 🚀 3. TRENDS TAB */}
           {activeTab === "TRENDS" && (
             <div key={`trends-${currentUser}-${selectedMonth}`} className="animate-vibe py-6">
               <CashFlowTrend transactions={userFilteredTransactions} />
             </div>
           )}
 
-          {/* 🚀 4. LOG TAB */}
           {activeTab === "LOG" && (
             <div key={`log-${currentUser}-${selectedMonth}`} className="animate-vibe py-6">
               <TransactionTable transactions={userFilteredTransactions} />
             </div>
           )}
 
-          {/* 🚀 5. CONTROL TAB */}
           {activeTab === "CONTROL" && (
             <div key={`control-${currentUser}`} className="animate-vibe py-6 max-w-4xl mx-auto flex flex-col gap-10">
               <AddTransactionForm currentUser={currentUser} />
 
-              <div className="w-full rounded-[32px] border border-rose-500/20 bg-rose-500/5 p-6 sm:p-8 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)]">
+              {/* 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා */}
+              <div className="w-full rounded-[32px] border border-rose-500/20 premium-glass p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)]">
                 <div>
                   <h3 className="text-[14px] sm:text-[16px] font-black italic tracking-widest text-white uppercase">System Disconnect</h3>
                   <p className="text-[10px] sm:text-[12px] font-bold italic text-slate-400 uppercase tracking-widest mt-1">Safely terminate current session</p>

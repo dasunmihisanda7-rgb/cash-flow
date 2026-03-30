@@ -70,13 +70,14 @@ body {
   background: #38bdf8;
 }
 
-/* ─── Glassmorphism card helper ──────────────────────────────────────────── */
-.glass-card {
-  background: rgba(30, 39, 58, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(42, 51, 71, 0.8);
-  border-radius: 1rem;
+/* ─── iOS Fix: Premium Glassmorphism Class 🚀 ────────────────────────────── */
+/* iPhone එකේ කළු වෙන එක නවත්තන්න මේක හැදුවේ */
+.premium-glass {
+  background-color: rgba(22, 27, 39, 0.4) !important;
+  /* #161b27 in RGB with 40% opacity */
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  /* Safari/iOS support */
 }
 
 /* ─── Form element base overrides ────────────────────────────────────────── */
@@ -92,12 +93,10 @@ textarea {
 }
 
 /* ─── Page Transition Animations (Super Fast & Smooth) ────────────────────────────── */
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(15px);
-    /* 🚀 දුර 50px ඉඳන් 15px වලට අඩු කළා */
   }
 
   to {
@@ -107,7 +106,6 @@ textarea {
 }
 
 .animate-vibe {
-  /* 🚀 3.4s වෙනුවට 0.3s දැම්මා. පට්ට ස්පීඩ් එකට මාරු වෙයි! */
   animation: fadeInUp 0.3s ease-out forwards;
 }
 
