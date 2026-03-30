@@ -30,7 +30,8 @@ export default function CashFlowTrend({ transactions }) {
 
     if (chartData.length === 0) {
         return (
-            <div className="flex h-48 w-full flex-col items-center justify-center rounded-[30px] border border-white/5 bg-[#161b27]/50 backdrop-blur-xl">
+            // 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා
+            <div className="flex h-48 w-full flex-col items-center justify-center rounded-[30px] border border-white/5 premium-glass">
                 <p className="text-[12px] font-black italic tracking-widest text-slate-600">NO TREND DATA YET</p>
             </div>
         );
@@ -57,7 +58,8 @@ export default function CashFlowTrend({ transactions }) {
     };
 
     return (
-        <section className="w-full rounded-[30px] sm:rounded-[40px] border border-white/5 bg-[#161b27]/80 p-5 sm:p-8 shadow-2xl backdrop-blur-xl">
+        // 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා
+        <section className="w-full rounded-[30px] sm:rounded-[40px] border border-white/5 premium-glass p-5 sm:p-8 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
                 <div>
                     <h2 className="text-[14px] sm:text-[18px] font-black italic tracking-[0.2em] uppercase text-white">Cash Flow Trend</h2>

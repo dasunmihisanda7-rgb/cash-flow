@@ -101,7 +101,8 @@ export default function SpendingBreakdown({ transactions }) {
     <section className="grid grid-cols-2 gap-3 sm:gap-8">
 
       {/* ── EXPENSE BREAKDOWN (CASH OUT) ── */}
-      <div className="group relative overflow-hidden rounded-[24px] sm:rounded-[32px] border border-white/5 bg-[#161b27]/30 p-4 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500 hover:border-rose-500/30 hover:bg-white/[0.02] flex flex-col">
+      {/* 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා */}
+      <div className="group relative overflow-hidden rounded-[24px] sm:rounded-[32px] border border-white/5 premium-glass p-4 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] transition-all duration-500 hover:border-rose-500/30 hover:bg-white/[0.02] flex flex-col">
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between mb-4 sm:mb-8 gap-2 sm:gap-0">
           <div className="flex items-center gap-1.5 sm:gap-3 mt-1">
@@ -169,7 +170,8 @@ export default function SpendingBreakdown({ transactions }) {
       </div>
 
       {/* ── INCOME SOURCES (CASH IN) ── */}
-      <div className="group relative overflow-hidden rounded-[24px] sm:rounded-[32px] border border-white/5 bg-[#161b27]/30 p-4 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500 hover:border-emerald-500/30 hover:bg-white/[0.02] flex flex-col">
+      {/* 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා */}
+      <div className="group relative overflow-hidden rounded-[24px] sm:rounded-[32px] border border-white/5 premium-glass p-4 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] transition-all duration-500 hover:border-emerald-500/30 hover:bg-white/[0.02] flex flex-col">
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between mb-4 sm:mb-8 gap-2 sm:gap-0">
           <div className="flex items-center gap-1.5 sm:gap-3 mt-1">

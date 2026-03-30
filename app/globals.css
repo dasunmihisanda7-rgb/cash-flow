@@ -71,13 +71,13 @@ body {
 }
 
 /* ─── iOS Fix: Premium Glassmorphism Class 🚀 ────────────────────────────── */
-/* iPhone එකේ කළු වෙන එක නවත්තන්න මේක හැදුවේ */
 .premium-glass {
+  /* තද නිල් පාට පසුබිම 40% විනිවිද පෙනෙන ලෙස (Fallback for older browsers) */
   background-color: rgba(22, 27, 39, 0.4) !important;
-  /* #161b27 in RGB with 40% opacity */
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  /* Safari/iOS support */
+  /* Safari වලට වැඩ කරන්න පොඩි gradient එකක් සහ සුදු tint එකක් */
+  background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
 }
 
 /* ─── Form element base overrides ────────────────────────────────────────── */

@@ -38,23 +38,19 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
     incStr = "LIFETIME TOTAL";
     expStr = "LIFETIME TOTAL";
   } else {
-    // ගිය මාසය ගණනය කිරීම
     const [y, m] = selectedMonth.split('-');
     let prevDate = new Date(parseInt(y), parseInt(m) - 2, 1);
     const prevY = prevDate.getFullYear();
     const prevM = String(prevDate.getMonth() + 1).padStart(2, "0");
     const prevMonthStr = `${prevY}-${prevM}`;
 
-    // ගිය මාසයේ දත්ත පෙරීම
     const prevT = transactions.filter(t => t.date?.startsWith(prevMonthStr) && t.user?.toUpperCase() === currentUser.toUpperCase());
     const prevInc = prevT.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
     const prevExp = prevT.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
 
-    // ප්‍රතිශතය සෙවීම
     incChange = prevInc === 0 ? (totalIncome > 0 ? 100 : 0) : ((totalIncome - prevInc) / prevInc) * 100;
     expChange = prevExp === 0 ? (totalExpenses > 0 ? 100 : 0) : ((totalExpenses - prevExp) / prevExp) * 100;
 
-    // පෝන් එකේ ඉඩ මදි නිසා "VS LAST MONTH" කෑල්ල "VS PREV" විදිහට ටිකක් කොට කළා
     incStr = `${Math.abs(incChange).toFixed(1)}% VS PREV`;
     expStr = `${Math.abs(expChange).toFixed(1)}% VS PREV`;
   }
@@ -76,7 +72,7 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       value: fmt(totalExpenses),
       change: expStr,
       arrow: selectedMonth === "ALL" ? "●" : (expChange >= 0 ? "▲" : "▼"),
-      isGood: selectedMonth === "ALL" ? false : (expChange <= 0), // වියදම අඩුවෙන එක හොඳයි
+      isGood: selectedMonth === "ALL" ? false : (expChange <= 0),
       color: "rose",
       icon: <IconOut />,
     },
@@ -93,13 +89,12 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
   ];
 
   return (
-    // 🔥 වෙනස් කරපු කොටස: පෝන් එකේදීත් grid-cols-3 කරලා එක පේළියට ගත්තා
     <section className="grid grid-cols-3 gap-2 sm:gap-6">
       {cards.map((card) => (
         <article
           key={card.id}
-          // පෝන් එකට padding (p-3) සහ border-radius (rounded-[24px]) අඩු කළා
-          className="group relative overflow-hidden rounded-[24px] sm:rounded-[50px] border border-white/5 bg-[#161b27]/30 p-3 sm:p-6 backdrop-blur-2xl transition-all duration-500 hover:bg-white/[0.03] hover:border-white/10 hover:-translate-y-1 cursor-pointer shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[110px] sm:min-h-auto"
+          // 🚀 වෙනස් කළ තැන: `premium-glass` class එක දැම්මා සහ පරණ bg-[#161b27]/30 අයින් කළා
+          className="group relative overflow-hidden rounded-[24px] sm:rounded-[50px] border border-white/5 premium-glass p-3 sm:p-6 transition-all duration-500 hover:bg-white/[0.03] hover:border-white/10 hover:-translate-y-1 cursor-pointer shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[110px] sm:min-h-auto"
         >
           {/* Enhanced Glow Effect on Hover */}
           <div className={`absolute -right-5 -top-5 sm:-right-10 sm:-top-10 h-16 w-16 sm:h-32 sm:w-32 rounded-full blur-[30px] sm:blur-[50px] transition-opacity duration-500 opacity-10 group-hover:opacity-30 
