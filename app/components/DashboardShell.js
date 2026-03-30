@@ -9,9 +9,8 @@ import AddTransactionForm from "@/app/components/AddTransactionForm";
 import TransactionTable from "@/app/components/TransactionTable";
 import SpendingBreakdown from "@/app/components/SpendingBreakdown";
 import CashFlowTrend from "@/app/components/CashFlowTrend";
-import { INITIAL_EXPENSE_CATEGORIES, INITIAL_CAPITAL_CATEGORIES } from "@/lib/constants"; // 🚀 අලුතින් Import කළා
+import { INITIAL_EXPENSE_CATEGORIES, INITIAL_CAPITAL_CATEGORIES } from "@/lib/constants";
 
-// ... (අර කලින් තිබ්බ Icons ටික සහ Helpers ටික එහෙමම තියන්න) ...
 const WalletOutlineIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" strokeWidth="1.5" stroke="currentColor" className="w-full h-full">
     <defs><linearGradient id="grad-wallet" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#38bdf8" /><stop offset="100%" stopColor="#2563eb" /></linearGradient></defs>
@@ -44,7 +43,6 @@ export default function DashboardShell({ transactions }) {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
 
-  // 🚀 අලුත්: Shared Category States (මේවා තමයි හැමතැනටම යවන්නේ)
   const [expenseCats, setExpenseCats] = useState(INITIAL_EXPENSE_CATEGORIES);
   const [capitalCats, setCapitalCats] = useState(INITIAL_CAPITAL_CATEGORIES);
 
@@ -83,10 +81,12 @@ export default function DashboardShell({ transactions }) {
   const isKavindya = currentUser === "KAVINDYA";
 
   return (
-    <>
+    // 🚀 වෙනස් කළ තැන: මුළු ඇප් එකේම පිටිපස්සට `ios-safe-bottom` class එක දැම්මා
+    <div className="ios-safe-bottom min-h-screen flex flex-col">
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} setCurrentUser={setCurrentUser} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6">
+      {/* 🚀 වෙනස් කළ තැන: යටින් තව පොඩි ඉඩක් (pb-12) දුන්නා Scrolling වලට ලේසි වෙන්න */}
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-12">
         <div className="space-y-10">
 
           {activeTab === "SUMMARY" && (
@@ -132,7 +132,6 @@ export default function DashboardShell({ transactions }) {
 
           {activeTab === "LOG" && (
             <div key={`log-${currentUser}-${selectedMonth}`} className="animate-vibe py-6">
-              {/* 🚀 වෙනස් කළ තැන: Shared States ටික යැව්වා */}
               <TransactionTable
                 transactions={userFilteredTransactions}
                 expenseCats={expenseCats}
@@ -143,7 +142,6 @@ export default function DashboardShell({ transactions }) {
 
           {activeTab === "CONTROL" && (
             <div key={`control-${currentUser}`} className="animate-vibe py-6 max-w-4xl mx-auto flex flex-col gap-10">
-              {/* 🚀 වෙනස් කළ තැන: Shared States ටික යැව්වා */}
               <AddTransactionForm
                 currentUser={currentUser}
                 expenseCats={expenseCats}
@@ -174,6 +172,6 @@ export default function DashboardShell({ transactions }) {
 
         </div>
       </main>
-    </>
+    </div>
   );
 }

@@ -40,6 +40,8 @@
 html {
   height: 100%;
   scroll-behavior: smooth;
+  /* 🚀 iOS Bounce Effect එක Smooth කරන්න */
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -72,12 +74,20 @@ body {
 
 /* ─── iOS Fix: Premium Glassmorphism Class 🚀 ────────────────────────────── */
 .premium-glass {
-  /* තද නිල් පාට පසුබිම 40% විනිවිද පෙනෙන ලෙස (Fallback for older browsers) */
   background-color: rgba(22, 27, 39, 0.4) !important;
-  /* Safari වලට වැඩ කරන්න පොඩි gradient එකක් සහ සුදු tint එකක් */
   background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+}
+
+/* ─── 📱 iOS iPhone Safe Area Optimizations (Notch & Home Bar Fix) ─── */
+/* මේකෙන් තමයි iPhone 12, 14 වල Notch එකටයි යට තියෙන ඉරටයි ගාණට ඉඩ හැදෙන්නේ */
+.ios-safe-top {
+  padding-top: max(1.5rem, env(safe-area-inset-top));
+}
+
+.ios-safe-bottom {
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
 }
 
 /* ─── Form element base overrides ────────────────────────────────────────── */
