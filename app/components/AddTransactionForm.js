@@ -68,7 +68,7 @@ export default function AddTransactionForm({ currentUser }) {
       {/* 1. DATA ENTRY TERMINAL */}
       <section className="rounded-[24px] sm:rounded-[40px] border border-white/5 bg-[#161b27]/30 p-5 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-2xl relative overflow-hidden">
 
-        {/* User Indicator Badge - පෝන් එකේදී ටිකක් පොඩි කරලා අයිනට ගත්තා */}
+        {/* User Indicator Badge */}
         <div className={`absolute top-0 right-4 sm:right-8 rounded-b-xl sm:rounded-b-2xl border-b border-x ${userBorder} bg-black/40 px-3 sm:px-6 py-1.5 sm:py-2 backdrop-blur-md z-20`}>
           <p className={`text-[8px] sm:text-[10px] font-black italic tracking-widest uppercase ${userColor}`}>
             TERMINAL: {currentUser}
@@ -99,17 +99,20 @@ export default function AddTransactionForm({ currentUser }) {
           <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className="mb-1.5 sm:mb-2 block text-[8px] sm:text-[10px] font-black italic tracking-[0.2em] text-slate-500 uppercase">Description</label>
-              <input name="description" type="text" required placeholder="ENTRY IDENTIFIER..." className="w-full rounded-xl sm:rounded-2xl border border-white/5 bg-black/40 px-4 sm:px-5 py-3 sm:py-4 text-[10px] sm:text-xs font-bold italic tracking-widest text-white outline-none focus:border-fuchsia-500/50 transition-all uppercase" />
+              {/* 🚀 text-[16px] එකතු කළා */}
+              <input name="description" type="text" required placeholder="ENTRY IDENTIFIER..." className="w-full rounded-xl sm:rounded-2xl border border-white/5 bg-black/40 px-4 sm:px-5 py-3 sm:py-4 text-[16px] sm:text-xs font-bold italic tracking-widest text-white outline-none focus:border-fuchsia-500/50 transition-all uppercase" />
             </div>
 
             <div>
               <label className="mb-1.5 sm:mb-2 block text-[8px] sm:text-[10px] font-black italic tracking-[0.2em] text-slate-500 uppercase">Amount (LKR)</label>
-              <input name="amount" type="number" step="0.01" required placeholder="0.00" className="w-full rounded-xl sm:rounded-2xl border border-white/5 bg-black/40 px-4 sm:px-5 py-3 sm:py-4 text-[10px] sm:text-xs font-bold italic text-white outline-none focus:border-fuchsia-500/50 transition-all" />
+              {/* 🚀 text-[16px] එකතු කළා */}
+              <input name="amount" type="number" step="0.01" required placeholder="0.00" className="w-full rounded-xl sm:rounded-2xl border border-white/5 bg-black/40 px-4 sm:px-5 py-3 sm:py-4 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-fuchsia-500/50 transition-all" />
             </div>
 
             <div>
               <label className="mb-1.5 sm:mb-2 block text-[8px] sm:text-[10px] font-black italic tracking-[0.2em] text-slate-500 uppercase">Timestamp</label>
-              <input name="date" type="date" required defaultValue={today()} className="w-full rounded-xl sm:rounded-2xl border border-white/5 bg-black/40 px-4 sm:px-5 py-3 sm:py-4 text-[10px] sm:text-xs font-bold italic text-white outline-none focus:border-fuchsia-500/50 [color-scheme:dark]" />
+              {/* 🚀 text-[16px] එකතු කළා */}
+              <input name="date" type="date" required defaultValue={today()} className="w-full rounded-xl sm:rounded-2xl border border-white/5 bg-black/40 px-4 sm:px-5 py-3 sm:py-4 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-fuchsia-500/50 [color-scheme:dark]" />
             </div>
 
             <div>
@@ -126,7 +129,8 @@ export default function AddTransactionForm({ currentUser }) {
 
             <div>
               <label className="mb-1.5 sm:mb-2 block text-[8px] sm:text-[10px] font-black italic tracking-[0.2em] text-slate-500 uppercase">Category</label>
-              <select name="category" required className="w-full rounded-xl sm:rounded-2xl border border-white/5 bg-black/40 px-4 sm:px-5 py-3 sm:py-4 text-[10px] sm:text-xs font-bold italic text-white outline-none focus:border-fuchsia-500/50 uppercase appearance-none cursor-pointer">
+              {/* 🚀 text-[16px] එකතු කළා */}
+              <select name="category" required className="w-full rounded-xl sm:rounded-2xl border border-white/5 bg-black/40 px-4 sm:px-5 py-3 sm:py-4 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-fuchsia-500/50 uppercase appearance-none cursor-pointer">
                 {activeCategories.map((cat) => (
                   <option key={cat} value={cat} className="bg-[#161b27]">{cat}</option>
                 ))}
@@ -149,7 +153,8 @@ export default function AddTransactionForm({ currentUser }) {
         </div>
 
         <form onSubmit={handleAddCategory} className="mb-6 sm:mb-8 flex gap-2 sm:gap-3">
-          <input type="text" value={newCatInput} onChange={(e) => setNewCatInput(e.target.value)} placeholder={`ADD NEW ${type.toUpperCase()}...`} className="flex-1 rounded-xl sm:rounded-2xl border border-white/5 bg-black/40 px-4 sm:px-5 py-2.5 sm:py-3 text-[9px] sm:text-[10px] font-bold italic text-white outline-none focus:border-white/20 uppercase" />
+          {/* 🚀 text-[16px] එකතු කළා */}
+          <input type="text" value={newCatInput} onChange={(e) => setNewCatInput(e.target.value)} placeholder={`ADD NEW ${type.toUpperCase()}...`} className="flex-1 rounded-xl sm:rounded-2xl border border-white/5 bg-black/40 px-4 sm:px-5 py-2.5 sm:py-3 text-[16px] sm:text-[10px] font-bold italic text-white outline-none focus:border-white/20 uppercase" />
           <button type="submit" className="rounded-xl sm:rounded-2xl bg-white/5 px-6 sm:px-8 py-2.5 sm:py-3 text-[9px] sm:text-[10px] font-black italic text-white hover:bg-white/10 transition-all">ADD</button>
         </form>
 

@@ -7,7 +7,6 @@ const inter = Inter({
   display: "swap",
 });
 
-// 🚀 මෙන්න මෙතනට තමයි Home Screen Icons සහ PWA settings දැම්මේ
 export const metadata = {
   title: "CashFlow – Income & Expense Manager",
   description: "A modern dashboard to track your income, expenses, and net balance in one place.",
@@ -23,8 +22,13 @@ export const metadata = {
   },
 };
 
+// 🚀 මෙන්න මේක තමයි අලුතින් හැදුවේ! (Auto Zoom නවත්තන මැජික් එක)
 export const viewport = {
-  themeColor: "#0f172a", // Dark Theme color එක
+  themeColor: "#0f172a",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({ children }) {
