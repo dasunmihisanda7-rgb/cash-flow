@@ -91,24 +91,24 @@ textarea {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ─── Page Transition Animations (Slow Vibe) ────────────────────────────── */
+/* ─── Page Transition Animations (Super Fast & Smooth) ────────────────────────────── */
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(50px);
-    /* පොඩ්ඩක් පල්ලෙහා සිට */
+    transform: translateY(15px);
+    /* 🚀 දුර 50px ඉඳන් 15px වලට අඩු කළා */
   }
 
   to {
     opacity: 1;
     transform: translateY(0);
-    /* නියමිත තැනට */
   }
 }
 
 .animate-vibe {
-  animation: fadeInUp 3.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  /* 🚀 3.4s වෙනුවට 0.3s දැම්මා. පට්ට ස්පීඩ් එකට මාරු වෙයි! */
+  animation: fadeInUp 0.3s ease-out forwards;
 }
 
 /* ─── Hover effect for glass cards ──────────────────────────────────────── */
