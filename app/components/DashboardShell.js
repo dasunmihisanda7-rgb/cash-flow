@@ -47,6 +47,29 @@ export default function DashboardShell({ transactions }) {
   const [capitalCats, setCapitalCats] = useState(INITIAL_CAPITAL_CATEGORIES);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedExpense = localStorage.getItem("customExpenseCats");
+      if (savedExpense) {
+        setExpenseCats([...new Set([...INITIAL_EXPENSE_CATEGORIES, ...JSON.parse(savedExpense)])]);
+      }
+      const savedCapital = localStorage.getItem("customCapitalCats");
+      if (savedCapital) {
+        setCapitalCats([...new Set([...INITIAL_CAPITAL_CATEGORIES, ...JSON.parse(savedCapital)])]);
+      }
+    }
+  }, []);
+
+  const handleUpdateExpenseCats = (newCats) => {
+    setExpenseCats(newCats);
+    localStorage.setItem("customExpenseCats", JSON.stringify(newCats.filter(c => !INITIAL_EXPENSE_CATEGORIES.includes(c))));
+  };
+
+  const handleUpdateCapitalCats = (newCats) => {
+    setCapitalCats(newCats);
+    localStorage.setItem("customCapitalCats", JSON.stringify(newCats.filter(c => !INITIAL_CAPITAL_CATEGORIES.includes(c))));
+  };
+
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         if (user.email.toLowerCase().includes("dasun")) setCurrentUser("DASUN");
@@ -81,11 +104,9 @@ export default function DashboardShell({ transactions }) {
   const isKavindya = currentUser === "KAVINDYA";
 
   return (
-    // 🚀 වෙනස් කළ තැන: මුළු ඇප් එකේම පිටිපස්සට `ios-safe-bottom` class එක දැම්මා
     <div className="ios-safe-bottom min-h-screen flex flex-col">
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} setCurrentUser={setCurrentUser} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
 
-      {/* 🚀 වෙනස් කළ තැන: යටින් තව පොඩි ඉඩක් (pb-12) දුන්නා Scrolling වලට ලේසි වෙන්න */}
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-12">
         <div className="space-y-10">
 
@@ -118,14 +139,10 @@ export default function DashboardShell({ transactions }) {
             </div>
           )}
 
+          {/* 🚀 වෙනස් කළ තැන: ANALYTICS ටැබ් එක ඇතුළටම CashFlowTrend එකත් දැම්මා */}
           {activeTab === "ANALYTICS" && (
-            <div key={`analytics-${currentUser}-${selectedMonth}`} className="animate-vibe py-6">
+            <div key={`analytics-${currentUser}-${selectedMonth}`} className="animate-vibe py-6 space-y-10">
               <SpendingBreakdown transactions={userFilteredTransactions} />
-            </div>
-          )}
-
-          {activeTab === "TRENDS" && (
-            <div key={`trends-${currentUser}-${selectedMonth}`} className="animate-vibe py-6">
               <CashFlowTrend transactions={userFilteredTransactions} />
             </div>
           )}
@@ -145,9 +162,9 @@ export default function DashboardShell({ transactions }) {
               <AddTransactionForm
                 currentUser={currentUser}
                 expenseCats={expenseCats}
-                setExpenseCats={setExpenseCats}
+                setExpenseCats={handleUpdateExpenseCats}
                 capitalCats={capitalCats}
-                setCapitalCats={setCapitalCats}
+                setCapitalCats={handleUpdateCapitalCats}
               />
 
               <div className="w-full rounded-[32px] border border-rose-500/20 premium-glass p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)]">

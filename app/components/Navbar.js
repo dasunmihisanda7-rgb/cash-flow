@@ -12,7 +12,8 @@ const getCurrentMonthStr = () => {
 };
 
 export default function Navbar({ activeTab, setActiveTab, currentUser, setCurrentUser, selectedMonth, setSelectedMonth }) {
-  const tabs = ["SUMMARY", "ANALYTICS", "TRENDS", "LOG", "CONTROL"];
+  // 🚀 වෙනස් කළ තැන: "TRENDS" අයින් කරලා Tabs 4කට හැදුවා
+  const tabs = ["SUMMARY", "ANALYTICS", "LOG", "CONTROL"];
   const router = useRouter();
 
   const toggleUser = () => {
@@ -29,13 +30,11 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
   };
 
   return (
-    // 🚀 වෙනස් කළ තැන: Notch/Dynamic Island එකට ගැලපෙන්න top එක Dynamic කළා.
     <div className="sticky z-50 flex flex-col items-center w-full px-4 mb-8 gap-4 top-[max(1rem,env(safe-area-inset-top))]">
 
       {/* 1. Glassmorphism Navigation Bar */}
       <div className="w-full max-w-3xl overflow-hidden rounded-full border border-white/10 bg-white/5 backdrop-blur-lg shadow-2xl">
-        {/* 🚀 වෙනස් කළ තැන: ඇඟිල්ලට අහුවෙන්න ලේසි වෙන්න py-3.5 දැම්මා (Touch Target Size එක වැඩි කළා) */}
-        <header className="flex items-center gap-6 sm:gap-8 px-6 sm:px-9 py-3.5 sm:py-4 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full text-[10px] md:text-xs font-bold italic">
+        <header className="flex items-center justify-center gap-6 sm:gap-8 px-6 sm:px-9 py-3.5 sm:py-4 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full text-[10px] md:text-xs font-bold italic">
           {tabs.map((tab) => (
             <span
               key={tab}
@@ -54,7 +53,6 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
       {/* 2. Nav Badges & Controls */}
       <div className="flex items-center gap-3">
 
-        {/* 🚀 වෙනස් කළ තැන: py-2.5 දාලා බට්න් එක ටිකක් මහත කළා */}
         <button
           onClick={toggleUser}
           className={`flex items-center gap-1.5 rounded-full border px-4 py-2.5 text-[11px] font-bold italic transition-all duration-500 shadow-lg cursor-pointer
@@ -72,7 +70,6 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
         {/* ── 3. HYBRID MONTH PICKER ── */}
         <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/40 p-1.5 backdrop-blur-md shadow-inner">
 
-          {/* 🚀 වෙනස් කළ තැන: py-2 දාලා බට්න් එක ටිකක් මහත කළා */}
           <button
             onClick={() => setSelectedMonth("ALL")}
             className={`rounded-full px-4 py-2 text-[10px] font-black italic tracking-widest transition-all duration-300 ${selectedMonth === "ALL"
@@ -83,7 +80,6 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
             ALL TIME
           </button>
 
-          {/* 🚀 වෙනස් කළ තැන: py-2 දාලා බට්න් එක ටිකක් මහත කළා */}
           <div className={`relative flex items-center rounded-full px-4 py-2 transition-all duration-300 ${selectedMonth !== "ALL"
             ? "bg-sky-500/20 text-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.2)]"
             : "text-slate-500/40 hover:text-slate-400 cursor-pointer"

@@ -20,7 +20,6 @@ const fmtDate = (dateStr) =>
     month: "short", day: "numeric", year: "numeric",
   });
 
-// 🚀 වෙනස් කළ තැන: Props විදිහට expenseCats, capitalCats ගත්තා
 export default function TransactionTable({ transactions, expenseCats = [], capitalCats = [] }) {
   const router = useRouter();
 
@@ -109,8 +108,9 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
     }
   };
 
-  // 🚀 අලුත්: Edit ෆෝම් එකේ පෙන්නන Categories ලිස්ට් එක, Type එක අනුව මාරු වෙනවා
-  const editCategories = editingTxn?.type === "income" ? capitalCats : expenseCats;
+  // 🚀 වෙනස් කළ තැන: Edit ෆෝම් එකේ පෙන්නන Categories ලිස්ට් එක (Props වලින් එන එක ගන්නවා)
+  // Income නම් capitalCats ගන්නවා, නැත්නම් expenseCats ගන්නවා.
+  const activeEditCategories = editingTxn?.type === "income" ? capitalCats : expenseCats;
 
   return (
     <section className="flex flex-col gap-6 relative w-full">
@@ -158,7 +158,7 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Type</label>
-                  {/* Type එක මාරු කරද්දි Edit state එක අප්ඩේට් කරනවා (Categories මාරු වෙන්න) */}
+                  {/* Type එක මාරු කරද්දි Edit state එක අප්ඩේට් කරනවා (එතකොට අදාළ Categories ටික ලෝඩ් වෙනවා) */}
                   <select name="type" value={editingTxn.type} onChange={(e) => setEditingTxn({ ...editingTxn, type: e.target.value })} className="rounded-xl border border-white/5 bg-black/40 p-3 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase">
                     <option value="income">Income</option>
                     <option value="expense">Expense</option>
@@ -177,11 +177,19 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
 
               <div className="flex flex-col gap-1">
                 <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Category</label>
-                {/* 🚀 වෙනස් කළ තැන: Shared Edit Categories ටික පාවිච්චි කරනවා */}
-                <select name="category" defaultValue={editingTxn.category} className="rounded-xl border border-white/5 bg-black/40 p-3 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase">
-                  {editCategories.map(cat => (
-                    <option key={cat} value={cat}>{CATEGORY_EMOJI[cat] ?? "📦"} {cat}</option>
+                <select name="category" defaultValue={editingTxn.category} className="rounded-xl border border-white/5 bg-black/40 p-3 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase appearance-none">
+                  {/* 🚀 වෙනස් කළ තැන: Shared Edit Categories ටික පාවිච්චි කරනවා */}
+                  {activeEditCategories.map(cat => (
+                    <option key={cat} value={cat} className="bg-[#161b27]">
+                      {CATEGORY_EMOJI[cat] ?? "📦"} {cat}
+                    </option>
                   ))}
+                  {/* 🚀 පොඩි ට්‍රික් එකක්: දැනට සේව් වෙලා තියෙන Category එක ලිස්ට් එකේ නැත්නම් ඒකත් පෙන්නනවා */}
+                  {!activeEditCategories.includes(editingTxn.category) && (
+                    <option key={editingTxn.category} value={editingTxn.category} className="bg-[#161b27]">
+                      📦 {editingTxn.category}
+                    </option>
+                  )}
                 </select>
               </div>
 

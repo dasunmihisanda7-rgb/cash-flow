@@ -4,7 +4,7 @@ import { addTransaction } from "@/app/actions";
 
 const today = () => new Date().toISOString().split("T")[0];
 
-// 🚀 වෙනස් කළ තැන: Props වලින් expenseCats, capitalCats, etc. ගත්තා
+// 🚀 වෙනස් කළ තැන: Props වලින් එන Functions පාවිච්චි කරනවා (setExpenseCats / setCapitalCats)
 export default function AddTransactionForm({ currentUser, expenseCats, setExpenseCats, capitalCats, setCapitalCats }) {
   const [type, setType] = useState("expense");
   const [pending, setPending] = useState(false);
@@ -36,19 +36,25 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
     }
   }
 
+  // 🚀 වෙනස් කළ තැන: අලුත් Category එකක් දැම්මම ඒක Main Component එකේ Function එකට යවනවා
   const handleAddCategory = (e) => {
     e.preventDefault();
     const val = newCatInput.trim();
     if (!val) return;
 
     if (isIncome) {
-      if (!capitalCats.includes(val)) setCapitalCats([...capitalCats, val]);
+      if (!capitalCats.includes(val)) {
+        setCapitalCats([...capitalCats, val]); // මේකෙන් Local Storage එකටත් Save වෙනවා
+      }
     } else {
-      if (!expenseCats.includes(val)) setExpenseCats([...expenseCats, val]);
+      if (!expenseCats.includes(val)) {
+        setExpenseCats([...expenseCats, val]); // මේකෙන් Local Storage එකටත් Save වෙනවා
+      }
     }
     setNewCatInput("");
   };
 
+  // 🚀 වෙනස් කළ තැන: Category එකක් මැකුවමත් ඒක Main Component එකේ Function එකට යවනවා
   const deleteCat = (cat) => {
     if (isIncome) {
       setCapitalCats(capitalCats.filter(c => c !== cat));
