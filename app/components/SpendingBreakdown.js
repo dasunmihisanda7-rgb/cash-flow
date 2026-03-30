@@ -9,14 +9,20 @@ const CATEGORY_COLORS = {
   Health: "#a78bfa", Entertainment: "#38bdf8", Education: "#818cf8", Other: "#94a3b8",
 };
 
+// 🚀 අලුත්: Fallback (විකල්ප) පාට දෙක (Income එකටයි Expense එකටයි)
+const DEFAULT_INCOME_COLOR = "#10b981"; // Emerald / Green
+const DEFAULT_EXPENSE_COLOR = "#f43f5e"; // Rose / Red
+
 const fmt = (n) =>
   `Rs. ${new Intl.NumberFormat("en-LK", { minimumFractionDigits: 0 }).format(n)}`;
 
 // ── 2. CUSTOM TOOLTIP DESIGN ─────────────────────
-const CustomTooltip = ({ active, payload }) => {
+const CustomTooltip = ({ active, payload, type }) => {
   if (active && payload && payload.length) {
     const data = payload[0];
-    const categoryColor = CATEGORY_COLORS[data.name] || "#ffffff";
+    // 🚀 Fallback එකත් එක්ක පාට ගන්නවා
+    const defaultColor = type === 'income' ? DEFAULT_INCOME_COLOR : DEFAULT_EXPENSE_COLOR;
+    const categoryColor = CATEGORY_COLORS[data.name] || defaultColor;
 
     return (
       <div className="pointer-events-none flex flex-col justify-center rounded-xl sm:rounded-2xl border border-white/10 bg-[#0f172a]/95 px-3 py-2 sm:px-4 sm:py-3 shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl outline-none">
@@ -57,20 +63,39 @@ export default function SpendingBreakdown({ transactions }) {
   const totalExp = expenseData.reduce((s, d) => s + d.value, 0);
   const totalInc = incomeData.reduce((s, d) => s + d.value, 0);
 
-  // 🚀 අලුත්: Gradient සහ 3D Shadow හදන කෑල්ල
-  const renderDefs = () => (
-    <defs>
-      {Object.entries(CATEGORY_COLORS).map(([key, color]) => (
-        <linearGradient id={`color-${key}`} x1="0" y1="0" x2="1" y2="1" key={key}>
-          <stop offset="0%" stopColor={color} stopOpacity={1} />
-          <stop offset="100%" stopColor={color} stopOpacity={0.4} />
-        </linearGradient>
-      ))}
-      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#000" floodOpacity="0.5" />
-      </filter>
-    </defs>
-  );
+  // 🚀 අලුත්: Chart එකේ තියෙන ඔක්කොම නම් වලට (අලුත් ඒවාටත් එක්කම) Gradient හදනවා
+  const renderDefs = (data, isIncome) => {
+    // දන්නා Categories ටිකට Gradient හදනවා
+    const knownDefs = Object.entries(CATEGORY_COLORS).map(([key, color]) => (
+      <linearGradient id={`color-${key}`} x1="0" y1="0" x2="1" y2="1" key={key}>
+        <stop offset="0%" stopColor={color} stopOpacity={1} />
+        <stop offset="100%" stopColor={color} stopOpacity={0.4} />
+      </linearGradient>
+    ));
+
+    // අලුතින් ආපු (දන්නේ නැති) Categories ටික හොයාගෙන ඒවටත් Gradient හදනවා
+    const unknownDefs = data
+      .filter(item => !CATEGORY_COLORS[item.name])
+      .map((item) => {
+        const fallbackColor = isIncome ? DEFAULT_INCOME_COLOR : DEFAULT_EXPENSE_COLOR;
+        return (
+          <linearGradient id={`color-${item.name}`} x1="0" y1="0" x2="1" y2="1" key={`unknown-${item.name}`}>
+            <stop offset="0%" stopColor={fallbackColor} stopOpacity={1} />
+            <stop offset="100%" stopColor={fallbackColor} stopOpacity={0.4} />
+          </linearGradient>
+        );
+      });
+
+    return (
+      <defs>
+        {knownDefs}
+        {unknownDefs}
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#000" floodOpacity="0.5" />
+        </filter>
+      </defs>
+    );
+  };
 
   return (
     <section className="grid grid-cols-2 gap-3 sm:gap-8">
@@ -92,25 +117,26 @@ export default function SpendingBreakdown({ transactions }) {
         <div className="relative h-[120px] sm:h-[250px] w-full mb-4 sm:mb-6 flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              {renderDefs()}
+              {/* Expense Data එක pass කරනවා */}
+              {renderDefs(expenseData, false)}
               <Pie
                 data={expenseData}
-                innerRadius="65%" // 🚀 මහත වෙනස් කළා
+                innerRadius="65%"
                 outerRadius="90%"
-                paddingAngle={8}  // 🚀 පරතරය වැඩි කළා
-                cornerRadius={10} // 🚀 වටකුරු දාර දැම්මා
+                paddingAngle={8}
+                cornerRadius={10}
                 dataKey="value"
-                stroke="#161b27"  // 🚀 Background එකේ පාටින්ම border එකක් දැම්මා
+                stroke="#161b27"
                 strokeWidth={3}
                 animationBegin={0}
                 animationDuration={1500}
-                filter="url(#shadow)" // 🚀 Shadow එක ඇඩ් කළා
+                filter="url(#shadow)"
               >
                 {expenseData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={`url(#color-${entry.name})`} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} cursor={false} wrapperStyle={{ outline: 'none', zIndex: 100 }} />
+              <Tooltip content={<CustomTooltip type="expense" />} cursor={false} wrapperStyle={{ outline: 'none', zIndex: 100 }} />
             </PieChart>
           </ResponsiveContainer>
 
@@ -122,15 +148,18 @@ export default function SpendingBreakdown({ transactions }) {
 
         {expenseData.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto">
-            {expenseData.slice(0, 4).map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl bg-black/20 border border-white/5">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[item.name] || "#e11d48", boxShadow: `0 0 8px ${CATEGORY_COLORS[item.name]}` }} />
-                  <span className="text-[7px] sm:text-[10px] font-bold text-slate-400 italic uppercase tracking-wider truncate max-w-[40px] sm:max-w-[60px]" title={item.name}>{item.name}</span>
+            {expenseData.slice(0, 4).map((item, i) => {
+              const itemColor = CATEGORY_COLORS[item.name] || DEFAULT_EXPENSE_COLOR;
+              return (
+                <div key={i} className="flex items-center justify-between p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl bg-black/20 border border-white/5">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: itemColor, boxShadow: `0 0 8px ${itemColor}` }} />
+                    <span className="text-[7px] sm:text-[10px] font-bold text-slate-400 italic uppercase tracking-wider truncate max-w-[40px] sm:max-w-[60px]" title={item.name}>{item.name}</span>
+                  </div>
+                  <span className="text-[7px] sm:text-[10px] font-black text-white italic">{((item.value / totalExp) * 100).toFixed(0)}%</span>
                 </div>
-                <span className="text-[7px] sm:text-[10px] font-black text-white italic">{((item.value / totalExp) * 100).toFixed(0)}%</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="pt-4 sm:pt-6 border-t border-white/5 text-center mt-auto">
@@ -156,7 +185,8 @@ export default function SpendingBreakdown({ transactions }) {
         <div className="relative h-[120px] sm:h-[250px] w-full mb-4 sm:mb-6 flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              {renderDefs()}
+              {/* Income Data එක pass කරනවා */}
+              {renderDefs(incomeData, true)}
               <Pie
                 data={incomeData}
                 innerRadius="65%"
@@ -174,7 +204,7 @@ export default function SpendingBreakdown({ transactions }) {
                   <Cell key={`cell-${index}`} fill={`url(#color-${entry.name})`} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} cursor={false} wrapperStyle={{ outline: 'none', zIndex: 100 }} />
+              <Tooltip content={<CustomTooltip type="income" />} cursor={false} wrapperStyle={{ outline: 'none', zIndex: 100 }} />
             </PieChart>
           </ResponsiveContainer>
 
@@ -186,15 +216,18 @@ export default function SpendingBreakdown({ transactions }) {
 
         {incomeData.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto">
-            {incomeData.slice(0, 4).map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl bg-black/20 border border-white/5">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[item.name] || "#10b981", boxShadow: `0 0 8px ${CATEGORY_COLORS[item.name]}` }} />
-                  <span className="text-[7px] sm:text-[10px] font-bold text-slate-400 italic uppercase tracking-wider truncate max-w-[40px] sm:max-w-[60px]" title={item.name}>{item.name}</span>
+            {incomeData.slice(0, 4).map((item, i) => {
+              const itemColor = CATEGORY_COLORS[item.name] || DEFAULT_INCOME_COLOR;
+              return (
+                <div key={i} className="flex items-center justify-between p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl bg-black/20 border border-white/5">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: itemColor, boxShadow: `0 0 8px ${itemColor}` }} />
+                    <span className="text-[7px] sm:text-[10px] font-bold text-slate-400 italic uppercase tracking-wider truncate max-w-[40px] sm:max-w-[60px]" title={item.name}>{item.name}</span>
+                  </div>
+                  <span className="text-[7px] sm:text-[10px] font-black text-white italic">{((item.value / totalInc) * 100).toFixed(0)}%</span>
                 </div>
-                <span className="text-[7px] sm:text-[10px] font-black text-white italic">{((item.value / totalInc) * 100).toFixed(0)}%</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="pt-4 sm:pt-6 border-t border-white/5 text-center mt-auto">
