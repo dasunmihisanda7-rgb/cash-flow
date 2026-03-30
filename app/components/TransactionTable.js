@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-// 🔥 වෙනස් කළා: updateTransaction කියන එකත් import කළා
 import { deleteTransaction, updateTransaction } from "@/app/actions";
 import { useRouter } from "next/navigation";
 
@@ -9,8 +8,6 @@ const CATEGORY_EMOJI = {
   Food: "🍔", Transport: "🚌", Utilities: "⚡",
   Health: "🏥", Entertainment: "🎬", Education: "📚", Other: "📦",
 };
-
-const CATEGORIES = Object.keys(CATEGORY_EMOJI);
 
 const fmt = (n) =>
   `Rs. ${new Intl.NumberFormat("en-LK", {
@@ -23,19 +20,18 @@ const fmtDate = (dateStr) =>
     month: "short", day: "numeric", year: "numeric",
   });
 
-export default function TransactionTable({ transactions }) {
+// 🚀 වෙනස් කළ තැන: Props විදිහට expenseCats, capitalCats ගත්තා
+export default function TransactionTable({ transactions, expenseCats = [], capitalCats = [] }) {
   const router = useRouter();
 
   const [localTransactions, setLocalTransactions] = useState(transactions);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
-  // Delete States
   const [deletingId, setDeletingId] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [idToDelete, setIdToDelete] = useState(null);
 
-  // 🚀 අලුත් Edit States
   const [editingTxn, setEditingTxn] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -51,7 +47,6 @@ export default function TransactionTable({ transactions }) {
     return matchType && matchSearch;
   });
 
-  // ── DELETE LOGIC ──
   const askDelete = (id) => {
     setIdToDelete(id);
     setShowConfirm(true);
@@ -72,14 +67,13 @@ export default function TransactionTable({ transactions }) {
       router.refresh();
     } catch (error) {
       alert("Error deleting: " + error.message);
-      setLocalTransactions(transactions); // Revert on error
+      setLocalTransactions(transactions);
     } finally {
       setDeletingId(null);
       setIdToDelete(null);
     }
   }
 
-  // ── 🚀 EDIT LOGIC ──
   const openEdit = (txn) => {
     setEditingTxn(txn);
   };
@@ -92,7 +86,6 @@ export default function TransactionTable({ transactions }) {
     const updatedId = editingTxn.id;
     formData.set("id", updatedId);
 
-    // Optimistic UI Update (ක්ෂණිකව පේන්න හදනවා)
     const updatedTxnObj = {
       ...editingTxn,
       type: formData.get("type"),
@@ -103,18 +96,21 @@ export default function TransactionTable({ transactions }) {
     };
 
     setLocalTransactions(prev => prev.map(t => t.id === updatedId ? updatedTxnObj : t));
-    setEditingTxn(null); // Close Modal
+    setEditingTxn(null);
 
     try {
       await updateTransaction(formData);
       router.refresh();
     } catch (error) {
       alert("Error updating: " + error.message);
-      setLocalTransactions(transactions); // Revert on error
+      setLocalTransactions(transactions);
     } finally {
       setIsUpdating(false);
     }
   };
+
+  // 🚀 අලුත්: Edit ෆෝම් එකේ පෙන්නන Categories ලිස්ට් එක, Type එක අනුව මාරු වෙනවා
+  const editCategories = editingTxn?.type === "income" ? capitalCats : expenseCats;
 
   return (
     <section className="flex flex-col gap-6 relative w-full">
@@ -142,7 +138,7 @@ export default function TransactionTable({ transactions }) {
         </div>
       )}
 
-      {/* ── 🚀 EDIT MODAL (GLASSMORPHISM) ── */}
+      {/* ── EDIT MODAL (GLASSMORPHISM) ── */}
       {editingTxn && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
           <div className="w-full max-w-md rounded-[32px] border border-white/10 bg-[#161b27]/95 p-6 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl ring-1 ring-white/20">
@@ -162,34 +158,36 @@ export default function TransactionTable({ transactions }) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Type</label>
-                  <select name="type" defaultValue={editingTxn.type} className="rounded-xl border border-white/5 bg-black/40 p-3 text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase">
+                  {/* Type එක මාරු කරද්දි Edit state එක අප්ඩේට් කරනවා (Categories මාරු වෙන්න) */}
+                  <select name="type" value={editingTxn.type} onChange={(e) => setEditingTxn({ ...editingTxn, type: e.target.value })} className="rounded-xl border border-white/5 bg-black/40 p-3 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase">
                     <option value="income">Income</option>
                     <option value="expense">Expense</option>
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Date</label>
-                  <input type="date" name="date" defaultValue={editingTxn.date} required className="rounded-xl border border-white/5 bg-black/40 p-3 text-xs font-bold italic text-white outline-none focus:border-sky-500/50 [color-scheme:dark] uppercase" />
+                  <input type="date" name="date" defaultValue={editingTxn.date} required className="rounded-xl border border-white/5 bg-black/40 p-3 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 [color-scheme:dark] uppercase" />
                 </div>
               </div>
 
               <div className="flex flex-col gap-1">
                 <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Amount (Rs.)</label>
-                <input type="number" step="0.01" name="amount" defaultValue={editingTxn.amount} required className="rounded-xl border border-white/5 bg-black/40 p-3 text-lg font-black italic text-white outline-none focus:border-sky-500/50" />
+                <input type="number" step="0.01" name="amount" defaultValue={editingTxn.amount} required className="rounded-xl border border-white/5 bg-black/40 p-3 text-[16px] sm:text-lg font-black italic text-white outline-none focus:border-sky-500/50" />
               </div>
 
               <div className="flex flex-col gap-1">
                 <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Category</label>
-                <select name="category" defaultValue={editingTxn.category} className="rounded-xl border border-white/5 bg-black/40 p-3 text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase">
-                  {CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{CATEGORY_EMOJI[cat]} {cat}</option>
+                {/* 🚀 වෙනස් කළ තැන: Shared Edit Categories ටික පාවිච්චි කරනවා */}
+                <select name="category" defaultValue={editingTxn.category} className="rounded-xl border border-white/5 bg-black/40 p-3 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase">
+                  {editCategories.map(cat => (
+                    <option key={cat} value={cat}>{CATEGORY_EMOJI[cat] ?? "📦"} {cat}</option>
                   ))}
                 </select>
               </div>
 
               <div className="flex flex-col gap-1">
                 <label className="text-[9px] font-black italic tracking-widest text-slate-500 uppercase">Description</label>
-                <input type="text" name="description" defaultValue={editingTxn.description} required className="rounded-xl border border-white/5 bg-black/40 p-3 text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase" />
+                <input type="text" name="description" defaultValue={editingTxn.description} required className="rounded-xl border border-white/5 bg-black/40 p-3 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase" />
               </div>
 
               <div className="flex gap-3 mt-4">
@@ -228,7 +226,7 @@ export default function TransactionTable({ transactions }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="QUERY LOG..."
-            className="w-full sm:w-56 rounded-2xl border border-white/5 bg-[#161b27]/30 backdrop-blur-md px-4 sm:px-5 py-2 sm:py-2.5 text-[10px] sm:text-[11px] font-bold italic text-white outline-none focus:border-sky-500/50 uppercase"
+            className="w-full sm:w-56 rounded-2xl border border-white/5 bg-[#161b27]/30 backdrop-blur-md px-4 sm:px-5 py-2 sm:py-2.5 text-[16px] sm:text-[11px] font-bold italic text-white outline-none focus:border-sky-500/50 uppercase"
           />
 
           <div className="flex gap-1.5 sm:gap-2 bg-[#161b27]/30 backdrop-blur-md p-1 rounded-2xl border border-white/5 w-full sm:w-auto">
@@ -270,10 +268,8 @@ export default function TransactionTable({ transactions }) {
                     {txn.type === "income" ? "+ " : "- "} {fmt(txn.amount)}
                   </td>
 
-                  {/* 🚀 වෙනස් කළ තැන: Edit & Delete බට්න් දෙකම දාලා තියෙනවා */}
                   <td className="px-2 sm:px-6 py-3 sm:py-5 text-center">
                     <div className="flex items-center justify-center gap-1 sm:gap-2">
-                      {/* EDIT BUTTON */}
                       <button
                         onClick={() => openEdit(txn)}
                         className="inline-flex items-center justify-center h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-sky-500/5 text-sky-500/50 hover:bg-sky-500/10 hover:text-sky-400 border border-transparent hover:border-sky-500/20 transition-all"
@@ -284,7 +280,6 @@ export default function TransactionTable({ transactions }) {
                         </svg>
                       </button>
 
-                      {/* DELETE BUTTON */}
                       <button
                         disabled={deletingId === txn.id}
                         onClick={() => askDelete(txn.id)}

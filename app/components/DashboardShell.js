@@ -9,7 +9,9 @@ import AddTransactionForm from "@/app/components/AddTransactionForm";
 import TransactionTable from "@/app/components/TransactionTable";
 import SpendingBreakdown from "@/app/components/SpendingBreakdown";
 import CashFlowTrend from "@/app/components/CashFlowTrend";
+import { INITIAL_EXPENSE_CATEGORIES, INITIAL_CAPITAL_CATEGORIES } from "@/lib/constants"; // 🚀 අලුතින් Import කළා
 
+// ... (අර කලින් තිබ්බ Icons ටික සහ Helpers ටික එහෙමම තියන්න) ...
 const WalletOutlineIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" strokeWidth="1.5" stroke="currentColor" className="w-full h-full">
     <defs><linearGradient id="grad-wallet" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#38bdf8" /><stop offset="100%" stopColor="#2563eb" /></linearGradient></defs>
@@ -41,6 +43,10 @@ export default function DashboardShell({ transactions }) {
   const [currentUser, setCurrentUser] = useState("DASUN");
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
+
+  // 🚀 අලුත්: Shared Category States (මේවා තමයි හැමතැනටම යවන්නේ)
+  const [expenseCats, setExpenseCats] = useState(INITIAL_EXPENSE_CATEGORIES);
+  const [capitalCats, setCapitalCats] = useState(INITIAL_CAPITAL_CATEGORIES);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -86,7 +92,6 @@ export default function DashboardShell({ transactions }) {
           {activeTab === "SUMMARY" && (
             <div key={`summary-${currentUser}-${selectedMonth}`} className="animate-vibe space-y-10">
               <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16">
-                {/* 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා */}
                 <article onClick={() => setCurrentUser("DASUN")} className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-4 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'premium-glass border-sky-500/60 shadow-[0_15px_50px_-20px_rgba(14,165,233,0.5)]' : 'premium-glass border-white/5 scale-[0.98]'}`}>
                   <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? 'opacity-[0.07] text-sky-400' : 'opacity-[0.03] text-slate-500'}`}><WalletOutlineIcon /></div>
                   <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
@@ -98,7 +103,6 @@ export default function DashboardShell({ transactions }) {
                   </div>
                 </article>
 
-                {/* 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා */}
                 <article onClick={() => setCurrentUser("KAVINDYA")} className={`group relative overflow-hidden rounded-[30px] sm:rounded-[60px] border p-4 sm:p-10 shadow-2xl transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? 'premium-glass border-purple-500/60 shadow-[0_15px_50px_-20px_rgba(168,85,247,0.5)]' : 'premium-glass border-white/5 scale-[0.98]'}`}>
                   <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isKavindya ? 'opacity-[0.07] text-purple-400' : 'opacity-[0.03] text-slate-500'}`}><BankOutlineIcon /></div>
                   <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
@@ -128,15 +132,26 @@ export default function DashboardShell({ transactions }) {
 
           {activeTab === "LOG" && (
             <div key={`log-${currentUser}-${selectedMonth}`} className="animate-vibe py-6">
-              <TransactionTable transactions={userFilteredTransactions} />
+              {/* 🚀 වෙනස් කළ තැන: Shared States ටික යැව්වා */}
+              <TransactionTable
+                transactions={userFilteredTransactions}
+                expenseCats={expenseCats}
+                capitalCats={capitalCats}
+              />
             </div>
           )}
 
           {activeTab === "CONTROL" && (
             <div key={`control-${currentUser}`} className="animate-vibe py-6 max-w-4xl mx-auto flex flex-col gap-10">
-              <AddTransactionForm currentUser={currentUser} />
+              {/* 🚀 වෙනස් කළ තැන: Shared States ටික යැව්වා */}
+              <AddTransactionForm
+                currentUser={currentUser}
+                expenseCats={expenseCats}
+                setExpenseCats={setExpenseCats}
+                capitalCats={capitalCats}
+                setCapitalCats={setCapitalCats}
+              />
 
-              {/* 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා */}
               <div className="w-full rounded-[32px] border border-rose-500/20 premium-glass p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)]">
                 <div>
                   <h3 className="text-[14px] sm:text-[16px] font-black italic tracking-widest text-white uppercase">System Disconnect</h3>
