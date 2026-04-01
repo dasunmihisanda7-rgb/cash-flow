@@ -8,9 +8,6 @@ export default function ServiceWorkerRegister() {
       window.addEventListener("load", function () {
         navigator.serviceWorker
           .register("/sw.js")
-          .then(function (registration) {
-            console.log("Service Worker registration successful with scope: ", registration.scope);
-          })
           .catch(function (err) {
             console.error("Service Worker registration failed: ", err);
           });

@@ -9,9 +9,7 @@ import AddTransactionForm from "@/app/components/AddTransactionForm";
 import TransactionTable from "@/app/components/TransactionTable";
 import SpendingBreakdown from "@/app/components/SpendingBreakdown";
 import CashFlowTrend from "@/app/components/CashFlowTrend";
-// PERF-02 FIX: CATEGORY_EMOJI now imported from shared constants instead of duplicated here.
 import { INITIAL_EXPENSE_CATEGORIES, INITIAL_CAPITAL_CATEGORIES, CATEGORY_EMOJI } from "@/lib/constants";
-// REFACTOR-03 FIX: getCurrentMonthStr now from shared utils instead of duplicated here.
 import { getCurrentMonthStr } from "@/lib/utils";
 
 import AnimatedNumber from "@/lib/AnimatedNumber";
@@ -61,8 +59,6 @@ export default function DashboardShell({ transactions }) {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthStr);
 
-  // UX-08 FIX: Initialise from sessionStorage so the boot sequence is skipped
-  // when the user returns to the PWA within the same browser session.
   const [bootComplete, setBootComplete] = useState(() => {
     if (typeof window !== "undefined") {
       return sessionStorage.getItem("boot-complete") === "1";
@@ -70,8 +66,6 @@ export default function DashboardShell({ transactions }) {
     return false;
   });
 
-  // BUG-10 FIX: Memoised with useCallback so BootSequence's useEffect dependency
-  // doesn't change on DashboardShell re-renders, preventing mid-animation restarts.
   const handleBootComplete = useCallback(() => {
     setBootComplete(true);
     sessionStorage.setItem("boot-complete", "1");
@@ -80,7 +74,6 @@ export default function DashboardShell({ transactions }) {
   const [expenseCats, setExpenseCats] = useState(INITIAL_EXPENSE_CATEGORIES);
   const [capitalCats, setCapitalCats] = useState(INITIAL_CAPITAL_CATEGORIES);
 
-  // Debounce ref for localStorage writes (PERF-04 FIX)
   const saveCatsTimeoutRef = { expense: null, capital: null };
 
   useEffect(() => {
@@ -92,8 +85,6 @@ export default function DashboardShell({ transactions }) {
     }
   }, []);
 
-  // PERF-04 FIX: localStorage writes are now debounced to avoid synchronous
-  // main-thread writes on every rapid deletion.
   const expenseSaveTimer = useState(null);
   const capitalSaveTimer = useState(null);
 
@@ -119,8 +110,6 @@ export default function DashboardShell({ transactions }) {
     }, 300);
   }, [capitalSaveTimer]);
 
-  // BUG-04 FIX: `isMounted` guard prevents calling setState / router.push on
-  // an unmounted component if the auth callback fires after navigation.
   useEffect(() => {
     let isMounted = true;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -151,8 +140,6 @@ export default function DashboardShell({ transactions }) {
     [transactions, selectedMonth]
   );
 
-  // PERF-01 FIX: Consolidated from 4 separate O(n) passes into one useMemo.
-  // Previously getMonthlyStats + userFilteredTransactions = 4 array iterations per render.
   const { income, expense, balance, userTransactions } = useMemo(() => {
     const userT = monthFilteredTransactions.filter(
       (t) => t.user?.toUpperCase() === currentUser.toUpperCase()
@@ -162,8 +149,6 @@ export default function DashboardShell({ transactions }) {
     return { income, expense, balance: income - expense, userTransactions: userT };
   }, [monthFilteredTransactions, currentUser]);
 
-  // UX-11 FIX: Top wallet cards must always show the true ALL-TIME running balance.
-  // We revert their dependency to the global `transactions` array, bypassing `monthFilteredTransactions`.
   const dasunBalance = useMemo(
     () => transactions
       .filter((t) => t.user === "DASUN")

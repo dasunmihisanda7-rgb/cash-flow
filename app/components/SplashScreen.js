@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import Image from "next/image";
 
 export default function SplashScreen({ onComplete }) {
   const [stage, setStage] = useState(0);
@@ -28,13 +27,77 @@ export default function SplashScreen({ onComplete }) {
       {/* App Logo */}
       <div className={`relative transition-all duration-[1000ms] ${stage >= 1 ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}>
         <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(56,189,248,0.2)] animate-pulse-slow">
-          <Image 
-            src="/icon.png" 
-            alt="CashFlow V7 Elite Plus Logo" 
-            fill 
-            className="object-cover" 
-            priority
-          />
+          <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+            <defs>
+              <linearGradient id="cg" x1="380" y1="28" x2="65" y2="468" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#38ddff"/>
+                <stop offset="14%" stopColor="#4466ff"/>
+                <stop offset="38%" stopColor="#7733ee"/>
+                <stop offset="62%" stopColor="#9922cc"/>
+                <stop offset="82%" stopColor="#cc33ee"/>
+                <stop offset="100%" stopColor="#ff44ee"/>
+              </linearGradient>
+              <radialGradient id="hl" cx="322" cy="110" r="150" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#aaeeff" stopOpacity="0.52"/>
+                <stop offset="48%" stopColor="#88ccff" stopOpacity="0.1"/>
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0"/>
+              </radialGradient>
+              <radialGradient id="sh" cx="168" cy="182" r="105" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#000" stopOpacity="0.62"/>
+                <stop offset="58%" stopColor="#000" stopOpacity="0.18"/>
+                <stop offset="100%" stopColor="#000" stopOpacity="0"/>
+              </radialGradient>
+              <radialGradient id="sh2" cx="168" cy="358" r="88" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#000" stopOpacity="0.28"/>
+                <stop offset="100%" stopColor="#000" stopOpacity="0"/>
+              </radialGradient>
+              <radialGradient id="bgg" cx="250" cy="250" r="240" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#1a0033" stopOpacity="0.75"/>
+                <stop offset="100%" stopColor="#000000" stopOpacity="0"/>
+              </radialGradient>
+              <filter id="gl" x="-38%" y="-38%" width="176%" height="176%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="13" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <clipPath id="cm">
+                <path d="M250 50 L395 195 L325 195 L250 120 L120 250 L250 380 L325 305 L395 305 L250 450 L50 250 Z"/>
+              </clipPath>
+            </defs>
+
+            {/* Background */}
+            <rect width="500" height="500" fill="#000"/>
+            <rect width="500" height="500" fill="url(#bgg)"/>
+
+            {/* Glow aura */}
+            <path d="M250 50 L395 195 L325 195 L250 120 L120 250 L250 380 L325 305 L395 305 L250 450 L50 250 Z"
+                  fill="#7733dd" filter="url(#gl)" opacity="0.42"/>
+
+            {/* Main C band */}
+            <path d="M250 50 L395 195 L325 195 L250 120 L120 250 L250 380 L325 305 L395 305 L250 450 L50 250 Z"
+                  fill="url(#cg)"/>
+
+            {/* Top arm highlight */}
+            <rect width="500" height="500" fill="url(#hl)" clipPath="url(#cm)"/>
+
+            {/* Weave junction shadow (top arm over spine) */}
+            <rect width="500" height="500" fill="url(#sh)" clipPath="url(#cm)"/>
+
+            {/* Lower arm depth shadow */}
+            <rect width="500" height="500" fill="url(#sh2)" clipPath="url(#cm)"/>
+
+            {/* Outer top-right edge highlight */}
+            <path d="M250 50 L395 195" fill="none" stroke="#88eeff" strokeWidth="2.5" strokeOpacity="0.4" strokeLinecap="round"/>
+
+            {/* Outer top-left edge highlight */}
+            <path d="M50 250 L250 50" fill="none" stroke="#aaddff" strokeWidth="1.5" strokeOpacity="0.18" strokeLinecap="round"/>
+
+            {/* Inner top-left face glow */}
+            <path d="M250 120 L120 250" fill="none" stroke="#ffffff" strokeWidth="1.2" strokeOpacity="0.2" strokeLinecap="round"/>
+
+            {/* Inner boundary outline */}
+            <path d="M250 120 L120 250 L250 380 L325 305 L325 195 Z"
+                  fill="none" stroke="#ffffff" strokeWidth="0.8" strokeOpacity="0.1"/>
+          </svg>
         </div>
       </div>
 

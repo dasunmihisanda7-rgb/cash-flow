@@ -23,14 +23,13 @@ export const metadata = {
   },
 };
 
-// 🚀 iOS PWA Fixes: viewportFit: "cover" දැම්මා, themeColor එකත් update කළා
 export const viewport = {
-  themeColor: "#080b12", // Agent කිව්ව විදිහටම Background එකට match කළා
+  themeColor: "#080b12",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover", // 🔴 CRITICAL FIX: මේකෙන් තමයි Notch/Home Bar එක ගාණට අඳුරගන්නේ
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }) {
