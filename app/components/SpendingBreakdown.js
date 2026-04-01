@@ -53,28 +53,21 @@ const renderActiveShape = (props) => {
 
   return (
     <g>
-      <text x={cx} y={cy - 10} dy={8} textAnchor="middle" fill="#94a3b8" fontSize={10} fontStyle="italic">
+      <text x={cx} y={cy - 10} textAnchor="middle" fill="#64748b" fontSize={12} fontWeight="bold" className="uppercase tracking-widest">
         {payload.name}
       </text>
-      <text x={cx} y={cy + 10} dy={8} textAnchor="middle" fill={fill} fontSize={14} fontStyle="italic" fontWeight="900">
-        {`${(percent * 100).toFixed(0)}%`}
+      <text x={cx} y={cy + 18} textAnchor="middle" fill={fill} fontSize={24} fontStyle="italic" fontWeight="900" style={{ filter: `drop-shadow(0px 0px 8px ${fill})` }}>
+        {fmt(payload.value)}
       </text>
       <Sector
         cx={cx} cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius + 8}
+        outerRadius={outerRadius + 5}
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
+        cornerRadius={40}
         filter="url(#glow)"
-      />
-      <Sector
-        cx={cx} cy={cy}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        innerRadius={outerRadius + 10}
-        outerRadius={outerRadius + 12}
-        fill={fill}
       />
     </g>
   );
@@ -106,11 +99,17 @@ const renderDefs = (data, isIncome, namespace) => {
     <defs>
       {knownDefs}
       {unknownDefs}
-      <filter id={`${namespace}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="#000" floodOpacity="0.6" />
+      <filter id={`${namespace}-neon-glow`} x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur1" />
+        <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur2" />
+        <feMerge>
+          <feMergeNode in="blur2" />
+          <feMergeNode in="blur1" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
       </filter>
       <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+        <feGaussianBlur stdDeviation="8" result="coloredBlur" />
         <feMerge>
           <feMergeNode in="coloredBlur" />
           <feMergeNode in="SourceGraphic" />
@@ -167,16 +166,15 @@ export default function SpendingBreakdown({ transactions }) {
                 activeIndex={activeIndexExp}
                 activeShape={renderActiveShape}
                 data={expenseData}
-                innerRadius="60%"
-                outerRadius="85%"
-                paddingAngle={6}
-                cornerRadius={8}
+                innerRadius="75%"
+                outerRadius="90%"
+                paddingAngle={8}
+                cornerRadius={40}
+                stroke="none"
                 dataKey="value"
-                stroke="#080b12"
-                strokeWidth={4}
                 animationBegin={100}
                 animationDuration={1500}
-                filter="url(#exp-shadow)"
+                filter="url(#exp-neon-glow)"
                 onMouseEnter={(_, index) => setActiveIndexExp(index)}
                 onMouseLeave={() => setActiveIndexExp(-1)}
               >
@@ -189,8 +187,8 @@ export default function SpendingBreakdown({ transactions }) {
           </ResponsiveContainer>
 
           <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 ${activeIndexExp !== -1 ? "opacity-0" : "opacity-100"}`}>
-            <p className="text-[7px] sm:text-[9px] font-bold text-slate-600 italic tracking-[0.2em] sm:tracking-[0.4em] uppercase">Overview</p>
-            <p className="text-[12px] sm:text-lg font-black text-rose-500/80 italic tracking-widest mt-0.5 sm:mt-1">OUTFLOW</p>
+            <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">TOTAL OUTFLOW</p>
+            <p className="text-2xl sm:text-3xl font-black text-rose-400 italic drop-shadow-[0_0_12px_rgba(244,63,94,0.6)] mt-0.5">{fmt(totalExp)}</p>
           </div>
         </div>
 
@@ -239,16 +237,15 @@ export default function SpendingBreakdown({ transactions }) {
                 activeIndex={activeIndexInc}
                 activeShape={renderActiveShape}
                 data={incomeData}
-                innerRadius="60%"
-                outerRadius="85%"
-                paddingAngle={6}
-                cornerRadius={8}
+                innerRadius="75%"
+                outerRadius="90%"
+                paddingAngle={8}
+                cornerRadius={40}
+                stroke="none"
                 dataKey="value"
-                stroke="#080b12"
-                strokeWidth={4}
                 animationBegin={400}
                 animationDuration={1500}
-                filter="url(#inc-shadow)"
+                filter="url(#inc-neon-glow)"
                 onMouseEnter={(_, index) => setActiveIndexInc(index)}
                 onMouseLeave={() => setActiveIndexInc(-1)}
               >
@@ -261,8 +258,8 @@ export default function SpendingBreakdown({ transactions }) {
           </ResponsiveContainer>
 
           <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 ${activeIndexInc !== -1 ? "opacity-0" : "opacity-100"}`}>
-            <p className="text-[7px] sm:text-[9px] font-bold text-slate-600 italic tracking-[0.2em] sm:tracking-[0.4em] uppercase">Sources</p>
-            <p className="text-[12px] sm:text-lg font-black text-emerald-500/80 italic tracking-widest mt-0.5 sm:mt-1">INFLOW</p>
+            <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">TOTAL INFLOW</p>
+            <p className="text-2xl sm:text-3xl font-black text-emerald-400 italic drop-shadow-[0_0_12px_rgba(52,211,153,0.6)] mt-0.5">{fmt(totalInc)}</p>
           </div>
         </div>
 
