@@ -16,6 +16,7 @@ import { getCurrentMonthStr } from "@/lib/utils";
 
 import AnimatedNumber from "@/lib/AnimatedNumber";
 import SkeletonLoader from "@/app/components/SkeletonLoader";
+import SplashScreen from "@/app/components/SplashScreen";
 import BootSequence from "@/app/components/BootSequence";
 import { useSwipe } from "@/lib/useSwipe";
 import { useHaptic } from "@/lib/useHaptic";
@@ -198,7 +199,7 @@ export default function DashboardShell({ transactions }) {
 
   return (
     <>
-      {!bootComplete && <BootSequence onComplete={handleBootComplete} />}
+      {!bootComplete && <SplashScreen onComplete={handleBootComplete} />}
 
       <div className={`flex flex-col relative w-full transition-opacity duration-[800ms] ${bootComplete ? "opacity-100" : "opacity-0"}`}>
 

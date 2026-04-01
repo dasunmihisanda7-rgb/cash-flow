@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
+import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -13,12 +14,12 @@ export const metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "CashFlow",
   },
   icons: {
     icon: "/icon.png",
-    apple: "/apple-icon.png",
+    apple: "/icon.png",
   },
 };
 
@@ -35,7 +36,10 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
-      <body className="min-h-full flex flex-col antialiased bg-[#080b12]">{children}</body>
+      <body className="min-h-full flex flex-col antialiased bg-[#080b12]">
+        <ServiceWorkerRegister />
+        {children}
+      </body>
     </html>
   );
 }
