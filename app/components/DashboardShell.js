@@ -87,27 +87,36 @@ export default function DashboardShell({ transactions }) {
 
   if (loading) return <div className="flex h-screen w-full items-center justify-center bg-[#0b0f1a] text-white"><div className="h-12 w-12 animate-spin rounded-full border-4 border-fuchsia-500 border-t-transparent shadow-[0_0_20px_rgba(217,70,239,0.5)]"></div></div>;
 
+  const getAllTimeStats = (userName) => {
+    const userT = transactions.filter((t) => t.user?.toUpperCase() === userName.toUpperCase());
+    const income = userT.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+    const expense = userT.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+    return { balance: income - expense };
+  };
+
+  const dasunAllTimeBalance = getAllTimeStats("DASUN").balance;
+  const kavindyaAllTimeBalance = getAllTimeStats("KAVINDYA").balance;
+
   const monthFilteredTransactions = transactions.filter((t) => selectedMonth === "ALL" ? true : t.date?.startsWith(selectedMonth));
 
-  const getStats = (userName) => {
+  const getMonthlyStats = (userName) => {
     const userT = monthFilteredTransactions.filter((t) => t.user?.toUpperCase() === userName.toUpperCase());
     const income = userT.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
     const expense = userT.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
     return { income, expense, balance: income - expense };
   };
 
-  const dasunStats = getStats("DASUN");
-  const kavindyaStats = getStats("KAVINDYA");
-  const currentStats = currentUser === "DASUN" ? dasunStats : kavindyaStats;
+  const currentMonthlyStats = getMonthlyStats(currentUser);
   const userFilteredTransactions = monthFilteredTransactions.filter((t) => t.user?.toUpperCase() === currentUser.toUpperCase());
   const isDasun = currentUser === "DASUN";
   const isKavindya = currentUser === "KAVINDYA";
 
   return (
-    <div className="ios-safe-bottom min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} setCurrentUser={setCurrentUser} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-12">
+      {/* 🚀 වෙනස් කළ තැන: pb-safe-nav class එක දැම්මා, Bottom Bar එකට යට වෙන්නෙ නැති වෙන්න */}
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-safe-nav">
         <div className="space-y-10">
 
           {activeTab === "SUMMARY" && (
@@ -119,7 +128,7 @@ export default function DashboardShell({ transactions }) {
                     <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? 'text-white' : 'text-slate-500'}`}>DASUN</p>
                     <div className="flex items-baseline gap-1.5 w-full">
                       <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isDasun ? 'text-sky-400' : 'text-slate-500'}`}>Rs.</span>
-                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? 'text-white' : 'text-slate-300'}`}>{fmtNum(dasunStats.balance)}</p>
+                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? 'text-white' : 'text-slate-300'}`}>{fmtNum(dasunAllTimeBalance)}</p>
                     </div>
                   </div>
                 </article>
@@ -130,16 +139,23 @@ export default function DashboardShell({ transactions }) {
                     <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isKavindya ? 'text-white' : 'text-slate-500'}`}>KAVINDYA</p>
                     <div className="flex items-baseline gap-1.5 w-full">
                       <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isKavindya ? 'text-purple-400' : 'text-slate-500'}`}>Rs.</span>
-                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? 'text-white' : 'text-slate-300'}`}>{fmtNum(kavindyaStats.balance)}</p>
+                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? 'text-white' : 'text-slate-300'}`}>{fmtNum(kavindyaAllTimeBalance)}</p>
                     </div>
                   </div>
                 </article>
               </div>
-              <SummaryCards totalIncome={currentStats.income} totalExpenses={currentStats.expense} balance={currentStats.balance} transactions={transactions} currentUser={currentUser} selectedMonth={selectedMonth} />
+
+              <SummaryCards
+                totalIncome={currentMonthlyStats.income}
+                totalExpenses={currentMonthlyStats.expense}
+                balance={currentMonthlyStats.balance}
+                transactions={transactions}
+                currentUser={currentUser}
+                selectedMonth={selectedMonth}
+              />
             </div>
           )}
 
-          {/* 🚀 වෙනස් කළ තැන: ANALYTICS ටැබ් එක ඇතුළටම CashFlowTrend එකත් දැම්මා */}
           {activeTab === "ANALYTICS" && (
             <div key={`analytics-${currentUser}-${selectedMonth}`} className="animate-vibe py-6 space-y-10">
               <SpendingBreakdown transactions={userFilteredTransactions} />

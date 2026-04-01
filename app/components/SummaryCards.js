@@ -78,7 +78,8 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
     },
     {
       id: "card-current-balance",
-      label: "BALANCE",
+      // 🚀 වෙනස් කළ තැන: All Time එකේදී NET BALANCE කියලත්, මාසෙකදී MONTH NET කියලත් පෙන්නනවා
+      label: selectedMonth === "ALL" ? "NET BALANCE" : "MONTH NET",
       value: fmt(balance),
       change: balance > 0 ? "HEALTHY SURPLUS" : balance < 0 ? "IN DEFICIT" : "ZERO BALANCE",
       arrow: balance >= 0 ? "▲" : "▼",
@@ -93,7 +94,6 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       {cards.map((card) => (
         <article
           key={card.id}
-          // 🚀 වෙනස් කළ තැන: `premium-glass` class එක දැම්මා සහ පරණ bg-[#161b27]/30 අයින් කළා
           className="group relative overflow-hidden rounded-[24px] sm:rounded-[50px] border border-white/5 premium-glass p-3 sm:p-6 transition-all duration-500 hover:bg-white/[0.03] hover:border-white/10 hover:-translate-y-1 cursor-pointer shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[110px] sm:min-h-auto"
         >
           {/* Enhanced Glow Effect on Hover */}
