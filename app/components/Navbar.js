@@ -17,28 +17,23 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
     <>
       {/* ── Top Bar ── */}
       <div
-        className="sticky top-0 z-40 w-full gpu-promote"
+        className="sticky top-0 z-40 w-full gpu-promote pointer-events-none"
         style={{
           paddingTop: "max(1rem, env(safe-area-inset-top))",
         }}
       >
-        <div className="w-full bg-[#080b12]/60 border-b border-white/5 pb-3 px-4 flex justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all"
-          style={{
-            WebkitBackdropFilter: "blur(28px) saturate(2)",
-            backdropFilter: "blur(28px) saturate(2)",
-          }}
-        >
-          {/* Action Buttons Container (Background box removed) */}
-          <div className="flex items-center justify-center gap-3 w-full max-w-sm mx-auto pt-1">
+        <div className="w-full pb-3 px-4 flex justify-center transition-all pointer-events-auto">
+          {/* Action Buttons Container - Totally Clean */}
+          <div className="flex items-center justify-center gap-6 w-full max-w-sm mx-auto pt-1">
 
-            {/* User toggle pill */}
+            {/* User toggle pill - No box, just glowing text */}
             <button
               onClick={toggleUser}
               aria-label={`Active user: ${currentUser}. Tap to switch.`}
-              className={`click-pop no-select flex items-center shrink-0 gap-1.5 rounded-full border px-4 py-2.5 text-[11px] font-bold italic transition-all duration-300 shadow-lg cursor-pointer min-h-[44px]
+              className={`click-pop no-select flex items-center shrink-0 gap-2 rounded-full px-2 py-2.5 text-[12px] font-bold italic transition-all duration-300 cursor-pointer min-h-[44px]
                 ${currentUser === "DASUN"
-                  ? "border-sky-500/30 bg-sky-500/10 text-white hover:bg-sky-500/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.3)]"
-                  : "border-purple-500/40 bg-purple-500/20 text-white hover:bg-purple-500/30 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"}`}
+                  ? "text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.6)]"
+                  : "text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"}`}
             >
               <span className="relative flex h-1.5 w-1.5 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -47,16 +42,16 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
               {currentUser}
             </button>
 
-            {/* Month filter group */}
-            <div className="flex items-center gap-1.5 shrink-0">
+            {/* Month filter group - No box, just glowing text */}
+            <div className="flex items-center shrink-0">
 
               {/* ALL TIME button */}
               <button
                 onClick={() => { haptic.light(); setSelectedMonth("ALL"); }}
                 aria-pressed={selectedMonth === "ALL"}
-                className={`click-pop no-select rounded-full px-4 py-2.5 text-[10px] font-black italic tracking-widest transition-all duration-300 min-h-[44px] ${selectedMonth === "ALL"
-                  ? "bg-purple-500/20 border border-purple-500/30 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
-                  : "border border-transparent text-slate-500 hover:text-white hover:bg-white/5"
+                className={`click-pop no-select rounded-full px-2 py-2.5 text-[11px] font-black italic tracking-widest transition-all duration-300 min-h-[44px] ${selectedMonth === "ALL"
+                  ? "text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"
+                  : "text-slate-500 hover:text-white"
                   }`}
               >
                 ALL TIME
@@ -66,12 +61,12 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
                 <button
                   type="button"
                   onClick={() => { haptic.light(); setSelectedMonth(getCurrentMonthStr()); }}
-                  className="click-pop no-select rounded-full px-4 py-2.5 text-[10px] font-black italic tracking-widest border border-transparent text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all duration-300 min-h-[44px]"
+                  className="click-pop no-select rounded-full px-2 py-2.5 text-[11px] font-black italic tracking-widest text-slate-500 hover:text-white transition-all duration-300 min-h-[44px]"
                 >
                   THIS MONTH
                 </button>
               ) : (
-                <div className="rounded-full px-4 py-2.5 bg-sky-500/20 border border-sky-500/30 text-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.2)] transition-all duration-300">
+                <div className="rounded-full px-2 py-2.5 transition-all duration-300 text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.6)]">
                   <input
                     type="month"
                     value={selectedMonth}
