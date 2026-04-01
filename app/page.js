@@ -7,14 +7,17 @@ export default async function DashboardPage() {
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#05070a] text-white"
-      style={{ backgroundImage: "radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.05), transparent 50%), radial-gradient(circle at 100% 100%, rgba(192, 132, 252, 0.05), transparent 50%)" }}>
+      style={{ backgroundImage: "radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.08), transparent 50%), radial-gradient(circle at 100% 100%, rgba(192, 132, 252, 0.05), transparent 50%)" }}>
 
-      {/* ── Background Glows (Glassmorphism එකට පණ දෙන්නේ මේවා) ── */}
-      {/* 🚀 වෙනස් කළ තැන: එළිය ආයෙත් වැඩි කළා (Opacity 5% ඉඳන් 20% කළා). දැන් කාඩ් ටික Dark නිසා මේ එළිය පට්ටෙට පෙනේවි! */}
+      {/* ── Background Glows ── */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute -top-[10%] -left-[10%] h-[400px] w-[400px] rounded-full bg-sky-500/20 blur-[100px] mix-blend-screen" />
-        <div className="absolute top-[30%] -right-[10%] h-[400px] w-[400px] rounded-full bg-purple-600/20 blur-[120px] mix-blend-screen" />
-        <div className="absolute -bottom-[10%] left-[10%] h-[500px] w-[500px] rounded-full bg-fuchsia-500/20 blur-[120px] mix-blend-screen" />
+        {/* 🚀 නිල් පාට (Sky Blue) එළිය ටිකක් ලොකු කරලා, තව ටිකක් මැදට ගත්තා (Opacity 25% කළා) */}
+        <div className="absolute -top-[5%] -left-[5%] h-[550px] w-[550px] rounded-full bg-sky-500/25 blur-[120px] mix-blend-screen" />
+
+        <div className="absolute top-[30%] -right-[10%] h-[400px] w-[400px] rounded-full bg-purple-600/15 blur-[120px] mix-blend-screen" />
+
+        {/* 🚀 යට තියෙන දම් පාට ටිකක් අඩු කළා නිල් පාට කැපිලා පේන්න (Opacity 10% කළා) */}
+        <div className="absolute -bottom-[10%] left-[10%] h-[500px] w-[500px] rounded-full bg-fuchsia-500/10 blur-[120px] mix-blend-screen" />
       </div>
 
       <div className="relative z-10 flex flex-col flex-1">
