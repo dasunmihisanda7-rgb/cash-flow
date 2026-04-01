@@ -1,7 +1,7 @@
 // app/components/SummaryCards.js – Server Component
 import React from 'react';
 
-// ── 1. ELITE MINIMALIST ICONS (Responsive size) ─────────────────────
+// ── 1. ELITE MINIMALIST ICONS ─────────────────────
 
 const IconIn = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.0" stroke="currentColor" className="w-full h-full">
@@ -78,7 +78,6 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
     },
     {
       id: "card-current-balance",
-      // 🚀 වෙනස් කළ තැන: All Time එකේදී NET BALANCE කියලත්, මාසෙකදී MONTH NET කියලත් පෙන්නනවා
       label: selectedMonth === "ALL" ? "NET BALANCE" : "MONTH NET",
       value: fmt(balance),
       change: balance > 0 ? "HEALTHY SURPLUS" : balance < 0 ? "IN DEFICIT" : "ZERO BALANCE",
@@ -94,42 +93,52 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       {cards.map((card) => (
         <article
           key={card.id}
-          className="group relative overflow-hidden rounded-[24px] sm:rounded-[50px] border border-white/5 premium-glass p-3 sm:p-6 transition-all duration-500 hover:bg-white/[0.03] hover:border-white/10 hover:-translate-y-1 cursor-pointer shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[110px] sm:min-h-auto"
+          // 🚀 UI Upgrade: click-pop සහ Dynamic Border Glows
+          className={`click-pop group relative overflow-hidden rounded-[24px] sm:rounded-[40px] border border-white/5 premium-glass p-3 sm:p-5 transition-all duration-500 hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[110px] sm:min-h-[140px]
+            ${card.color === 'emerald' ? 'hover:border-emerald-500/30 hover:shadow-[0_15px_40px_-15px_rgba(52,211,153,0.3)]' :
+              card.color === 'rose' ? 'hover:border-rose-500/30 hover:shadow-[0_15px_40px_-15px_rgba(244,63,94,0.3)]' :
+                'hover:border-sky-500/30 hover:shadow-[0_15px_40px_-15px_rgba(56,189,248,0.3)]'}`}
         >
           {/* Enhanced Glow Effect on Hover */}
-          <div className={`absolute -right-5 -top-5 sm:-right-10 sm:-top-10 h-16 w-16 sm:h-32 sm:w-32 rounded-full blur-[30px] sm:blur-[50px] transition-opacity duration-500 opacity-10 group-hover:opacity-30 
+          <div className={`absolute -right-5 -top-5 sm:-right-10 sm:-top-10 h-16 w-16 sm:h-32 sm:w-32 rounded-full blur-[30px] sm:blur-[50px] transition-opacity duration-500 opacity-10 group-hover:opacity-30 pointer-events-none
             ${card.color === 'emerald' ? 'bg-emerald-500' : card.color === 'rose' ? 'bg-rose-500' : 'bg-sky-500'}`}
           />
 
-          <div className="relative z-10 flex flex-col h-full justify-between gap-3 sm:gap-6">
+          <div className="relative z-10 flex flex-col h-full justify-between gap-3 sm:gap-4">
 
-            {/* Top Row: Label & Icon */}
-            <div className="flex items-start justify-between">
-              <p className="text-[7px] sm:text-[11px] font-black italic tracking-widest text-slate-500 uppercase mt-0.5 sm:mt-1 truncate mr-1">
+            {/* Top Row: Label & Premium Icon Box */}
+            <div className="flex items-center justify-between">
+              <p className="text-[7px] sm:text-[10px] font-black italic tracking-widest text-slate-400 uppercase truncate mr-1">
                 {card.label}
               </p>
-              <div className={`flex shrink-0 items-center justify-center transition-all duration-500 group-hover:scale-110 opacity-70 group-hover:opacity-100 w-4 h-4 sm:w-8 sm:h-8
-                ${card.color === 'emerald' ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]' :
-                  card.color === 'rose' ? 'text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.5)]' : 'text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]'}`}
+
+              {/* 🚀 UI Upgrade: Premium Icon Container */}
+              <div className={`flex shrink-0 items-center justify-center transition-all duration-500 group-hover:scale-110 w-5 h-5 sm:w-8 sm:h-8 rounded-md sm:rounded-xl border
+                ${card.color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:shadow-[0_0_15px_rgba(52,211,153,0.4)]' :
+                  card.color === 'rose' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:shadow-[0_0_15px_rgba(244,63,94,0.4)]' :
+                    'bg-sky-500/10 border-sky-500/20 text-sky-400 group-hover:shadow-[0_0_15px_rgba(56,189,248,0.4)]'}`}
               >
-                {card.icon}
+                <div className="w-3 h-3 sm:w-4 sm:h-4">
+                  {card.icon}
+                </div>
               </div>
             </div>
 
             {/* Bottom Row: Amount & Badge */}
-            <div className="flex flex-col gap-1 sm:gap-2">
-              <h3 className={`text-[11px] sm:text-3xl font-black italic tracking-tighter leading-none truncate
-                ${card.color === 'emerald' ? 'text-emerald-400' :
-                  card.color === 'rose' ? 'text-rose-400' :
-                    'text-sky-400'}`}
+            <div className="flex flex-col gap-1 sm:gap-1.5">
+              {/* 🚀 UI Upgrade: Gradient Text for Values */}
+              <h3 className={`text-[11px] sm:text-2xl font-black italic tracking-tighter leading-none truncate bg-clip-text text-transparent
+                ${card.color === 'emerald' ? 'bg-gradient-to-br from-emerald-300 to-emerald-500' :
+                  card.color === 'rose' ? 'bg-gradient-to-br from-rose-300 to-rose-500' :
+                    'bg-gradient-to-br from-sky-300 to-sky-500'}`}
               >
                 {card.value}
               </h3>
 
               <div className="flex items-center">
-                <span className={`inline-flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg text-[6px] sm:text-[10px] font-bold italic border transition-colors duration-500 w-full sm:w-auto overflow-hidden
-                  ${card.isGood ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/20' :
-                    'bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:bg-rose-500/20'}`}
+                <span className={`inline-flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg text-[6px] sm:text-[9px] font-bold italic border transition-all duration-500 w-full sm:w-auto overflow-hidden
+                  ${card.isGood ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/40' :
+                    'bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:bg-rose-500/20 group-hover:border-rose-500/40'}`}
                 >
                   <span className="shrink-0">{card.arrow}</span>
                   <span className="ml-0.5 sm:ml-1 tracking-wider uppercase truncate">{card.change}</span>

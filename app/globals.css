@@ -35,27 +35,24 @@
 *::before,
 *::after {
   box-sizing: border-box;
-  /* 🚀 iOS Fix: Safari වල ඔබද්දි පේන අළු පාට කොටුව (Tap Highlight) අයින් කිරීම */
   -webkit-tap-highlight-color: transparent;
 }
 
 html {
   height: 100%;
   scroll-behavior: smooth;
-  /* 🚀 iOS Fix: iOS Bounce Effect එක Smooth කරන්න */
   -webkit-overflow-scrolling: touch;
-  /* 🚀 iOS Fix: Text size ඔටෝ ලොකු වෙන එක නවත්වන්න */
   -webkit-text-size-adjust: 100%;
 }
 
 body {
   min-height: 100%;
-  background-color: #0f1117;
+  /* 🚀 UI Upgrade: පසුබිමට පොඩි Ambient Dark ගතියක් දුන්නා */
+  background-color: #080b12;
   color: #e2e8f0;
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* 🚀 iOS Fix: පෝන් එකේ ඇඟිල්ලෙන් අදිද්දි පිටිපස්සට යන එක (Swipe back) ප්‍රශස්ත කිරීම */
   overscroll-behavior-y: none;
 }
 
@@ -66,12 +63,12 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #161b27;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #2a3347;
-  border-radius: 3px;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -79,22 +76,68 @@ body {
 }
 
 /* ─── iOS Fix: Native App Utilities 🚀 ────────────────────────────── */
-/* අකුරු Select වෙන එක නවත්තන්න (බට්න් වලට පාවිච්චි කරන්න) */
 .no-select {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
 }
 
-/* ─── iOS Fix: Premium Glassmorphism Class 🚀 ────────────────────────────── */
+/* ─── 🚀 UI Upgrade: Premium Glassmorphism 2.0 (3D Feel) ──────────── */
 .premium-glass {
-  background-color: rgba(22, 27, 39, 0.4) !important;
-  background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  background-color: rgba(22, 27, 39, 0.45) !important;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  /* 🚀 Inner Shadow එකක් දාලා 3D කරලා තියෙන්නේ */
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 20px 40px -10px rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* ─── 📱 iOS iPhone Safe Area Optimizations (Notch & Home Bar Fix) ─── */
+/* ─── 🚀 UI Upgrade: Premium Text Gradients ────────────────────────── */
+.text-gradient-premium {
+  background: linear-gradient(to right, #38bdf8, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── 🚀 UI Upgrade: Micro Animations (Button Clicks) ──────────────── */
+.click-pop {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.click-pop:active {
+  transform: scale(0.94);
+}
+
+/* ─── 🚀 UI Upgrade: Ambient Animated Backgrounds ─────────────────── */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.bg-animated-mesh {
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* ─── 📱 iOS iPhone Safe Area Optimizations ────────────────────────── */
 .ios-safe-top {
   padding-top: max(1.5rem, env(safe-area-inset-top));
 }
@@ -103,9 +146,8 @@ body {
   padding-bottom: max(2rem, env(safe-area-inset-bottom));
 }
 
-/* 🚀 අලුත්: Bottom Nav එකක් දාන නිසා ඒකට ගැලපෙන්න යටින් ඉඩක් (Padding) තියන්න */
 .pb-safe-nav {
-  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
 }
 
 /* ─── Form element base overrides ────────────────────────────────────────── */
@@ -115,12 +157,7 @@ textarea {
   color-scheme: dark;
 }
 
-/* ─── Transition helpers ─────────────────────────────────────────────────── */
-.transition-smooth {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ─── Page Transition Animations (Super Fast & Smooth) ────────────────────────────── */
+/* ─── Page Transition Animations ────────────────────────────── */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -134,16 +171,5 @@ textarea {
 }
 
 .animate-vibe {
-  animation: fadeInUp 0.3s ease-out forwards;
-}
-
-/* ─── Hover effect for glass cards ──────────────────────────────────────── */
-.glass-hover {
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.glass-hover:hover {
-  transform: translateY(-2px);
-  border-color: rgba(56, 189, 248, 0.4);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  animation: fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }

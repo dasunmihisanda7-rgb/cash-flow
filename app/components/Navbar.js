@@ -31,17 +31,16 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
   return (
     <>
       {/* ── 1. TOP HEADER (Controls & Badges) 🚀 ── */}
-      {/* මේක Notch එකට ගැලපෙන්න උඩින්ම තියෙනවා */}
-      <div className="sticky top-0 z-40 w-full bg-[#0b0f1a]/80 backdrop-blur-2xl border-b border-white/5 pt-[max(1rem,env(safe-area-inset-top))] pb-3 px-4 flex justify-center shadow-lg">
+      <div className="sticky top-0 z-40 w-full bg-[#080b12]/80 backdrop-blur-2xl border-b border-white/5 pt-[max(1rem,env(safe-area-inset-top))] pb-3 px-4 flex justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-3">
 
           {/* User Toggle */}
           <button
             onClick={toggleUser}
-            className={`no-select flex items-center gap-1.5 rounded-full border px-4 py-2 text-[11px] font-bold italic transition-all duration-500 shadow-lg cursor-pointer
+            className={`click-pop no-select flex items-center gap-1.5 rounded-full border px-4 py-2 text-[11px] font-bold italic transition-all duration-300 shadow-lg cursor-pointer
               ${currentUser === "DASUN"
-                ? "border-sky-500/30 bg-sky-500/10 text-white hover:bg-sky-500/20"
-                : "border-purple-500/40 bg-purple-500/20 text-white hover:bg-purple-500/30"}`}
+                ? "border-sky-500/30 bg-sky-500/10 text-white hover:bg-sky-500/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.3)]"
+                : "border-purple-500/40 bg-purple-500/20 text-white hover:bg-purple-500/30 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"}`}
           >
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -51,20 +50,20 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
           </button>
 
           {/* Month Picker */}
-          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/40 p-1 backdrop-blur-md shadow-inner">
+          <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] p-1 backdrop-blur-md shadow-inner">
             <button
               onClick={() => setSelectedMonth("ALL")}
-              className={`no-select rounded-full px-4 py-1.5 text-[10px] font-black italic tracking-widest transition-all duration-300 ${selectedMonth === "ALL"
-                ? "bg-purple-500/20 text-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.2)]"
-                : "text-slate-500 hover:text-white"
+              className={`click-pop no-select rounded-full px-4 py-1.5 text-[10px] font-black italic tracking-widest transition-all duration-300 ${selectedMonth === "ALL"
+                ? "bg-purple-500/20 border border-purple-500/30 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
+                : "border border-transparent text-slate-500 hover:text-white hover:bg-white/5"
                 }`}
             >
               ALL TIME
             </button>
 
             <div className={`relative flex items-center rounded-full px-4 py-1.5 transition-all duration-300 ${selectedMonth !== "ALL"
-              ? "bg-sky-500/20 text-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.2)]"
-              : "text-slate-500/40 hover:text-slate-400 cursor-pointer"
+              ? "bg-sky-500/20 border border-sky-500/30 text-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.2)]"
+              : "border border-transparent text-slate-500/60 hover:text-slate-300 hover:bg-white/5 cursor-pointer"
               }`}
             >
               {selectedMonth === "ALL" && (
@@ -88,26 +87,29 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
         </div>
       </div>
 
-      {/* ── 2. BOTTOM NAVIGATION BAR (iOS Style) 🚀 ── */}
-      {/* මේක ෆෝන් එකේ යටින්ම පාවෙන්න හදලා තියෙන්නේ */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 w-full border-t border-white/10 bg-[#161b27]/80 backdrop-blur-3xl pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-        <div className="flex h-16 sm:h-20 items-center justify-between px-2 sm:px-8 max-w-md mx-auto">
+      {/* ── 2. PREMIUM FLOATING BOTTOM BAR 🚀 ── */}
+      {/* 🚀 UI Upgrade: තිරයේ යටින් පාවෙන "Dynamic Island" ස්ටයිල් එක */}
+      <div className="fixed z-50 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bottom-[max(1.5rem,env(safe-area-inset-bottom))] pointer-events-none">
+
+        <div className="premium-glass rounded-[2rem] p-2 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border border-white/10 ring-1 ring-white/5">
           {tabs.map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className="no-select relative flex flex-col items-center justify-center w-full h-full transition-all duration-300"
+                className={`click-pop no-select relative flex-1 flex flex-col items-center justify-center py-3.5 sm:py-4 rounded-full transition-all duration-300
+                  ${isActive ? "bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" : "hover:bg-white/5"}
+                `}
               >
-                {/* Active උනාම උඩින් පේන ලස්සන ග්ලෝ වෙන ඉර */}
+                {/* Active Indicator Light */}
                 {isActive && (
-                  <span className="absolute top-0 w-8 h-[3px] rounded-b-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.8)] transition-all"></span>
+                  <span className="absolute -top-2 w-1 h-1 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
                 )}
 
                 <span
-                  className={`text-[9px] sm:text-[11px] font-black italic tracking-widest uppercase transition-all duration-300 mt-1
-                    ${isActive ? "text-purple-400 scale-110 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" : "text-slate-500 hover:text-slate-300 scale-100"}
+                  className={`text-[9px] sm:text-[10px] font-black italic tracking-widest uppercase transition-all duration-300
+                    ${isActive ? "text-purple-300 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]" : "text-slate-500"}
                   `}
                 >
                   {tab}
