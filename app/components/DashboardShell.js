@@ -10,32 +10,7 @@ import TransactionTable from "@/app/components/TransactionTable";
 import SpendingBreakdown from "@/app/components/SpendingBreakdown";
 import CashFlowTrend from "@/app/components/CashFlowTrend";
 import { INITIAL_EXPENSE_CATEGORIES, INITIAL_CAPITAL_CATEGORIES } from "@/lib/constants";
-
-// 🚀 UI Upgrade: 0 ඉඳන් සල්ලි ගාණ උඩට යන ඇනිමේෂන් එක ලොකු කාඩ්ස් වලටත් දානවා
-const AnimatedNumber = ({ value }) => {
-  const [displayValue, setDisplayValue] = useState(0);
-
-  useEffect(() => {
-    let startTimestamp = null;
-    const duration = 1500; // ලොකු ගණන් වලට ටිකක් වෙලා යන්න දුන්නා (1.5s)
-
-    const step = (timestamp) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-
-      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-      setDisplayValue(easeProgress * value);
-
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-
-    window.requestAnimationFrame(step);
-  }, [value]);
-
-  return new Intl.NumberFormat("en-LK", { maximumFractionDigits: 0 }).format(displayValue);
-};
+import AnimatedNumber from "@/lib/AnimatedNumber"; // 🚀 අලුත් Component එක Import කළා
 
 const CATEGORY_EMOJI = {
   Salary: "💼", Freelance: "🖊️", Investments: "📈", Business: "🏢", Bonus: "🎁",
@@ -168,7 +143,8 @@ export default function DashboardShell({ transactions }) {
               <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16 relative">
 
                 {/* Dasun's Card */}
-                <article onClick={() => setCurrentUser("DASUN")} className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'premium-glass shadow-[0_20px_60px_-15px_rgba(56,189,248,0.4)]' : 'border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60'}`}>
+                {/* 🔴 iOS FPS Fix: premium-glass වෙනුවට scroll-glass gpu-promote දැම්මා */}
+                <article onClick={() => setCurrentUser("DASUN")} className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(56,189,248,0.4)]' : 'border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60'}`}>
                   {isDasun && <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/20 blur-[50px] rounded-full pointer-events-none"></div>}
 
                   <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? 'opacity-[0.15]' : 'opacity-[0.03] text-slate-500'}`}><WalletOutlineIcon /></div>
@@ -176,14 +152,14 @@ export default function DashboardShell({ transactions }) {
                     <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? 'text-white drop-shadow-md' : 'text-slate-500'}`}>DASUN</p>
                     <div className="flex items-baseline gap-1.5 w-full">
                       <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isDasun ? 'text-sky-400' : 'text-slate-500'}`}>Rs.</span>
-                      {/* 🚀 UI Upgrade: Animated Number */}
-                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? 'text-gradient-premium' : 'text-slate-300'}`}><AnimatedNumber value={dasunAllTimeBalance} /></p>
+                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? 'text-gradient-premium' : 'text-slate-300'}`}><AnimatedNumber value={dasunAllTimeBalance} decimals={0} /></p>
                     </div>
                   </div>
                 </article>
 
                 {/* Kavindya's Card */}
-                <article onClick={() => setCurrentUser("KAVINDYA")} className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? 'premium-glass shadow-[0_20px_60px_-15px_rgba(246,211,101,0.3)]' : 'border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60'}`} style={{ animationDelay: '0.1s' }}>
+                {/* 🔴 iOS FPS Fix: premium-glass වෙනුවට scroll-glass gpu-promote දැම්මා */}
+                <article onClick={() => setCurrentUser("KAVINDYA")} className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? 'scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(246,211,101,0.3)]' : 'border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60'}`} style={{ animationDelay: '0.1s' }}>
                   {isKavindya && <div className="absolute top-0 left-0 w-32 h-32 bg-orange-500/15 blur-[50px] rounded-full pointer-events-none"></div>}
 
                   <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isKavindya ? 'opacity-[0.15]' : 'opacity-[0.03] text-slate-500'}`}><BankOutlineIcon /></div>
@@ -191,15 +167,12 @@ export default function DashboardShell({ transactions }) {
                     <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isKavindya ? 'text-white drop-shadow-md' : 'text-slate-500'}`}>KAVINDYA</p>
                     <div className="flex items-baseline gap-1.5 w-full">
                       <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isKavindya ? 'text-[#f6d365]' : 'text-slate-500'}`}>Rs.</span>
-                      {/* 🚀 UI Upgrade: Animated Number */}
-                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? 'text-gradient-gold' : 'text-slate-300'}`}><AnimatedNumber value={kavindyaAllTimeBalance} /></p>
+                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? 'text-gradient-gold' : 'text-slate-300'}`}><AnimatedNumber value={kavindyaAllTimeBalance} decimals={0} /></p>
                     </div>
                   </div>
                 </article>
               </div>
 
-              {/* Monthly Stat Cards */}
-              {/* 🚀 UI Upgrade: Staggered animation */}
               <div className="animate-vibe" style={{ animationDelay: '0.2s' }}>
                 <SummaryCards
                   totalIncome={currentMonthlyStats.income}
@@ -211,7 +184,7 @@ export default function DashboardShell({ transactions }) {
                 />
               </div>
 
-              {/* 🚀 UI Upgrade: Recent Activity Widget with Staggered animations per item */}
+              {/* 🔴 iOS FPS Fix: premium-glass වෙනුවට scroll-glass gpu-promote දැම්මා */}
               <div className="mt-12 animate-vibe" style={{ animationDelay: '0.3s' }}>
                 <div className="flex items-center justify-between mb-4 px-2">
                   <div className="flex items-center gap-3">
@@ -227,7 +200,7 @@ export default function DashboardShell({ transactions }) {
                   </button>
                 </div>
 
-                <div className="rounded-[24px] sm:rounded-[40px] premium-glass p-3 sm:p-5 flex flex-col gap-2">
+                <div className="rounded-[24px] sm:rounded-[40px] scroll-glass gpu-promote p-3 sm:p-5 flex flex-col gap-2">
                   {recentTransactions.length > 0 ? (
                     recentTransactions.map((txn, idx) => (
                       <div key={txn.id} className="animate-vibe click-pop group flex items-center justify-between p-3 sm:p-4 rounded-2xl transition-all hover:bg-white/[0.05] border border-transparent hover:border-white/10 cursor-pointer" style={{ animationDelay: `${0.4 + (idx * 0.1)}s` }}>
@@ -237,7 +210,8 @@ export default function DashboardShell({ transactions }) {
                           </div>
                           <div className="min-w-0">
                             <p className="text-[11px] sm:text-[14px] font-bold text-slate-200 uppercase truncate">{txn.description}</p>
-                            <p className="text-[8px] sm:text-[10px] font-bold italic text-slate-500 uppercase truncate mt-0.5">
+                            {/* 🔴 Legibility Fix: text-[8px] -> text-[9px] */}
+                            <p className="text-[9px] sm:text-[10px] font-bold italic text-slate-500 uppercase truncate mt-0.5">
                               {txn.category} <span className="mx-1">•</span> {fmtDate(txn.date)}
                             </p>
                           </div>
@@ -290,7 +264,8 @@ export default function DashboardShell({ transactions }) {
                 setCapitalCats={handleUpdateCapitalCats}
               />
 
-              <div className="w-full rounded-[32px] border border-rose-500/20 premium-glass p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)] mt-10" style={{ animationDelay: '0.2s' }}>
+              {/* 🔴 iOS FPS Fix: premium-glass වෙනුවට scroll-glass gpu-promote දැම්මා */}
+              <div className="w-full rounded-[32px] border border-rose-500/20 scroll-glass gpu-promote p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)] mt-10" style={{ animationDelay: '0.2s' }}>
                 <div>
                   <h3 className="text-[14px] sm:text-[16px] font-black italic tracking-widest text-white uppercase">System Disconnect</h3>
                   <p className="text-[10px] sm:text-[12px] font-bold italic text-slate-400 uppercase tracking-widest mt-1">Safely terminate current session</p>

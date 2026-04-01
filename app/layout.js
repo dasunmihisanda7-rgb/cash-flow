@@ -22,19 +22,20 @@ export const metadata = {
   },
 };
 
-// 🚀 මෙන්න මේක තමයි අලුතින් හැදුවේ! (Auto Zoom නවත්තන මැජික් එක)
+// 🚀 iOS PWA Fixes: viewportFit: "cover" දැම්මා, themeColor එකත් update කළා
 export const viewport = {
-  themeColor: "#0f172a",
+  themeColor: "#080b12", // Agent කිව්ව විදිහටම Background එකට match කළා
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: "cover", // 🔴 CRITICAL FIX: මේකෙන් තමයි Notch/Home Bar එක ගාණට අඳුරගන්නේ
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
-      <body className="min-h-full flex flex-col antialiased bg-[#0b0f1a]">{children}</body>
+      <body className="min-h-full flex flex-col antialiased bg-[#080b12]">{children}</body>
     </html>
   );
 }

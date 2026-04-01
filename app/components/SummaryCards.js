@@ -1,36 +1,6 @@
-"use client"; // 🚀 AnimatedNumber නිසා මේක Client Component එකක් වෙනවා
-import React, { useState, useEffect } from 'react';
-
-// 🚀 UI Upgrade: 0 ඉඳන් සල්ලි ගාණ උඩට යන ඇනිමේෂන් එක
-const AnimatedNumber = ({ value }) => {
-  const [displayValue, setDisplayValue] = useState(0);
-
-  useEffect(() => {
-    let startTimestamp = null;
-    const duration = 1200; // කොච්චර වෙලාවක් කැරකෙන්න ඕනෙද (ms)
-
-    const step = (timestamp) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-
-      // easeOutExpo effect - වේගෙන් පටන් අරන් අගදි හිමීට නතර වෙනවා
-      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-
-      setDisplayValue(easeProgress * value);
-
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-
-    window.requestAnimationFrame(step);
-  }, [value]);
-
-  return new Intl.NumberFormat("en-LK", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(displayValue);
-};
+"use client";
+import React from 'react';
+import AnimatedNumber from "@/lib/AnimatedNumber"; // 🚀 අලුත් Component එක Import කළා
 
 // ── ELITE MINIMALIST ICONS ──
 const IconIn = () => (
@@ -89,7 +59,7 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       isGood: selectedMonth === "ALL" ? true : (incChange >= 0),
       color: "emerald",
       icon: <IconIn />,
-      delay: "0.1s" // 🚀 Staggered delay
+      delay: "0.1s"
     },
     {
       id: "card-total-expenses",
@@ -100,7 +70,7 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       isGood: selectedMonth === "ALL" ? false : (expChange <= 0),
       color: "rose",
       icon: <IconOut />,
-      delay: "0.2s" // 🚀 Staggered delay
+      delay: "0.2s"
     },
     {
       id: "card-current-balance",
@@ -111,7 +81,7 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       isGood: balance >= 0,
       color: "sky",
       icon: <IconBalance />,
-      delay: "0.3s" // 🚀 Staggered delay
+      delay: "0.3s"
     },
   ];
 
@@ -120,8 +90,8 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       {cards.map((card) => (
         <article
           key={card.id}
-          // 🚀 UI Upgrade: Staggered animation (animate-vibe)
-          className={`animate-vibe click-pop group relative overflow-hidden rounded-[24px] sm:rounded-[40px] border border-white/5 premium-glass p-3 sm:p-5 transition-all duration-500 hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[110px] sm:min-h-[140px]
+          // 🔴 iOS FPS Fix: premium-glass වෙනුවට scroll-glass දැම්මා. gpu-promote දැම්මා.
+          className={`animate-vibe click-pop group relative overflow-hidden rounded-[24px] sm:rounded-[40px] border border-white/5 scroll-glass gpu-promote p-3 sm:p-5 transition-all duration-500 hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[110px] sm:min-h-[140px]
             ${card.color === 'emerald' ? 'hover:border-emerald-500/30 hover:shadow-[0_15px_40px_-15px_rgba(52,211,153,0.3)]' :
               card.color === 'rose' ? 'hover:border-rose-500/30 hover:shadow-[0_15px_40px_-15px_rgba(244,63,94,0.3)]' :
                 'hover:border-sky-500/30 hover:shadow-[0_15px_40px_-15px_rgba(56,189,248,0.3)]'}`}
@@ -149,13 +119,12 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
             </div>
 
             <div className="flex flex-col gap-1 sm:gap-1.5">
-              {/* 🚀 UI Upgrade: Animated Number පාවිච්චි කරනවා */}
               <h3 className={`text-[11px] sm:text-2xl font-black italic tracking-tighter leading-none truncate bg-clip-text text-transparent
                 ${card.color === 'emerald' ? 'bg-gradient-to-br from-emerald-300 to-emerald-500' :
                   card.color === 'rose' ? 'bg-gradient-to-br from-rose-300 to-rose-500' :
                     'bg-gradient-to-br from-sky-300 to-sky-500'}`}
               >
-                Rs. <AnimatedNumber value={card.value} />
+                Rs. <AnimatedNumber value={card.value} decimals={2} />
               </h3>
 
               <div className="flex items-center mt-1 sm:mt-0">

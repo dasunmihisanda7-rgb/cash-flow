@@ -53,6 +53,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior-y: none;
+
+  /* 🚀 iOS Typography Fixes */
+  text-rendering: optimizeLegibility;
+  -webkit-text-stroke: 0;
+  font-variant-numeric: tabular-nums;
+  /* 🟡 අංක ලෝඩ් වෙද්දි ගැස්සෙන එක මේකෙන් නවතිනවා */
 }
 
 /* Subtle scrollbar styling */
@@ -82,15 +88,34 @@ body {
 }
 
 /* ─── 🚀 UI Upgrade: Premium Glassmorphism 2.0 (3D Feel) ──────────── */
+/* Tier-1: Used for always-fixed UI chrome (nav bars) */
 .premium-glass {
-  /* 🚀 වෙනස් කළ තැන: Glass එක ටිකක් Dark කළා පිටිපස්සේ එළිය වදින්නෙ නැති වෙන්න */
-  background-color: rgba(11, 15, 24, 0.75) !important;
+  background-color: rgba(11, 15, 24, 0.80) !important;
   background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.005) 100%) !important;
-  backdrop-filter: blur(30px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(150%) !important;
-  /* 🚀 Shadow එක ටිකක් වැඩි කළා තව 3D ගතිය එන්න */
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 20px 40px -10px rgba(0, 0, 0, 0.8) !important;
   border: 1px solid rgba(255, 255, 255, 0.06);
+  /* Force GPU layer promotion */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Tier-2: Used for scrollable content cards (Better FPS) */
+.scroll-glass {
+  background-color: rgba(11, 15, 24, 0.85) !important;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.005) 100%) !important;
+  backdrop-filter: blur(12px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 10px 30px -8px rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gpu-promote {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* ─── 🚀 UI Upgrade: Premium Text Gradients ────────────────────────── */
@@ -99,6 +124,9 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  /* Safari Retina rendering fix for gradients */
+  -webkit-font-smoothing: subpixel-antialiased;
+  paint-order: stroke fill;
 }
 
 .text-gradient-gold {
@@ -106,6 +134,9 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  /* Safari Retina rendering fix for gradients */
+  -webkit-font-smoothing: subpixel-antialiased;
+  paint-order: stroke fill;
 }
 
 /* ─── 🚀 UI Upgrade: Micro Animations (Button Clicks) ──────────────── */
@@ -115,26 +146,6 @@ body {
 
 .click-pop:active {
   transform: scale(0.94);
-}
-
-/* ─── 🚀 UI Upgrade: Ambient Animated Backgrounds ─────────────────── */
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.bg-animated-mesh {
-  background-size: 200% 200%;
-  animation: gradientShift 15s ease infinite;
 }
 
 /* ─── 📱 iOS iPhone Safe Area Optimizations ────────────────────────── */
@@ -147,7 +158,20 @@ body {
 }
 
 .pb-safe-nav {
-  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+  /* 🔴 iPhone 14 Plus Fix: 6.5rem -> 7.5rem (යටින් Card එක කැපෙන එක හදන්න) */
+  padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+}
+
+/* ─── Scroll Performance Fixes ────────────────────────────── */
+main {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+.sticky,
+[class*="fixed"] {
+  will-change: transform;
 }
 
 /* ─── Form element base overrides ────────────────────────────────────────── */
@@ -172,4 +196,9 @@ textarea {
 
 .animate-vibe {
   animation: fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  will-change: opacity, transform;
+}
+
+.animate-vibe[data-settled] {
+  will-change: auto;
 }

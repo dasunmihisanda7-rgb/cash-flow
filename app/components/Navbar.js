@@ -37,7 +37,8 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
           {/* User Toggle */}
           <button
             onClick={toggleUser}
-            className={`click-pop no-select flex items-center gap-1.5 rounded-full border px-4 py-2 text-[11px] font-bold italic transition-all duration-300 shadow-lg cursor-pointer
+            /* 🟡 HIG Fix: py-2 -> py-3 (Easier tap) */
+            className={`click-pop no-select flex items-center gap-1.5 rounded-full border px-4 py-3 text-[11px] font-bold italic transition-all duration-300 shadow-lg cursor-pointer
               ${currentUser === "DASUN"
                 ? "border-sky-500/30 bg-sky-500/10 text-white hover:bg-sky-500/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.3)]"
                 : "border-purple-500/40 bg-purple-500/20 text-white hover:bg-purple-500/30 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"}`}
@@ -53,7 +54,8 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
           <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] p-1 backdrop-blur-md shadow-inner">
             <button
               onClick={() => setSelectedMonth("ALL")}
-              className={`click-pop no-select rounded-full px-4 py-1.5 text-[10px] font-black italic tracking-widest transition-all duration-300 ${selectedMonth === "ALL"
+              /* 🟡 HIG Fix: py-1.5 -> py-2.5 */
+              className={`click-pop no-select rounded-full px-4 py-2.5 text-[10px] font-black italic tracking-widest transition-all duration-300 ${selectedMonth === "ALL"
                 ? "bg-purple-500/20 border border-purple-500/30 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
                 : "border border-transparent text-slate-500 hover:text-white hover:bg-white/5"
                 }`}
@@ -61,7 +63,8 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
               ALL TIME
             </button>
 
-            <div className={`relative flex items-center rounded-full px-4 py-1.5 transition-all duration-300 ${selectedMonth !== "ALL"
+            {/* 🟡 HIG Fix: py-1.5 -> py-2.5 */}
+            <div className={`relative flex items-center rounded-full px-4 py-2.5 transition-all duration-300 ${selectedMonth !== "ALL"
               ? "bg-sky-500/20 border border-sky-500/30 text-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.2)]"
               : "border border-transparent text-slate-500/60 hover:text-slate-300 hover:bg-white/5 cursor-pointer"
               }`}
@@ -77,7 +80,8 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
                 type="month"
                 value={selectedMonth === "ALL" ? getCurrentMonthStr() : selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value || "ALL")}
-                className={`bg-transparent outline-none text-[11px] font-bold italic tracking-widest cursor-pointer uppercase transition-all
+                /* 🔴 HIG Fix: text-[11px] -> text-[16px] (Stops iOS auto-zoom flash) */
+                className={`bg-transparent outline-none text-[16px] font-bold italic tracking-widest cursor-pointer uppercase transition-all
                   ${selectedMonth === "ALL" ? "opacity-50 pointer-events-none" : "opacity-100"} 
                   [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:h-4 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-1`}
               />
@@ -88,7 +92,6 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
       </div>
 
       {/* ── 2. PREMIUM FLOATING BOTTOM BAR 🚀 ── */}
-      {/* 🚀 UI Upgrade: තිරයේ යටින් පාවෙන "Dynamic Island" ස්ටයිල් එක */}
       <div className="fixed z-50 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bottom-[max(1.5rem,env(safe-area-inset-bottom))] pointer-events-none">
 
         <div className="premium-glass rounded-[2rem] p-2 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border border-white/10 ring-1 ring-white/5">
@@ -98,11 +101,11 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`click-pop no-select relative flex-1 flex flex-col items-center justify-center py-3.5 sm:py-4 rounded-full transition-all duration-300
+                /* 🔴 HIG Fix: py-3.5 -> min-h-[52px] py-3 (Fixes mis-taps on 6.7" screens) */
+                className={`click-pop no-select relative flex-1 flex flex-col items-center justify-center min-h-[52px] py-3 rounded-full transition-all duration-300
                   ${isActive ? "bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" : "hover:bg-white/5"}
                 `}
               >
-                {/* Active Indicator Light */}
                 {isActive && (
                   <span className="absolute -top-2 w-1 h-1 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
                 )}
