@@ -131,8 +131,8 @@ export default function DashboardShell({ transactions }) {
   const isKavindya = currentUser === "KAVINDYA";
 
   return (
-    // 🚀 UI Upgrade: මුළු ඇප් එකටම Animated Background එක දැම්මා
-    <div className="min-h-screen flex flex-col relative bg-animated-mesh" style={{ backgroundImage: "radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.05), transparent 25%), radial-gradient(circle at 85% 30%, rgba(192, 132, 252, 0.05), transparent 25%)" }}>
+    // 🚀 වෙනස් කළ තැන: මෙතන තිබ්බ Background එක අයින් කළා. එතකොට page.js එකේ එළි ටික පේනවා!
+    <div className="flex flex-col relative w-full">
 
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} setCurrentUser={setCurrentUser} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
 
