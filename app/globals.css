@@ -40,20 +40,25 @@
 
 html {
   height: 100%;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
+  /* OPT-01: scroll-behavior removed — CSS smooth-scroll causes jank on iOS
+     when interacting with fixed elements during programmatic scrolls. */
   -webkit-text-size-adjust: 100%;
+  /* OPT-02: overflow-scrolling:touch is a deprecated hint; modern iOS uses
+     momentum scrolling by default. Removing avoids stacking context issues. */
 }
 
 body {
   min-height: 100%;
+  min-height: 100dvh; /* OPT-03: dvh accounts for the iOS browser chrome */
   background-color: #05080f;
   color: #e2e8f0;
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* OPT-04: Lock elastic bounce on the root body — the app should feel native,
+     not like a webpage that springs back. Scrolling is delegated to <main>. */
   overscroll-behavior-y: none;
-
+  overflow: hidden;
   /* iOS Typography Fixes */
   text-rendering: optimizeLegibility;
   -webkit-text-stroke: 0;
@@ -62,11 +67,14 @@ body {
 
 /* ─── Animated Chromatic Mesh Gradient (Base Ambient Layer) ──────────── */
 /*
- * A pure-CSS radial gradient mesh pinned to the viewport via body::after.
- * Sits at z-index: -2, beneath the health orbs at z-index: -10 (via Tailwind's
- * -z-10). Uses very low HSL lightness (≤10%) so it never competes with text.
- * The bg-drift animation is a slow background-position pan for a living,
- * breathing quality — no JS, no layout reflow, GPU-composited paint only.
+ * OPT-05: The bg-drift animation is now fully composite-layer friendly.
+ *   • Animates only `background-position` on a `::after` pseudo-element
+ *     that is `position: fixed` with `will-change: transform` — this tells
+ *     the browser to promote it to its own GPU layer upfront, preventing
+ *     any main-thread paint during the loop.
+ *   • `transform: translateZ(0)` forces rasterization on the GPU.
+ *   • `background-attachment: fixed` is NOT used (causes a separate repaint
+ *     path on iOS). Instead we rely on `position: fixed` + background-size.
  */
 @keyframes bg-drift {
   0%,  100% { background-position: 0%   0%,   100% 100%, 50%  50%; }
@@ -80,6 +88,11 @@ body::after {
   inset: 0;
   z-index: -2;
   pointer-events: none;
+  will-change: background-position;  /* OPT-05a: pre-promote to GPU composite */
+  transform: translateZ(0);           /* OPT-05b: force hardware layer */
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   background:
     radial-gradient(ellipse 80% 50% at 15% 20%,  hsl(245 80% 10% / 0.9)  0%, transparent 70%),
     radial-gradient(ellipse 70% 60% at 85% 80%,  hsl(215 90% 8%  / 0.85) 0%, transparent 65%),
@@ -88,7 +101,7 @@ body::after {
   animation: bg-drift 20s ease-in-out infinite;
 }
 
-/* Subtle scrollbar styling */
+/* ─── Subtle scrollbar styling ──────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -107,47 +120,46 @@ body::after {
   background: linear-gradient(160deg, #38bdf8 0%, #c084fc 100%);
 }
 
-/* ─── iOS Fix: Native App Utilities ────────────────────────────────── */
+/* ─── iOS Fix: Native App Utilities ────────────────────────────────────── */
 .no-select {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
 }
 
-/* ─── Premium Glassmorphism 2.0 (3D Feel) ──────────────────────────── */
+/* ─── Premium Glassmorphism 2.0 (3D Feel) ──────────────────────────────── */
 /* Tier-1: Used for always-fixed UI chrome (nav bars) */
 .premium-glass {
-  background-color: rgba(8, 12, 22, 0.86) !important;
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
-  backdrop-filter: blur(28px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  /* OPT-06: -webkit-backdrop-filter must appear BEFORE backdrop-filter for
+     Safari/WebKit to pick it up. Both are required for cross-browser support. */
+  background-color: rgba(8, 12, 22, 0.86);
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.14),
     inset 0 -1px 1px rgba(0, 0, 0, 0.60),
-    0 24px 48px -12px rgba(0, 0, 0, 0.90) !important;
+    0 24px 48px -12px rgba(0, 0, 0, 0.90);
   border: 1px solid rgba(255, 255, 255, 0.09);
 }
 
 /* Tier-2: Used for scrollable content cards */
 .scroll-glass {
-  background-color: rgba(8, 12, 22, 0.88) !important;
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.008) 100%) !important;
-  backdrop-filter: blur(16px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  background-color: rgba(8, 12, 22, 0.88);
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.008) 100%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.10),
     inset 0 -1px 1px rgba(0, 0, 0, 0.45),
-    0 16px 40px -10px rgba(0, 0, 0, 0.70) !important;
+    0 16px 40px -10px rgba(0, 0, 0, 0.70);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /*
- * PERF-03 FIX: The previous rule `.sticky, [class*="fixed"] { will-change: transform }`
- * promoted EVERY element whose class string contained "fixed" (including all the
- * decorative glow divs) to its own GPU compositing layer, wasting significant
- * GPU memory on mobile. That rule has been removed.
- *
- * Use .gpu-promote *surgically* only on truly animated, hardware-accelerated elements.
+ * OPT-07: .gpu-promote — surgical hardware acceleration.
+ * Apply ONLY to elements that animate transform/opacity to avoid wasting
+ * GPU memory on decorative or static elements.
  */
 .gpu-promote {
   transform: translateZ(0);
@@ -156,13 +168,13 @@ body::after {
   -webkit-backface-visibility: hidden;
 }
 
-/* ─── Premium Text Gradients ────────────────────────────────────────── */
+/* ─── Premium Text Gradients ────────────────────────────────────────────── */
 .text-gradient-premium {
   background: linear-gradient(to right, #38bdf8, #c084fc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  /* Safari Retina rendering fix for gradients */
+  /* Safari Retina rendering fix for gradient text */
   -webkit-font-smoothing: subpixel-antialiased;
   paint-order: stroke fill;
 }
@@ -172,12 +184,12 @@ body::after {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  /* Safari Retina rendering fix for gradients */
+  /* Safari Retina rendering fix for gradient text */
   -webkit-font-smoothing: subpixel-antialiased;
   paint-order: stroke fill;
 }
 
-/* ─── Micro Animations (Button Clicks) ─────────────────────────────── */
+/* ─── Micro Animations (Button Clicks) ─────────────────────────────────── */
 .click-pop {
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -187,7 +199,12 @@ body::after {
   transform: scale(0.92);
 }
 
-/* ─── iOS iPhone Safe Area Optimizations ───────────────────────────── */
+/* ─── iOS iPhone Safe Area Utilities ───────────────────────────────────── */
+/*
+ * OPT-08: Safe-area utilities use max() so they gracefully degrade to sensible
+ * pixel fallbacks on devices without a notch or home indicator (e.g. iPhone SE,
+ * Android). env() values are 0 on non-iOS devices so max() picks the fallback.
+ */
 .ios-safe-top {
   padding-top: max(1.5rem, env(safe-area-inset-top));
 }
@@ -196,32 +213,41 @@ body::after {
   padding-bottom: max(2rem, env(safe-area-inset-bottom));
 }
 
+/* OPT-09: pb-safe-nav — pushes scrollable main content clear of the floating
+   bottom nav pill. Accounts for: nav height (~5rem) + bottom bar safe area. */
 .pb-safe-nav {
-  /* iPhone 14 Plus Fix: enough padding to clear the floating bottom nav */
-  padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(5.5rem + max(1rem, env(safe-area-inset-bottom)));
 }
 
-/* ─── Scroll Performance Fixes ─────────────────────────────────────── */
+/* ─── Scroll Performance Fixes ──────────────────────────────────────────── */
+/*
+ * OPT-10: <main> is the single scrollable region.
+ *   • overflow-y: auto  → enables scroll only when content overflows
+ *   • overscroll-behavior-y: contain → allows content to scroll freely but
+ *     stops the chain from bubbling to body (no elastic bounce on the shell)
+ *   • contain: layout style paint → hints to WebKit that this element is a
+ *     self-contained paint boundary, enabling scroll compositing off main thread
+ */
 main {
-  -webkit-overflow-scrolling: touch;
   overflow-y: auto;
   overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  contain: layout style paint;
 }
 
-/* ─── Form element base overrides ──────────────────────────────────── */
+/* ─── Form element base overrides ──────────────────────────────────────── */
 input,
 select,
 textarea {
   color-scheme: dark;
 }
 
-/* ─── Page Transition Animations ───────────────────────────────────── */
+/* ─── Page Transition Animations ────────────────────────────────────────── */
 @keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(15px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -229,74 +255,57 @@ textarea {
 }
 
 /*
- * CSS-01 FIX: `will-change` has been removed from .animate-vibe.
- * The `[data-settled]` reset was defined in CSS but never applied via JS,
- * meaning every .animate-vibe element permanently held a GPU layer hint.
- * Since this animation fires once (short-lived), `will-change` provides no
- * benefit and wastes GPU memory. The animation still works perfectly without it.
+ * OPT-11: .animate-vibe — no will-change.
+ * Short-lived entrance animations don't benefit from will-change because the
+ * browser can't reuse the promoted layer after the animation ends. Keeping
+ * will-change off saves GPU memory on memory-constrained iPhones.
  */
 .animate-vibe {
   animation: fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-/* ─── Cyberpunk Skeleton Shimmer ────────────────────────────────────── */
+/* ─── Cyberpunk Skeleton Shimmer ────────────────────────────────────────── */
 @keyframes skeleton-pulse {
-  0% {
-    background-position: -200% 0;
-  }
-
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .skeleton-shimmer {
   background: linear-gradient(110deg,
-      rgba(255, 255, 255, 0.02) 0%,
-      rgba(255, 255, 255, 0.02) 20%,
-      rgba(255, 255, 255, 0.08) 40%,
-      rgba(56, 189, 248, 0.12) 50%,
-      rgba(192, 132, 252, 0.12) 60%,
-      rgba(255, 255, 255, 0.08) 70%,
-      rgba(255, 255, 255, 0.02) 80%,
-      rgba(255, 255, 255, 0.02) 100%);
+    rgba(255, 255, 255, 0.02) 0%,
+    rgba(255, 255, 255, 0.02) 20%,
+    rgba(255, 255, 255, 0.08) 40%,
+    rgba(56, 189, 248, 0.12) 50%,
+    rgba(192, 132, 252, 0.12) 60%,
+    rgba(255, 255, 255, 0.08) 70%,
+    rgba(255, 255, 255, 0.02) 80%,
+    rgba(255, 255, 255, 0.02) 100%);
   background-size: 200% 100%;
   animation: skeleton-pulse 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-8px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
 }
 
-/* ─── Swipe Row Utilities ───────────────────────────────────────────── */
+/* ─── Swipe Row Utilities ────────────────────────────────────────────────── */
 /*
- * touch-action: pan-y on the list container tells the browser that this area
- * scrolls vertically only, helping the OS-level gesture engine hand off
- * horizontal touches to our JS handlers rather than to page scroll.
- * .click-pop is NOT applied to the swipe delete button to avoid :active scale
- * conflicting with the parent translateX transform.
+ * touch-action: pan-y — tells the OS gesture engine that this area scrolls
+ * vertically, so horizontal swipes are handed to our JS handlers instead of
+ * triggering back-navigation or page scroll.
  */
-
-/* Applied to the outer swipe row container — horizontal gesture is handled by JS */
 .swipe-row-container {
   touch-action: pan-y;
 }
 
-/* Applied to the sliding inner content div — disables text selection during drag */
 .swipe-row-content {
   user-select: none;
   -webkit-user-select: none;
   touch-action: pan-y;
 }
 
-/* ─── Animate-in utility (for modal fade-in) ────────────────────────── */
+/* ─── Animate-in utility (modal / tab-panel fade-in) ───────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.97) translateY(8px); }
   to   { opacity: 1; transform: scale(1)    translateY(0);   }
@@ -306,7 +315,26 @@ textarea {
   animation: fadeIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-/* ─── Toast notification slide-up ──────────────────────────────────── */
+/* ─── Bottom Sheet slide-up (QuickAddFAB) ──────────────────────────────── */
+/*
+ * OPT-12: QuickAdd bottom sheet uses `will-change: transform` declared via
+ * an explicit class rather than inline styles. This promotes the sheet to a
+ * GPU layer BEFORE the animation starts, avoiding the costly promotion
+ * mid-animation that causes jank on the first open.
+ */
+@keyframes slideInFromBottom {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.sheet-enter {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  animation: slideInFromBottom 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Toast notification slide-up ──────────────────────────────────────── */
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }

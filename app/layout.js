@@ -14,7 +14,11 @@ export const metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    // OPT-13: "black-translucent" lets the app render behind the status bar
+    // so our env(safe-area-inset-top) padding correctly clears the notch
+    // on both iPhone 12 and 14 Plus. "default" would push content down and
+    // leave a white bar, while "black" is opaque black — neither is ideal.
+    statusBarStyle: "black-translucent",
     title: "CashFlow V7 Elite Plus",
   },
   icons: {
@@ -30,6 +34,10 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  // OPT-14: viewportFit:"cover" is the critical flag that tells iOS Safari
+  // the app wants to render into the safe area rectangle, which activates
+  // env(safe-area-inset-*) values in CSS. Without this, all safe-area
+  // env() calls resolve to 0px.
   viewportFit: "cover",
 };
 
@@ -39,7 +47,12 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="apple-touch-icon" href="/apple-icon.png?v=1" />
       </head>
-      <body className="min-h-full flex flex-col antialiased bg-[#05080f]">
+      {/*
+        OPT-15: `overflow-hidden` on body prevents a double-scrollbar and
+        elastic-bounce at the root level. All actual scrolling is isolated
+        inside <main> which has `overscroll-behavior-y: contain`.
+      */}
+      <body className="min-h-full flex flex-col antialiased bg-[#05080f] overflow-hidden">
         <ServiceWorkerRegister />
         {children}
       </body>

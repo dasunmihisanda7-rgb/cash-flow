@@ -18,8 +18,15 @@ export default function SplashScreen({ onComplete }) {
   }, [onComplete]);
 
   return (
-    <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#05070a] transition-opacity duration-700
-      ${stage >= 2 ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+    /*
+      OPT-25: Splash overlay gets will-change:opacity (via gpu-promote + the
+      opacity transition) so WebKit composites the fade on the GPU rather than
+      painting the full screen on every frame of the exit animation.
+    */
+    <div
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#05070a] gpu-promote transition-opacity duration-700
+        ${stage >= 2 ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+    >
 
       {/* Ambient orbs */}
       <div className="absolute w-64 h-64 bg-slate-900/40 blur-[120px] rounded-full pointer-events-none" />
@@ -113,7 +120,8 @@ export default function SplashScreen({ onComplete }) {
         V7 ELITE PLUS
       </p>
 
-      <style jsx>{`
+      {/* OPT-26: Plain <style> — no styled-jsx dependency required */}
+      <style>{`
         .animate-pulse-slow {
           animation: pulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }

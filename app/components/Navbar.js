@@ -1,19 +1,11 @@
 "use client";
-// UX-03 FIX: Replaced overlay click-catcher approach with conditional rendering
-//   of a placeholder button vs. the real <input type="month">. Avoids cross-browser
-//   issues where Firefox Android would open the native picker despite pointer-events:none.
-// UX-04 FIX: Bottom nav now has role="tablist" / role="tab" / aria-selected / aria-controls.
-// REFACTOR-02 FIX: Removed dead handleLogout and unused signOut import.
-// REFACTOR-03 FIX: Imports getCurrentMonthStr from lib/utils instead of duplicating it.
 
-import { useRouter } from "next/navigation";
 import { useHaptic } from "@/lib/useHaptic";
 import { getCurrentMonthStr } from "@/lib/utils";
 
 const tabs = ["SUMMARY", "ANALYTICS", "LOG", "CONTROL"];
 
 export default function Navbar({ activeTab, setActiveTab, currentUser, setCurrentUser, selectedMonth, setSelectedMonth }) {
-  const router = useRouter();
   const haptic = useHaptic();
 
   const toggleUser = () => {
@@ -24,87 +16,128 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
   return (
     <>
       {/* ── Top Bar ── */}
-      <div className="sticky top-0 z-40 w-full bg-[#080b12]/60 backdrop-blur-3xl saturate-[2] border-b border-white/5 pt-[max(1rem,env(safe-area-inset-top))] pb-3 px-4 flex justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all">
-        
-        {/* Unified Command Bar Container */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-full bg-[#161b27]/60 backdrop-blur-md border border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_10px_30px_rgba(0,0,0,0.5)] ring-1 ring-white/5">
-
-          {/* User toggle pill */}
-          <button
-            onClick={toggleUser}
-            aria-label={`Active user: ${currentUser}. Tap to switch.`}
-            className={`click-pop no-select flex items-center shrink-0 gap-1.5 rounded-full border px-4 py-2.5 text-[11px] font-bold italic transition-all duration-300 shadow-lg cursor-pointer
-              ${currentUser === "DASUN"
-                ? "border-sky-500/30 bg-sky-500/10 text-white hover:bg-sky-500/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.3)]"
-                : "border-purple-500/40 bg-purple-500/20 text-white hover:bg-purple-500/30 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"}`}
+      {/*
+        OPT-16: Top bar uses env(safe-area-inset-top) via the .ios-safe-top
+        utility class (defined in globals.css) so content clears the notch
+        on iPhone 12 (34px) and the Dynamic Island on iPhone 14 Plus (59px).
+        The -webkit-backdrop-filter is listed FIRST so WebKit picks it up;
+        backdrop-filter is the standard fallback for non-WebKit browsers.
+        gpu-promote forces this fixed chrome into its own compositor layer
+        so it never causes a repaint when the content below it scrolls.
+      */}
+      <div
+        className="sticky top-0 z-40 w-full gpu-promote"
+        style={{
+          paddingTop: "max(1rem, env(safe-area-inset-top))",
+        }}
+      >
+        <div className="w-full bg-[#080b12]/60 border-b border-white/5 pb-3 px-4 flex justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all"
+          style={{
+            WebkitBackdropFilter: "blur(28px) saturate(2)",
+            backdropFilter: "blur(28px) saturate(2)",
+          }}
+        >
+          {/* Unified Command Bar Container */}
+          <div className="flex items-center gap-1.5 p-1.5 rounded-full bg-[#161b27]/60 border border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_10px_30px_rgba(0,0,0,0.5)] ring-1 ring-white/5"
+            style={{
+              WebkitBackdropFilter: "blur(12px)",
+              backdropFilter: "blur(12px)",
+            }}
           >
-            <span className="relative flex h-1.5 w-1.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            </span>
-            {currentUser}
-          </button>
-
-          {/* Minimal Separator */}
-          <div className="w-[1px] h-5 bg-white/10 rounded-full mx-0.5 shrink-0" />
-
-          {/* Month filter group */}
-          <div className="flex items-center gap-1.5 shrink-0">
-
-            {/* ALL TIME button */}
+            {/* User toggle pill */}
             <button
-              onClick={() => { haptic.light(); setSelectedMonth("ALL"); }}
-              aria-pressed={selectedMonth === "ALL"}
-              className={`click-pop no-select rounded-full px-4 py-2.5 text-[10px] font-black italic tracking-widest transition-all duration-300 ${selectedMonth === "ALL"
-                ? "bg-purple-500/20 border border-purple-500/30 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
-                : "border border-transparent text-slate-500 hover:text-white hover:bg-white/5"
-                }`}
+              onClick={toggleUser}
+              aria-label={`Active user: ${currentUser}. Tap to switch.`}
+              className={`click-pop no-select flex items-center shrink-0 gap-1.5 rounded-full border px-4 py-2.5 text-[11px] font-bold italic transition-all duration-300 shadow-lg cursor-pointer min-h-[44px]
+                ${currentUser === "DASUN"
+                  ? "border-sky-500/30 bg-sky-500/10 text-white hover:bg-sky-500/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.3)]"
+                  : "border-purple-500/40 bg-purple-500/20 text-white hover:bg-purple-500/30 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"}`}
             >
-              ALL TIME
+              <span className="relative flex h-1.5 w-1.5 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              </span>
+              {currentUser}
             </button>
 
-            {/* UX-03 FIX: When selectedMonth === "ALL", render a plain button that
+            {/* Minimal Separator */}
+            <div className="w-[1px] h-5 bg-white/10 rounded-full mx-0.5 shrink-0" />
+
+            {/* Month filter group */}
+            <div className="flex items-center gap-1.5 shrink-0">
+
+              {/* ALL TIME button */}
+              <button
+                onClick={() => { haptic.light(); setSelectedMonth("ALL"); }}
+                aria-pressed={selectedMonth === "ALL"}
+                className={`click-pop no-select rounded-full px-4 py-2.5 text-[10px] font-black italic tracking-widest transition-all duration-300 min-h-[44px] ${selectedMonth === "ALL"
+                  ? "bg-purple-500/20 border border-purple-500/30 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
+                  : "border border-transparent text-slate-500 hover:text-white hover:bg-white/5"
+                  }`}
+              >
+                ALL TIME
+              </button>
+
+              {/*
+                UX-03: When selectedMonth === "ALL", render a plain button that
                 sets the month on click. When a month is already selected, render
                 the real <input type="month"> directly. This avoids the overlay
-                pattern that conflicted with the native picker on Firefox Android. */}
-            {selectedMonth === "ALL" ? (
-              <button
-                type="button"
-                onClick={() => { haptic.light(); setSelectedMonth(getCurrentMonthStr()); }}
-                className="click-pop no-select rounded-full px-4 py-2.5 text-[10px] font-black italic tracking-widest border border-transparent text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all duration-300"
-              >
-                THIS MONTH
-              </button>
-            ) : (
-              <div className="rounded-full px-4 py-2.5 bg-sky-500/20 border border-sky-500/30 text-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.2)] transition-all duration-300">
-                <input
-                  type="month"
-                  value={selectedMonth}
-                  onChange={(e) => { haptic.light(); setSelectedMonth(e.target.value || "ALL"); }}
-                  aria-label="Select month"
-                  className="bg-transparent outline-none text-[16px] font-bold italic tracking-widest cursor-pointer uppercase [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:h-4 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-1"
-                />
-              </div>
-            )}
+                pattern that conflicted with the native picker on Firefox Android.
+              */}
+              {selectedMonth === "ALL" ? (
+                <button
+                  type="button"
+                  onClick={() => { haptic.light(); setSelectedMonth(getCurrentMonthStr()); }}
+                  className="click-pop no-select rounded-full px-4 py-2.5 text-[10px] font-black italic tracking-widest border border-transparent text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all duration-300 min-h-[44px]"
+                >
+                  THIS MONTH
+                </button>
+              ) : (
+                <div className="rounded-full px-4 py-2.5 bg-sky-500/20 border border-sky-500/30 text-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.2)] transition-all duration-300">
+                  <input
+                    type="month"
+                    value={selectedMonth}
+                    onChange={(e) => { haptic.light(); setSelectedMonth(e.target.value || "ALL"); }}
+                    aria-label="Select month"
+                    className="bg-transparent outline-none text-[16px] font-bold italic tracking-widest cursor-pointer uppercase [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:h-4 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-1"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* ── Floating Bottom Nav ── */}
-      <div className="fixed z-50 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bottom-0 pb-[max(1.5rem,env(safe-area-inset-bottom))] pointer-events-none transition-all">
-        {/* UX-04 FIX: role="tablist" + per-button role="tab" + aria-selected + aria-controls */}
+      {/*
+        OPT-17: Bottom nav padding uses env(safe-area-inset-bottom) so it
+        clears the iPhone home indicator (34px on iPhone 12, 34px on 14 Plus).
+        The nav itself has `will-change: transform` via gpu-promote so the
+        tab-switcher pill animation composites entirely on the GPU.
+        min-h-[52px] on each tab button satisfies Apple HIG 44pt minimum
+        tap target requirement with comfortable extra room.
+      */}
+      <div
+        className="fixed z-50 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md pointer-events-none transition-all gpu-promote"
+        style={{ bottom: 0, paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
+      >
         <nav
           role="tablist"
           aria-label="Main Navigation"
-          className="bg-[#080b12]/60 backdrop-blur-3xl saturate-[2] rounded-[2rem] p-2 relative flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border border-white/10 ring-1 ring-white/5"
+          className="bg-[#080b12]/60 rounded-[2rem] p-2 relative flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border border-white/10 ring-1 ring-white/5"
+          style={{
+            WebkitBackdropFilter: "blur(28px) saturate(2)",
+            backdropFilter: "blur(28px) saturate(2)",
+          }}
         >
-          {/* Sliding Active Pill */}
+          {/* Sliding Active Pill — gpu-promote so this translate composites off main thread */}
           <div
-            className="absolute top-2 bottom-2 bg-white/[0.08] rounded-full transition-transform duration-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] border border-white/[0.05] pointer-events-none"
-            style={{ 
+            className="absolute top-2 bottom-2 bg-white/[0.08] rounded-full border border-white/[0.05] pointer-events-none gpu-promote"
+            style={{
               width: `calc((100% - 16px) / ${tabs.length})`,
               transform: `translateX(calc(${tabs.indexOf(activeTab)} * 100%))`,
-              transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)"
+              transition: "transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+              boxShadow: "inset 0 1px 1px rgba(255,255,255,0.1)",
             }}
             aria-hidden="true"
           />

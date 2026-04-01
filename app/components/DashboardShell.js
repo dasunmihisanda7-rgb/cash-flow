@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect, useCallback, useMemo } from "react";
+
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -15,7 +16,6 @@ import { getCurrentMonthStr } from "@/lib/utils";
 import AnimatedNumber from "@/lib/AnimatedNumber";
 import SkeletonLoader from "@/app/components/SkeletonLoader";
 import SplashScreen from "@/app/components/SplashScreen";
-import BootSequence from "@/app/components/BootSequence";
 import { useSwipe } from "@/lib/useSwipe";
 import { useHaptic } from "@/lib/useHaptic";
 import { useFinancialHealth, HEALTH_CONFIG } from "@/lib/useFinancialHealth";
@@ -74,7 +74,10 @@ export default function DashboardShell({ transactions }) {
   const [expenseCats, setExpenseCats] = useState(INITIAL_EXPENSE_CATEGORIES);
   const [capitalCats, setCapitalCats] = useState(INITIAL_CAPITAL_CATEGORIES);
 
-  const saveCatsTimeoutRef = { expense: null, capital: null };
+  // OPT-21: Use refs for debounce timers so they don't trigger re-renders
+  // and don't stale-close over an obsolete state value.
+  const expenseTimerRef = useRef(null);
+  const capitalTimerRef = useRef(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -85,30 +88,27 @@ export default function DashboardShell({ transactions }) {
     }
   }, []);
 
-  const expenseSaveTimer = useState(null);
-  const capitalSaveTimer = useState(null);
-
   const handleUpdateExpenseCats = useCallback((newCats) => {
     setExpenseCats(newCats);
-    clearTimeout(expenseSaveTimer[0]);
-    expenseSaveTimer[0] = setTimeout(() => {
+    clearTimeout(expenseTimerRef.current);
+    expenseTimerRef.current = setTimeout(() => {
       localStorage.setItem(
         "customExpenseCats",
         JSON.stringify(newCats.filter((c) => !INITIAL_EXPENSE_CATEGORIES.includes(c)))
       );
     }, 300);
-  }, [expenseSaveTimer]);
+  }, []);
 
   const handleUpdateCapitalCats = useCallback((newCats) => {
     setCapitalCats(newCats);
-    clearTimeout(capitalSaveTimer[0]);
-    capitalSaveTimer[0] = setTimeout(() => {
+    clearTimeout(capitalTimerRef.current);
+    capitalTimerRef.current = setTimeout(() => {
       localStorage.setItem(
         "customCapitalCats",
         JSON.stringify(newCats.filter((c) => !INITIAL_CAPITAL_CATEGORIES.includes(c)))
       );
     }, 300);
-  }, [capitalSaveTimer]);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -144,9 +144,9 @@ export default function DashboardShell({ transactions }) {
     const userT = monthFilteredTransactions.filter(
       (t) => t.user?.toUpperCase() === currentUser.toUpperCase()
     );
-    const income = userT.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
-    const expense = userT.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-    return { income, expense, balance: income - expense, userTransactions: userT };
+    const inc = userT.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+    const exp = userT.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+    return { income: inc, expense: exp, balance: inc - exp, userTransactions: userT };
   }, [monthFilteredTransactions, currentUser]);
 
   const dasunBalance = useMemo(
@@ -186,14 +186,32 @@ export default function DashboardShell({ transactions }) {
     <>
       {!bootComplete && <SplashScreen onComplete={handleBootComplete} />}
 
-      <div className={`flex flex-col relative w-full transition-opacity duration-[800ms] ${bootComplete ? "opacity-100" : "opacity-0"}`}>
-
+      {/*
+        OPT-22: Root shell is a flex column filling the full viewport height.
+        `h-[100dvh]` uses the dynamic viewport height unit so the shell
+        accounts for the iOS address bar shrinking/expanding. `overflow-hidden`
+        prevents the shell itself from scrolling — that is delegated to <main>.
+      */}
+      <div
+        className={`flex flex-col w-full h-[100dvh] overflow-hidden relative transition-opacity duration-[800ms] ${bootComplete ? "opacity-100" : "opacity-0"}`}
+      >
         {/* ── Dynamic Financial Health Background Orbs ── */}
+        {/*
+          OPT-23: Health orbs animate only `background-color` via a 3s CSS
+          transition. They are on a fixed stacking layer below content.
+          `gpu-promote` is NOT applied here — these blurred divs don't animate
+          transforms so promoting them would waste a GPU layer on a static paint.
+          `pointer-events-none` prevents touch interference.
+        */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
-          <div className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full blur-[180px] transition-all duration-[3000ms]"
-            style={{ backgroundColor: hc.orb1 }} />
-          <div className="absolute bottom-1/3 right-1/4 w-72 h-72 rounded-full blur-[150px] transition-all duration-[3000ms]"
-            style={{ backgroundColor: hc.orb2 }} />
+          <div
+            className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full blur-[180px] transition-all duration-[3000ms]"
+            style={{ backgroundColor: hc.orb1 }}
+          />
+          <div
+            className="absolute bottom-1/3 right-1/4 w-72 h-72 rounded-full blur-[150px] transition-all duration-[3000ms]"
+            style={{ backgroundColor: hc.orb2 }}
+          />
         </div>
 
         <Navbar
@@ -205,9 +223,19 @@ export default function DashboardShell({ transactions }) {
           setSelectedMonth={setSelectedMonth}
         />
 
+        {/*
+          OPT-24: <main> is the ONLY scrollable region.
+          - `flex-1 min-h-0` allows it to fill available height between the
+            sticky top bar and nothing else, without growing past the viewport.
+          - `overflow-y-auto` + `overscroll-behavior-y: contain` (set in CSS)
+            keeps scroll internal — no bounce propagates to body.
+          - `pb-safe-nav` clears the floating bottom nav + home indicator.
+          - `touch-action: pan-y` on the swipe wrapper tells iOS the vertical
+            scroll gesture belongs to this container, not to a swipe nav handler.
+        */}
         <main
           {...swipeHandlers}
-          className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-safe-nav overflow-hidden"
+          className="flex-1 min-h-0 mx-auto w-full max-w-7xl overflow-y-auto px-4 py-4 sm:px-6 pb-safe-nav"
           style={{ touchAction: "pan-y" }}
         >
           <div className="space-y-10">
@@ -233,7 +261,7 @@ export default function DashboardShell({ transactions }) {
 
                 {/* Wallet Cards — Dynamic Animated Reordering */}
                 <div className="relative h-[160px] sm:h-[220px] mb-16 w-full">
-                  <div className={`absolute top-0 bottom-0 w-[calc(50%-6px)] sm:w-[calc(50%-12px)] transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isDasun ? "translate-x-0 z-10" : "translate-x-[calc(100%+12px)] sm:translate-x-[calc(100%+24px)] z-0"}`}>
+                  <div className={`absolute top-0 bottom-0 w-[calc(50%-6px)] sm:w-[calc(50%-12px)] transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] gpu-promote ${isDasun ? "translate-x-0 z-10" : "translate-x-[calc(100%+12px)] sm:translate-x-[calc(100%+24px)] z-0"}`}>
                     <article
                       onClick={() => { haptic.select(); setCurrentUser("DASUN"); }}
                       className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between h-full w-full ${isDasun ? "scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(56,189,248,0.55)]" : "border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60 hover:opacity-80 hover:scale-[0.98]"}`}
@@ -252,7 +280,7 @@ export default function DashboardShell({ transactions }) {
                     </article>
                   </div>
 
-                  <div className={`absolute top-0 bottom-0 w-[calc(50%-6px)] sm:w-[calc(50%-12px)] transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isKavindya ? "translate-x-0 z-10" : "translate-x-[calc(100%+12px)] sm:translate-x-[calc(100%+24px)] z-0"}`} style={{ animationDelay: "0.1s" }}>
+                  <div className={`absolute top-0 bottom-0 w-[calc(50%-6px)] sm:w-[calc(50%-12px)] transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] gpu-promote ${isKavindya ? "translate-x-0 z-10" : "translate-x-[calc(100%+12px)] sm:translate-x-[calc(100%+24px)] z-0"}`}>
                     <article
                       onClick={() => { haptic.select(); setCurrentUser("KAVINDYA"); }}
                       className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between h-full w-full ${isKavindya ? "scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(246,211,101,0.45)]" : "border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60 hover:opacity-80 hover:scale-[0.98]"}`}
@@ -273,7 +301,7 @@ export default function DashboardShell({ transactions }) {
                 </div>
 
                 {/* Summary Cards */}
-                <div key={`summary-cards-${currentUser}`} className="animate-in fade-in duration-500 slide-in-from-bottom-2" style={{ animationFillMode: 'both', animationDelay: '0.1s' }}>
+                <div key={`summary-cards-${currentUser}`} className="animate-in fade-in duration-500 slide-in-from-bottom-2" style={{ animationFillMode: "both", animationDelay: "0.1s" }}>
                   <SummaryCards
                     totalIncome={income}
                     totalExpenses={expense}
@@ -285,7 +313,7 @@ export default function DashboardShell({ transactions }) {
                 </div>
 
                 {/* Recent Activity */}
-                <div key={`recent-activity-${currentUser}`} className="mt-12 animate-in fade-in duration-500 slide-in-from-bottom-2" style={{ animationFillMode: 'both', animationDelay: '0.15s' }}>
+                <div key={`recent-activity-${currentUser}`} className="mt-12 animate-in fade-in duration-500 slide-in-from-bottom-2" style={{ animationFillMode: "both", animationDelay: "0.15s" }}>
                   <div className="flex items-center justify-between mb-4 px-2">
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
@@ -306,7 +334,7 @@ export default function DashboardShell({ transactions }) {
                       recentTransactions.map((txn, idx) => (
                         <div
                           key={txn.id}
-                          className="animate-vibe click-pop group flex items-center justify-between p-3 sm:p-4 rounded-2xl transition-all hover:bg-white/[0.05] border border-transparent hover:border-white/10 cursor-pointer"
+                          className="animate-vibe click-pop group flex items-center justify-between p-3 sm:p-4 rounded-2xl transition-all hover:bg-white/[0.05] border border-transparent hover:border-white/10 cursor-pointer min-h-[52px]"
                           style={{ animationDelay: `${0.4 + idx * 0.1}s` }}
                           onClick={() => haptic.light()}
                         >
@@ -381,7 +409,7 @@ export default function DashboardShell({ transactions }) {
                     onMouseMove={logoutMagnet.onMouseMove}
                     onMouseLeave={logoutMagnet.onMouseLeave}
                     onClick={handleLogout}
-                    className="click-pop group relative flex w-full sm:w-auto items-center justify-center gap-3 overflow-hidden rounded-2xl bg-rose-500/10 px-8 py-4 border border-rose-500/30 transition-all duration-300 hover:bg-rose-500/20 hover:border-rose-500/50 hover:shadow-[0_0_20px_rgba(244,63,94,0.3)] font-black italic tracking-widest uppercase text-[11px] text-rose-400"
+                    className="click-pop group relative flex w-full sm:w-auto items-center justify-center gap-3 overflow-hidden rounded-2xl bg-rose-500/10 px-8 py-4 border border-rose-500/30 transition-all duration-300 hover:bg-rose-500/20 hover:border-rose-500/50 hover:shadow-[0_0_20px_rgba(244,63,94,0.3)] font-black italic tracking-widest uppercase text-[11px] text-rose-400 min-h-[52px]"
                   >
                     Logout
                   </button>
@@ -392,7 +420,7 @@ export default function DashboardShell({ transactions }) {
           </div>
         </main>
 
-        <QuickAddFAB 
+        <QuickAddFAB
           currentUser={currentUser}
           expenseCats={expenseCats}
           capitalCats={capitalCats}
