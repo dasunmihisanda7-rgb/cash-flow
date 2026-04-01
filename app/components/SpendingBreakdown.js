@@ -1,6 +1,13 @@
 "use client";
 import React, { useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from "recharts";
+import { CATEGORY_EMOJI } from "@/lib/constants";
+
+// Fallback emojis in case CATEGORY_EMOJI doesn't have a specific mapping
+const FALLBACK_EMOJIS = {
+  Salary: "💰", Freelance: "💻", Investments: "📈", Business: "🏢", Bonus: "🎁",
+  Food: "🍔", Transport: "🚕", Utilities: "⚡", Health: "🏥", Entertainment: "🎬", Education: "📚", Other: "📦"
+};
 
 // ── 1. ULTRA-PREMIUM MULTI-COLOR NEON PALETTE ─────────────────────
 const CATEGORY_COLORS = {
@@ -18,11 +25,6 @@ const CATEGORY_COLORS = {
   Entertainment: "#76FF03",// Lime Green
   Education: "#651FFF",   // Indigo/Violet
   Other: "#94A3B8",       // Slate
-};
-
-const CATEGORY_EMOJI = {
-  Salary: "💰", Freelance: "💻", Investments: "📈", Business: "🏢", Bonus: "🎁",
-  Food: "🍔", Transport: "🚕", Utilities: "⚡", Health: "🏥", Entertainment: "🎬", Education: "📚", Other: "📦"
 };
 
 const DEFAULT_INCOME_COLOR = "#00E676";
@@ -85,15 +87,20 @@ const renderActiveShape = (props) => {
   );
 };
 
-// ── 4. GRADIENT DEFINITIONS ─────────────────────
+// ── 4. 3D NEON GLASS TUBE GRADIENTS ─────────────────────
 const renderDefs = (data, isIncome, namespace) => {
   const allDefs = data.map((item) => {
     const fallbackColor = isIncome ? DEFAULT_INCOME_COLOR : DEFAULT_EXPENSE_COLOR;
     const color = CATEGORY_COLORS[item.name] || fallbackColor;
+
+    // Creating a 3D effect: dark edges, bright center, glowing bottom
     return (
       <linearGradient id={`${namespace}-color-${item.name}`} x1="0" y1="0" x2="1" y2="1" key={`${namespace}-${item.name}`}>
         <stop offset="0%" stopColor={color} stopOpacity={1} />
-        <stop offset="100%" stopColor={color} stopOpacity={0.6} />
+        {/* The inner highlight that makes it look like a glass tube */}
+        <stop offset="30%" stopColor="#ffffff" stopOpacity={0.2} />
+        <stop offset="60%" stopColor={color} stopOpacity={0.9} />
+        <stop offset="100%" stopColor={color} stopOpacity={0.4} />
       </linearGradient>
     );
   });
@@ -159,7 +166,7 @@ export default function SpendingBreakdown({ transactions }) {
                 isAnimationActive={false}
               />
 
-              {/* Main Data Chart */}
+              {/* Main Data Chart - 3D Tube Effect */}
               <Pie
                 activeIndex={activeIndexExp}
                 activeShape={renderActiveShape}
@@ -168,7 +175,8 @@ export default function SpendingBreakdown({ transactions }) {
                 outerRadius="90%"
                 paddingAngle={8}
                 cornerRadius={40}
-                stroke="none"
+                stroke="rgba(255,255,255,0.05)" // Inner subtle rim light
+                strokeWidth={1}
                 dataKey="value"
                 animationBegin={100}
                 animationDuration={1500}
@@ -181,7 +189,7 @@ export default function SpendingBreakdown({ transactions }) {
                     <Cell
                       key={`cell-${index}`}
                       fill={`url(#exp-color-${entry.name})`}
-                      style={{ filter: `drop-shadow(0px 0px 8px ${rawColor}66)` }}
+                      style={{ filter: `drop-shadow(0px 0px 10px ${rawColor}80)` }} // Glowing tube base
                     />
                   );
                 })}
@@ -205,7 +213,7 @@ export default function SpendingBreakdown({ transactions }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto relative z-10">
             {expenseData.slice(0, 4).map((item, i) => {
               const itemColor = CATEGORY_COLORS[item.name] || DEFAULT_EXPENSE_COLOR;
-              const emoji = CATEGORY_EMOJI[item.name] || "📦";
+              const emoji = (CATEGORY_EMOJI && CATEGORY_EMOJI[item.name]) || FALLBACK_EMOJIS[item.name] || "📦";
               return (
                 <div key={i} className="flex items-center justify-between p-3 rounded-[18px] bg-white/[0.03] backdrop-blur-md border border-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_4px_10px_rgba(0,0,0,0.2)] hover:bg-white/[0.06] transition-colors cursor-default">
                   <div className="flex items-center gap-3">
@@ -260,7 +268,7 @@ export default function SpendingBreakdown({ transactions }) {
                 isAnimationActive={false}
               />
 
-              {/* Main Data Chart */}
+              {/* Main Data Chart - 3D Tube Effect */}
               <Pie
                 activeIndex={activeIndexInc}
                 activeShape={renderActiveShape}
@@ -269,7 +277,8 @@ export default function SpendingBreakdown({ transactions }) {
                 outerRadius="90%"
                 paddingAngle={8}
                 cornerRadius={40}
-                stroke="none"
+                stroke="rgba(255,255,255,0.05)" // Inner subtle rim light
+                strokeWidth={1}
                 dataKey="value"
                 animationBegin={400}
                 animationDuration={1500}
@@ -282,7 +291,7 @@ export default function SpendingBreakdown({ transactions }) {
                     <Cell
                       key={`cell-${index}`}
                       fill={`url(#inc-color-${entry.name})`}
-                      style={{ filter: `drop-shadow(0px 0px 8px ${rawColor}66)` }}
+                      style={{ filter: `drop-shadow(0px 0px 10px ${rawColor}80)` }} // Glowing tube base
                     />
                   );
                 })}
@@ -306,7 +315,7 @@ export default function SpendingBreakdown({ transactions }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto relative z-10">
             {incomeData.slice(0, 4).map((item, i) => {
               const itemColor = CATEGORY_COLORS[item.name] || DEFAULT_INCOME_COLOR;
-              const emoji = CATEGORY_EMOJI[item.name] || "📦";
+              const emoji = (CATEGORY_EMOJI && CATEGORY_EMOJI[item.name]) || FALLBACK_EMOJIS[item.name] || "📦";
               return (
                 <div key={i} className="flex items-center justify-between p-3 rounded-[18px] bg-white/[0.03] backdrop-blur-md border border-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_4px_10px_rgba(0,0,0,0.2)] hover:bg-white/[0.06] transition-colors cursor-default">
                   <div className="flex items-center gap-3">
