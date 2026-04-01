@@ -38,7 +38,12 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
           }}
         >
           {/* Unified Command Bar Container */}
-          <div className="flex items-center gap-1.5 p-1.5">
+          <div className="flex items-center gap-1.5 p-1.5 rounded-full bg-[#161b27]/60 border border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_10px_30px_rgba(0,0,0,0.5)] ring-1 ring-white/5"
+            style={{
+              WebkitBackdropFilter: "blur(12px)",
+              backdropFilter: "blur(12px)",
+            }}
+          >
             {/* User toggle pill */}
             <button
               onClick={toggleUser}
