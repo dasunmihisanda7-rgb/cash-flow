@@ -118,7 +118,7 @@ export default function QuickAddFAB({ currentUser, expenseCats, capitalCats, act
 
   return (
     <>
-      <div className={`fixed bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+4rem)] right-4 sm:right-[calc(50%-210px)] z-[90] flex justify-end pointer-events-none transition-all duration-300 ${activeTab === 'CONTROL' ? 'opacity-0 translate-y-10 scale-90' : 'opacity-100 translate-y-0 scale-100'}`}>
+      <div className={`fixed bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+5rem)] right-4 sm:right-[calc(50%-210px)] z-[90] flex justify-end pointer-events-none transition-all duration-300 ${activeTab === 'CONTROL' ? 'opacity-0 translate-y-10 scale-90' : 'opacity-100 translate-y-0 scale-100'}`}>
         <button
           onClick={openSheet}
           aria-label="Quick add transaction"
@@ -153,7 +153,7 @@ export default function QuickAddFAB({ currentUser, expenseCats, capitalCats, act
               <div className="w-12 h-1.5 bg-white/20 rounded-full" />
             </div>
 
-            <div className="px-6 py-2 sm:px-8 overflow-y-auto w-full flex-1 touch-pan-y">
+            <div className="px-6 py-2 sm:px-8 overflow-y-auto w-full flex-1 min-h-0 touch-pan-y">
               {/* Sticky Header */}
               <div className="flex items-center justify-between mb-6 sticky top-0 bg-[#080b12]/95 pt-2 pb-4 z-20 border-b border-white/5">
                 <h2 id="quick-add-title" className="text-[14px] sm:text-base font-black italic tracking-widest text-white uppercase flex items-center gap-2">

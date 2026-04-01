@@ -232,7 +232,7 @@ export default function DashboardShell({ transactions }) {
                 id="panel-summary"
                 role="tabpanel"
                 aria-labelledby="tab-summary"
-                key={`summary-${currentUser}-${selectedMonth}`}
+                key={`summary-${selectedMonth}`}
                 className="space-y-10"
               >
                 {/* Health Badge */}
@@ -287,7 +287,7 @@ export default function DashboardShell({ transactions }) {
                 </div>
 
                 {/* Summary Cards */}
-                <div className="animate-vibe" style={{ animationDelay: "0.2s" }}>
+                <div key={`summary-cards-${currentUser}`} className="animate-in fade-in duration-500 slide-in-from-bottom-2" style={{ animationFillMode: 'both', animationDelay: '0.1s' }}>
                   <SummaryCards
                     totalIncome={income}
                     totalExpenses={expense}
@@ -299,7 +299,7 @@ export default function DashboardShell({ transactions }) {
                 </div>
 
                 {/* Recent Activity */}
-                <div className="mt-12 animate-vibe" style={{ animationDelay: "0.3s" }}>
+                <div key={`recent-activity-${currentUser}`} className="mt-12 animate-in fade-in duration-500 slide-in-from-bottom-2" style={{ animationFillMode: 'both', animationDelay: '0.15s' }}>
                   <div className="flex items-center justify-between mb-4 px-2">
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.2)]">

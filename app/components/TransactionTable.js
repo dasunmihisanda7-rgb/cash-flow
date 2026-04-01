@@ -588,13 +588,13 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-2.25a2.25 2.25 0 00-2.25-2.25h-4.5a2.25 2.25 0 00-2.25 2.25v2.25m6.75 0h-13.5" />
                   </svg>
-                  <span className="text-[9px] font-black italic tracking-widest uppercase">Delete</span>
+                  <span className="text-[10px] sm:text-[11px] font-black italic tracking-[0.1em] uppercase">Delete</span>
                 </button>
               </div>
 
               {/* Sliding Content Row */}
               <div
-                className={`flex items-center justify-between p-3 sm:p-4 cursor-grab active:cursor-grabbing swipe-row-content transition-colors ${isEven ? 'bg-[#161b27]/40' : 'bg-[#161b27]/80'}`}
+                className={`flex items-center justify-between p-3 sm:p-4 cursor-grab active:cursor-grabbing swipe-row-content transition-colors bg-transparent border-b border-white/[0.03] hover:bg-white/[0.02]`}
                 style={{
                   transform: `translateX(${isSwipedOpen ? -90 : currentOffset}px)`,
                   transition: rowStartPositions.current[txn.id] != null
@@ -637,13 +637,13 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
                         {txn.description.toLowerCase()}
                       </p>
                     )}
-                    <p className="text-[9px] sm:text-[10px] font-bold italic tracking-widest text-slate-500 uppercase truncate mt-0.5 ml-2 sm:ml-0">
+                    <p className="text-[10px] sm:text-[11px] font-bold italic tracking-[0.1em] text-slate-500 uppercase truncate mt-0.5 ml-2 sm:ml-0">
                       {txn.category} <span className="mx-1 opacity-40">•</span> {fmtDate(txn.date)}
                     </p>
                   </div>
                 </div>
                 
-                <div className={`text-right text-sm sm:text-base font-bold tracking-tight shrink-0 ml-4 ${txn.type === "income" ? "text-emerald-400" : "text-rose-400"}`}>
+                <div className={`text-right text-sm sm:text-base font-bold tracking-tight tabular-nums shrink-0 ml-4 ${txn.type === "income" ? "text-emerald-400" : "text-rose-400"}`}>
                   {inlineEditAmount === txn.id ? (
                     <input
                       autoFocus
@@ -656,7 +656,7 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
                         if (e.key === 'Escape') setInlineEditAmount(null);
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      className="text-sm sm:text-base font-bold tracking-tight bg-[#080b12]/90 border border-sky-500/50 rounded-md px-2 py-0.5 outline-none w-24 sm:w-28 text-right shadow-[0_0_10px_rgba(56,189,248,0.2)]"
+                      className="text-sm sm:text-base font-bold tracking-tight bg-[#080b12]/90 border border-sky-500/50 rounded-md px-2 py-0.5 outline-none w-24 sm:w-28 text-right shadow-[0_0_10px_rgba(56,189,248,0.2)] tabular-nums"
                     />
                   ) : (
                     <div

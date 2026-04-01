@@ -92,8 +92,19 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
         <nav
           role="tablist"
           aria-label="Main Navigation"
-          className="bg-[#080b12]/60 backdrop-blur-3xl saturate-[2] rounded-[2rem] p-2 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border border-white/10 ring-1 ring-white/5"
+          className="bg-[#080b12]/60 backdrop-blur-3xl saturate-[2] rounded-[2rem] p-2 relative flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border border-white/10 ring-1 ring-white/5"
         >
+          {/* Sliding Active Pill */}
+          <div
+            className="absolute top-2 bottom-2 bg-white/[0.08] rounded-full transition-transform duration-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] border border-white/[0.05] pointer-events-none"
+            style={{ 
+              width: `calc((100% - 16px) / ${tabs.length})`,
+              transform: `translateX(calc(${tabs.indexOf(activeTab)} * 100%))`,
+              transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)"
+            }}
+            aria-hidden="true"
+          />
+
           {tabs.map((tab) => {
             const isActive = activeTab === tab;
             return (
@@ -106,8 +117,8 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
                   if (!isActive) haptic.medium();
                   setActiveTab(tab);
                 }}
-                className={`click-pop no-select relative flex-1 flex flex-col items-center justify-center min-h-[52px] py-3 rounded-full transition-all duration-300
-                  ${isActive ? "bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" : "hover:bg-white/5"}
+                className={`click-pop no-select relative z-10 flex-1 flex flex-col items-center justify-center min-h-[52px] py-3 rounded-full transition-all duration-300
+                  ${isActive ? "" : "hover:bg-white/5"}
                 `}
               >
                 {isActive && (
