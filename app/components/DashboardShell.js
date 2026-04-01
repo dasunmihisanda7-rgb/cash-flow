@@ -410,6 +410,7 @@ export default function DashboardShell({ transactions }) {
           currentUser={currentUser}
           expenseCats={expenseCats}
           capitalCats={capitalCats}
+          activeTab={activeTab}
         />
       </div>
     </>
