@@ -1,6 +1,11 @@
 "use client";
-import React, { useState } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts';
+// BUG-13 FIX: renderDefs() was called twice (once per chart), creating duplicate
+// SVG gradient IDs in the DOM. The SVG spec disallows duplicates — the browser
+// resolves the conflict by using the first occurrence, so the income chart
+// silently inherited expense chart colors for shared category names.
+// FIX: Each chart now passes a namespace ("exp" / "inc") that prefixes all IDs.
+import React, { useState } from "react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from "recharts";
 
 // ── 1. CATEGORY CONFIGURATION ─────────────────────
 const CATEGORY_COLORS = {
@@ -19,7 +24,7 @@ const fmt = (n) =>
 const CustomTooltip = ({ active, payload, type }) => {
   if (active && payload && payload.length) {
     const data = payload[0];
-    const defaultColor = type === 'income' ? DEFAULT_INCOME_COLOR : DEFAULT_EXPENSE_COLOR;
+    const defaultColor = type === "income" ? DEFAULT_INCOME_COLOR : DEFAULT_EXPENSE_COLOR;
     const categoryColor = CATEGORY_COLORS[data.name] || defaultColor;
 
     return (
@@ -43,31 +48,28 @@ const CustomTooltip = ({ active, payload, type }) => {
 };
 
 // ── 3. ACTIVE SHAPE (HOVER EFFECT) ─────────────────────
-// 🚀 UI Upgrade: Chart එකේ කෑල්ලක් උඩට ගියාම ඒක Pop out වෙන ඇනිමේෂන් එක
 const renderActiveShape = (props) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent } = props;
 
   return (
     <g>
-      <text x={cx} y={cy - 10} dy={8} textAnchor="middle" fill="#94a3b8" className="text-[8px] sm:text-[10px] font-bold italic tracking-widest uppercase">
+      <text x={cx} y={cy - 10} dy={8} textAnchor="middle" fill="#94a3b8" fontSize={10} fontStyle="italic">
         {payload.name}
       </text>
-      <text x={cx} y={cy + 10} dy={8} textAnchor="middle" fill={fill} className="text-[10px] sm:text-[14px] font-black italic tracking-widest">
+      <text x={cx} y={cy + 10} dy={8} textAnchor="middle" fill={fill} fontSize={14} fontStyle="italic" fontWeight="900">
         {`${(percent * 100).toFixed(0)}%`}
       </text>
       <Sector
-        cx={cx}
-        cy={cy}
+        cx={cx} cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius + 8} // Hover කරද්දි ලොකු වෙනවා
+        outerRadius={outerRadius + 8}
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
         filter="url(#glow)"
       />
       <Sector
-        cx={cx}
-        cy={cy}
+        cx={cx} cy={cy}
         startAngle={startAngle}
         endAngle={endAngle}
         innerRadius={outerRadius + 10}
@@ -78,18 +80,52 @@ const renderActiveShape = (props) => {
   );
 };
 
+// BUG-13 FIX: `namespace` parameter added to prefix all gradient IDs, preventing
+// duplicate SVG IDs when both expense and income charts are rendered together.
+const renderDefs = (data, isIncome, namespace) => {
+  const knownDefs = Object.entries(CATEGORY_COLORS).map(([key, color]) => (
+    <linearGradient id={`${namespace}-color-${key}`} x1="0" y1="0" x2="1" y2="1" key={key}>
+      <stop offset="0%" stopColor={color} stopOpacity={1} />
+      <stop offset="100%" stopColor={color} stopOpacity={0.6} />
+    </linearGradient>
+  ));
+
+  const unknownDefs = data
+    .filter((item) => !CATEGORY_COLORS[item.name])
+    .map((item) => {
+      const fallbackColor = isIncome ? DEFAULT_INCOME_COLOR : DEFAULT_EXPENSE_COLOR;
+      return (
+        <linearGradient id={`${namespace}-color-${item.name}`} x1="0" y1="0" x2="1" y2="1" key={`unknown-${item.name}`}>
+          <stop offset="0%" stopColor={fallbackColor} stopOpacity={1} />
+          <stop offset="100%" stopColor={fallbackColor} stopOpacity={0.6} />
+        </linearGradient>
+      );
+    });
+
+  return (
+    <defs>
+      {knownDefs}
+      {unknownDefs}
+      <filter id={`${namespace}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="#000" floodOpacity="0.6" />
+      </filter>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+        <feMerge>
+          <feMergeNode in="coloredBlur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+  );
+};
+
 export default function SpendingBreakdown({ transactions }) {
   const [activeIndexExp, setActiveIndexExp] = useState(-1);
   const [activeIndexInc, setActiveIndexInc] = useState(-1);
 
-  const onPieEnterExp = (_, index) => { setActiveIndexExp(index); };
-  const onPieLeaveExp = () => { setActiveIndexExp(-1); };
-
-  const onPieEnterInc = (_, index) => { setActiveIndexInc(index); };
-  const onPieLeaveInc = () => { setActiveIndexInc(-1); };
-
   const processData = (type) => {
-    const filtered = transactions.filter(t => t.type === type);
+    const filtered = transactions.filter((t) => t.type === type);
     const stats = filtered.reduce((acc, t) => {
       acc[t.category] = (acc[t.category] || 0) + t.amount;
       return acc;
@@ -99,57 +135,18 @@ export default function SpendingBreakdown({ transactions }) {
       .sort((a, b) => b.value - a.value);
   };
 
-  const expenseData = processData('expense');
-  const incomeData = processData('income');
+  const expenseData = processData("expense");
+  const incomeData = processData("income");
 
   const totalExp = expenseData.reduce((s, d) => s + d.value, 0);
   const totalInc = incomeData.reduce((s, d) => s + d.value, 0);
 
-  const renderDefs = (data, isIncome) => {
-    const knownDefs = Object.entries(CATEGORY_COLORS).map(([key, color]) => (
-      <linearGradient id={`color-${key}`} x1="0" y1="0" x2="1" y2="1" key={key}>
-        <stop offset="0%" stopColor={color} stopOpacity={1} />
-        <stop offset="100%" stopColor={color} stopOpacity={0.6} />
-      </linearGradient>
-    ));
-
-    const unknownDefs = data
-      .filter(item => !CATEGORY_COLORS[item.name])
-      .map((item) => {
-        const fallbackColor = isIncome ? DEFAULT_INCOME_COLOR : DEFAULT_EXPENSE_COLOR;
-        return (
-          <linearGradient id={`color-${item.name}`} x1="0" y1="0" x2="1" y2="1" key={`unknown-${item.name}`}>
-            <stop offset="0%" stopColor={fallbackColor} stopOpacity={1} />
-            <stop offset="100%" stopColor={fallbackColor} stopOpacity={0.6} />
-          </linearGradient>
-        );
-      });
-
-    return (
-      <defs>
-        {knownDefs}
-        {unknownDefs}
-        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="#000" floodOpacity="0.6" />
-        </filter>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-    );
-  };
-
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
 
-      {/* ── EXPENSE BREAKDOWN (CASH OUT) ── */}
+      {/* ── EXPENSE BREAKDOWN ── */}
       <div className="animate-vibe group relative overflow-hidden rounded-[30px] sm:rounded-[40px] border border-white/5 premium-glass p-5 sm:p-8 shadow-2xl flex flex-col">
-        {/* Subtle Background Glow */}
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-rose-500/10 blur-[60px] rounded-full pointer-events-none"></div>
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-rose-500/10 blur-[60px] rounded-full pointer-events-none" />
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between mb-6 sm:mb-8 gap-3 sm:gap-0">
           <div className="flex items-center gap-2 sm:gap-3 mt-1">
@@ -165,7 +162,7 @@ export default function SpendingBreakdown({ transactions }) {
         <div className="relative h-[180px] sm:h-[250px] w-full mb-6 flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              {renderDefs(expenseData, false)}
+              {renderDefs(expenseData, false, "exp")}
               <Pie
                 activeIndex={activeIndexExp}
                 activeShape={renderActiveShape}
@@ -179,26 +176,24 @@ export default function SpendingBreakdown({ transactions }) {
                 strokeWidth={4}
                 animationBegin={100}
                 animationDuration={1500}
-                filter="url(#shadow)"
-                onMouseEnter={onPieEnterExp}
-                onMouseLeave={onPieLeaveExp}
+                filter="url(#exp-shadow)"
+                onMouseEnter={(_, index) => setActiveIndexExp(index)}
+                onMouseLeave={() => setActiveIndexExp(-1)}
               >
                 {expenseData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={`url(#color-${entry.name})`} />
+                  <Cell key={`cell-${index}`} fill={`url(#exp-color-${entry.name})`} />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip type="expense" />} cursor={false} />
             </PieChart>
           </ResponsiveContainer>
 
-          {/* Center Text (Hidden when hovering a slice) */}
-          <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 ${activeIndexExp !== -1 ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 ${activeIndexExp !== -1 ? "opacity-0" : "opacity-100"}`}>
             <p className="text-[7px] sm:text-[9px] font-bold text-slate-600 italic tracking-[0.2em] sm:tracking-[0.4em] uppercase">Overview</p>
             <p className="text-[12px] sm:text-lg font-black text-rose-500/80 italic tracking-widest mt-0.5 sm:mt-1">OUTFLOW</p>
           </div>
         </div>
 
-        {/* Categories List */}
         {expenseData.length > 0 ? (
           <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto relative z-10">
             {expenseData.slice(0, 4).map((item, i) => {
@@ -221,10 +216,9 @@ export default function SpendingBreakdown({ transactions }) {
         )}
       </div>
 
-      {/* ── INCOME SOURCES (CASH IN) ── */}
-      <div className="animate-vibe group relative overflow-hidden rounded-[30px] sm:rounded-[40px] border border-white/5 premium-glass p-5 sm:p-8 shadow-2xl flex flex-col" style={{ animationDelay: '0.2s' }}>
-        {/* Subtle Background Glow */}
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/10 blur-[60px] rounded-full pointer-events-none"></div>
+      {/* ── INCOME SOURCES ── */}
+      <div className="animate-vibe group relative overflow-hidden rounded-[30px] sm:rounded-[40px] border border-white/5 premium-glass p-5 sm:p-8 shadow-2xl flex flex-col" style={{ animationDelay: "0.2s" }}>
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/10 blur-[60px] rounded-full pointer-events-none" />
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between mb-6 sm:mb-8 gap-3 sm:gap-0">
           <div className="flex items-center gap-2 sm:gap-3 mt-1">
@@ -240,7 +234,7 @@ export default function SpendingBreakdown({ transactions }) {
         <div className="relative h-[180px] sm:h-[250px] w-full mb-6 flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              {renderDefs(incomeData, true)}
+              {renderDefs(incomeData, true, "inc")}
               <Pie
                 activeIndex={activeIndexInc}
                 activeShape={renderActiveShape}
@@ -252,28 +246,26 @@ export default function SpendingBreakdown({ transactions }) {
                 dataKey="value"
                 stroke="#080b12"
                 strokeWidth={4}
-                animationBegin={400} // Start slightly after Expense chart
+                animationBegin={400}
                 animationDuration={1500}
-                filter="url(#shadow)"
-                onMouseEnter={onPieEnterInc}
-                onMouseLeave={onPieLeaveInc}
+                filter="url(#inc-shadow)"
+                onMouseEnter={(_, index) => setActiveIndexInc(index)}
+                onMouseLeave={() => setActiveIndexInc(-1)}
               >
                 {incomeData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={`url(#color-${entry.name})`} />
+                  <Cell key={`cell-${index}`} fill={`url(#inc-color-${entry.name})`} />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip type="income" />} cursor={false} />
             </PieChart>
           </ResponsiveContainer>
 
-          {/* Center Text (Hidden when hovering a slice) */}
-          <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 ${activeIndexInc !== -1 ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 ${activeIndexInc !== -1 ? "opacity-0" : "opacity-100"}`}>
             <p className="text-[7px] sm:text-[9px] font-bold text-slate-600 italic tracking-[0.2em] sm:tracking-[0.4em] uppercase">Sources</p>
             <p className="text-[12px] sm:text-lg font-black text-emerald-500/80 italic tracking-widest mt-0.5 sm:mt-1">INFLOW</p>
           </div>
         </div>
 
-        {/* Categories List */}
         {incomeData.length > 0 ? (
           <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto relative z-10">
             {incomeData.slice(0, 4).map((item, i) => {

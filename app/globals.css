@@ -54,11 +54,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior-y: none;
 
-  /* 🚀 iOS Typography Fixes */
+  /* iOS Typography Fixes */
   text-rendering: optimizeLegibility;
   -webkit-text-stroke: 0;
   font-variant-numeric: tabular-nums;
-  /* 🟡 අංක ලෝඩ් වෙද්දි ගැස්සෙන එක මේකෙන් නවතිනවා */
 }
 
 /* Subtle scrollbar styling */
@@ -80,14 +79,14 @@ body {
   background: #38bdf8;
 }
 
-/* ─── iOS Fix: Native App Utilities 🚀 ────────────────────────────── */
+/* ─── iOS Fix: Native App Utilities ────────────────────────────────── */
 .no-select {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
 }
 
-/* ─── 🚀 UI Upgrade: Premium Glassmorphism 2.0 (3D Feel) ──────────── */
+/* ─── Premium Glassmorphism 2.0 (3D Feel) ──────────────────────────── */
 /* Tier-1: Used for always-fixed UI chrome (nav bars) */
 .premium-glass {
   background-color: rgba(11, 15, 24, 0.80) !important;
@@ -96,9 +95,6 @@ body {
   -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 20px 40px -10px rgba(0, 0, 0, 0.8) !important;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  /* Force GPU layer promotion */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
 }
 
 /* Tier-2: Used for scrollable content cards (Better FPS) */
@@ -111,6 +107,14 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/*
+ * PERF-03 FIX: The previous rule `.sticky, [class*="fixed"] { will-change: transform }`
+ * promoted EVERY element whose class string contained "fixed" (including all the
+ * decorative glow divs) to its own GPU compositing layer, wasting significant
+ * GPU memory on mobile. That rule has been removed.
+ *
+ * Use .gpu-promote *surgically* only on truly animated, hardware-accelerated elements.
+ */
 .gpu-promote {
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -118,7 +122,7 @@ body {
   -webkit-backface-visibility: hidden;
 }
 
-/* ─── 🚀 UI Upgrade: Premium Text Gradients ────────────────────────── */
+/* ─── Premium Text Gradients ────────────────────────────────────────── */
 .text-gradient-premium {
   background: linear-gradient(to right, #38bdf8, #c084fc);
   -webkit-background-clip: text;
@@ -139,7 +143,7 @@ body {
   paint-order: stroke fill;
 }
 
-/* ─── 🚀 UI Upgrade: Micro Animations (Button Clicks) ──────────────── */
+/* ─── Micro Animations (Button Clicks) ─────────────────────────────── */
 .click-pop {
   transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -148,7 +152,7 @@ body {
   transform: scale(0.94);
 }
 
-/* ─── 📱 iOS iPhone Safe Area Optimizations ────────────────────────── */
+/* ─── iOS iPhone Safe Area Optimizations ───────────────────────────── */
 .ios-safe-top {
   padding-top: max(1.5rem, env(safe-area-inset-top));
 }
@@ -158,30 +162,25 @@ body {
 }
 
 .pb-safe-nav {
-  /* 🔴 iPhone 14 Plus Fix: 6.5rem -> 7.5rem (යටින් Card එක කැපෙන එක හදන්න) */
+  /* iPhone 14 Plus Fix: enough padding to clear the floating bottom nav */
   padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
 }
 
-/* ─── Scroll Performance Fixes ────────────────────────────── */
+/* ─── Scroll Performance Fixes ─────────────────────────────────────── */
 main {
   -webkit-overflow-scrolling: touch;
   overflow-y: auto;
   overscroll-behavior-y: contain;
 }
 
-.sticky,
-[class*="fixed"] {
-  will-change: transform;
-}
-
-/* ─── Form element base overrides ────────────────────────────────────────── */
+/* ─── Form element base overrides ──────────────────────────────────── */
 input,
 select,
 textarea {
   color-scheme: dark;
 }
 
-/* ─── Page Transition Animations ────────────────────────────── */
+/* ─── Page Transition Animations ───────────────────────────────────── */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -194,16 +193,18 @@ textarea {
   }
 }
 
+/*
+ * CSS-01 FIX: `will-change` has been removed from .animate-vibe.
+ * The `[data-settled]` reset was defined in CSS but never applied via JS,
+ * meaning every .animate-vibe element permanently held a GPU layer hint.
+ * Since this animation fires once (short-lived), `will-change` provides no
+ * benefit and wastes GPU memory. The animation still works perfectly without it.
+ */
 .animate-vibe {
   animation: fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  will-change: opacity, transform;
 }
 
-.animate-vibe[data-settled] {
-  will-change: auto;
-}
-
-/* ─── Cyberpunk Skeleton Shimmer (Sprint 1) ────────────────────────────── */
+/* ─── Cyberpunk Skeleton Shimmer ────────────────────────────────────── */
 @keyframes skeleton-pulse {
   0% {
     background-position: -200% center;
@@ -218,9 +219,7 @@ textarea {
   background: linear-gradient(90deg,
       rgba(255, 255, 255, 0.02) 0%,
       rgba(56, 189, 248, 0.08) 30%,
-      /* sky-400 neon flash */
       rgba(192, 132, 252, 0.08) 50%,
-      /* purple-400 neon flash */
       rgba(255, 255, 255, 0.02) 100%);
   background-size: 200% 100%;
   animation: skeleton-pulse 2s ease-in-out infinite;
@@ -237,15 +236,13 @@ textarea {
   }
 }
 
-/* ─── Bug #5 Fix: Swipe Row Utilities ────────────────────────────────────── */
+/* ─── Swipe Row Utilities ───────────────────────────────────────────── */
 /*
- * Problem: .click-pop:active { transform: scale(0.94) } on the delete trigger
- * button INSIDE the swipe panel resets the parent's transform transition timing,
- * causing a visible jitter. We replace it with a color-only feedback.
- *
- * Problem: touch-action on the list container tells the browser that this area
+ * touch-action: pan-y on the list container tells the browser that this area
  * scrolls vertically only, helping the OS-level gesture engine hand off
  * horizontal touches to our JS handlers rather than to page scroll.
+ * .click-pop is NOT applied to the swipe delete button to avoid :active scale
+ * conflicting with the parent translateX transform.
  */
 
 /* Applied to the outer swipe row container — horizontal gesture is handled by JS */
@@ -260,8 +257,7 @@ textarea {
   touch-action: pan-y;
 }
 
-/* ─── Animate-in utility (for modal fade-in) ─────────────────────────────── */
-/* If animate-in / fade-in are not available from a plugin, define them here  */
+/* ─── Animate-in utility (for modal fade-in) ────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.97) translateY(8px); }
   to   { opacity: 1; transform: scale(1)    translateY(0);   }
@@ -269,4 +265,14 @@ textarea {
 
 .animate-in.fade-in {
   animation: fadeIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* ─── Toast notification slide-up ──────────────────────────────────── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.toast-animate {
+  animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }

@@ -1,8 +1,8 @@
 "use client";
 import { useState, useRef } from "react";
 import { addTransaction } from "@/app/actions";
-import { useHaptic } from "@/lib/useHaptic"; // 🚀 අලුත්
-import { useParticleBurst } from "@/lib/useParticleBurst"; // 🚀 අලුත්
+import { useHaptic } from "@/lib/useHaptic";
+import { useParticleBurst } from "@/lib/useParticleBurst";
 
 const today = () => new Date().toISOString().split("T")[0];
 
@@ -11,10 +11,13 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
   const [pending, setPending] = useState(false);
   const [success, setSuccess] = useState(false);
   const formRef = useRef(null);
-  const submitBtnRef = useRef(null); // 🚀 Particle burst එක පටන් ගන්න තැන
+  const submitBtnRef = useRef(null);
+  // UX-06 FIX: Ref-based guard prevents double-submit in the microtask gap
+  // before setPending(true) can re-render the disabled button.
+  const isSubmittingRef = useRef(false);
 
-  const haptic = useHaptic(); // 🚀 Haptic Initialize
-  const { burst } = useParticleBurst(); // 🚀 Particle Initialize
+  const haptic = useHaptic();
+  const { burst } = useParticleBurst();
   const [newCatInput, setNewCatInput] = useState("");
 
   const isIncome = type === "income";
@@ -22,6 +25,9 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
 
   async function handleSubmit(e) {
     e.preventDefault();
+    // UX-06 FIX: Synchronous guard fires before any state update
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setPending(true);
     setSuccess(false);
 
@@ -30,19 +36,19 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
     try {
       await addTransaction(formData);
 
-      // 🚀 Sprint 3: Success Effects
-      haptic.success(); // සාර්ථක බව දැනෙන්න Vibrate කරයි
-      if (type === "income") burst(submitBtnRef.current); // සල්ලි ලැබුණම මල්වෙඩි!
+      haptic.success();
+      if (type === "income") burst(submitBtnRef.current);
 
       setSuccess(true);
       formRef.current.reset();
       setType("expense");
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
-      haptic.error(); // වැරදීමක් වුණොත් දැනෙන්න Vibrate කරයි
+      haptic.error();
       alert("Error adding transaction: " + error.message);
     } finally {
       setPending(false);
+      isSubmittingRef.current = false;
     }
   }
 
@@ -52,22 +58,27 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
     if (!val) return;
 
     if (isIncome) {
-      if (!capitalCats.includes(val)) {
-        setCapitalCats([...capitalCats, val]);
-      }
+      if (!capitalCats.includes(val)) setCapitalCats([...capitalCats, val]);
     } else {
-      if (!expenseCats.includes(val)) {
-        setExpenseCats([...expenseCats, val]);
-      }
+      if (!expenseCats.includes(val)) setExpenseCats([...expenseCats, val]);
     }
     setNewCatInput("");
   };
 
+  // BUG-11 FIX: When the currently-selected category is deleted, reset the form's
+  // category <select> to the first available option so the next submit doesn't
+  // send a stale/invalid category value to Firestore.
   const deleteCat = (cat) => {
     if (isIncome) {
-      setCapitalCats(capitalCats.filter(c => c !== cat));
+      setCapitalCats(capitalCats.filter((c) => c !== cat));
     } else {
-      setExpenseCats(expenseCats.filter(c => c !== cat));
+      setExpenseCats(expenseCats.filter((c) => c !== cat));
+    }
+
+    // Reset the category field if the deleted cat was currently selected
+    const categorySelect = formRef.current?.querySelector('select[name="category"]');
+    if (categorySelect && categorySelect.value === cat) {
+      categorySelect.selectedIndex = 0;
     }
   };
 
@@ -80,7 +91,7 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
       {/* ── 1. DATA ENTRY TERMINAL ── */}
       <section className="animate-vibe rounded-[30px] sm:rounded-[40px] border border-white/5 premium-glass p-5 sm:p-10 shadow-2xl relative overflow-hidden">
 
-        <div className={`absolute -top-10 -left-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none ${isIncome ? 'bg-emerald-500/10' : 'bg-rose-500/10'}`}></div>
+        <div className={`absolute -top-10 -left-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none ${isIncome ? "bg-emerald-500/10" : "bg-rose-500/10"}`} />
 
         <div className={`absolute top-0 right-4 sm:right-10 rounded-b-xl sm:rounded-b-2xl border-b border-x ${userBorder} bg-[#080b12]/80 px-4 sm:px-6 py-1.5 sm:py-2 backdrop-blur-md z-20 shadow-[0_5px_15px_rgba(0,0,0,0.5)]`}>
           <p className={`text-[8px] sm:text-[10px] font-black italic tracking-[0.3em] uppercase ${userColor}`}>
@@ -89,7 +100,7 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
         </div>
 
         <div className="mb-8 flex items-center gap-4 border-b border-white/5 pb-6 mt-6 sm:mt-2 relative z-10">
-          <div className={`flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl border ${isIncome ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-rose-500/10 border-rose-500/20 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.2)]'} transition-colors duration-500`}>
+          <div className={`flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl border ${isIncome ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]" : "bg-rose-500/10 border-rose-500/20 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.2)]"} transition-colors duration-500`}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6 sm:h-7 sm:w-7">
               <path d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" />
             </svg>
@@ -102,8 +113,8 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
 
         {success && (
           <div className="mb-6 flex items-center justify-center gap-3 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-[9px] sm:text-[11px] font-black italic tracking-[0.3em] text-emerald-400 uppercase animate-pulse shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]"></span>
-            TRANSACTION VERIFIED & LOGGED
+            <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]" />
+            TRANSACTION VERIFIED &amp; LOGGED
           </div>
         )}
 
@@ -113,28 +124,30 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
           <div className="grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2">
 
             <div className="sm:col-span-2">
-              <label className="mb-2 block text-[9px] sm:text-[11px] font-black italic tracking-[0.2em] text-slate-400 uppercase ml-1">Description</label>
-              <input name="description" type="text" required placeholder="ENTRY IDENTIFIER..." className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-[16px] sm:text-[13px] font-bold italic tracking-widest text-white outline-none focus:border-transparent focus:ring-2 focus:ring-fuchsia-500/50 focus:bg-white/5 transition-all uppercase placeholder:text-slate-600 shadow-inner" />
+              <label htmlFor="form-description" className="mb-2 block text-[9px] sm:text-[11px] font-black italic tracking-[0.2em] text-slate-400 uppercase ml-1">Description</label>
+              {/* UX-02 note: text-[16px] prevents iOS Safari auto-zoom on all form inputs */}
+              <input id="form-description" name="description" type="text" required placeholder="ENTRY IDENTIFIER..." className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-[16px] sm:text-[13px] font-bold italic tracking-widest text-white outline-none focus:border-transparent focus:ring-2 focus:ring-fuchsia-500/50 focus:bg-white/5 transition-all uppercase placeholder:text-slate-600 shadow-inner" />
             </div>
 
             <div>
-              <label className="mb-2 block text-[9px] sm:text-[11px] font-black italic tracking-[0.2em] text-slate-400 uppercase ml-1">Amount (LKR)</label>
-              <input name="amount" type="number" step="0.01" required placeholder="0.00" className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-[16px] sm:text-[14px] font-black italic text-white outline-none focus:border-transparent focus:ring-2 focus:ring-fuchsia-500/50 focus:bg-white/5 transition-all placeholder:text-slate-600 shadow-inner" />
+              <label htmlFor="form-amount" className="mb-2 block text-[9px] sm:text-[11px] font-black italic tracking-[0.2em] text-slate-400 uppercase ml-1">Amount (LKR)</label>
+              <input id="form-amount" name="amount" type="number" step="0.01" required placeholder="0.00" className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-[16px] sm:text-[14px] font-black italic text-white outline-none focus:border-transparent focus:ring-2 focus:ring-fuchsia-500/50 focus:bg-white/5 transition-all placeholder:text-slate-600 shadow-inner" />
             </div>
 
             <div>
-              <label className="mb-2 block text-[9px] sm:text-[11px] font-black italic tracking-[0.2em] text-slate-400 uppercase ml-1">Timestamp</label>
-              <input name="date" type="date" required defaultValue={today()} className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-[16px] sm:text-[13px] font-bold italic tracking-wider text-white outline-none focus:border-transparent focus:ring-2 focus:ring-fuchsia-500/50 focus:bg-white/5 transition-all [color-scheme:dark] shadow-inner" />
+              <label htmlFor="form-date" className="mb-2 block text-[9px] sm:text-[11px] font-black italic tracking-[0.2em] text-slate-400 uppercase ml-1">Timestamp</label>
+              <input id="form-date" name="date" type="date" required defaultValue={today()} className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-[16px] sm:text-[13px] font-bold italic tracking-wider text-white outline-none focus:border-transparent focus:ring-2 focus:ring-fuchsia-500/50 focus:bg-white/5 transition-all [color-scheme:dark] shadow-inner" />
             </div>
 
             <div>
               <label className="mb-2 block text-[9px] sm:text-[11px] font-black italic tracking-[0.2em] text-slate-400 uppercase ml-1">Classification</label>
-              <div className="flex rounded-2xl border border-white/10 bg-black/50 p-1.5 gap-1.5 shadow-inner">
+              <div className="flex rounded-2xl border border-white/10 bg-black/50 p-1.5 gap-1.5 shadow-inner" role="group" aria-label="Transaction type">
                 {["expense", "income"].map((t) => (
                   <button
                     key={t}
                     type="button"
-                    onClick={() => { haptic.light(); setType(t); }} // 🚀 Interaction Vibe
+                    onClick={() => { haptic.light(); setType(t); }}
+                    aria-pressed={type === t}
                     className={`click-pop flex-1 py-2.5 sm:py-3 rounded-xl text-[9px] sm:text-[10px] font-black italic tracking-widest uppercase transition-all duration-300 ${type === t
                       ? (t === "income" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]" : "bg-rose-500/20 text-rose-400 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.2)]")
                       : "text-slate-500 hover:text-white border border-transparent hover:bg-white/5"
@@ -148,26 +161,27 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
             </div>
 
             <div>
-              <label className="mb-2 block text-[9px] sm:text-[11px] font-black italic tracking-[0.2em] text-slate-400 uppercase ml-1">Category</label>
-              <select name="category" required className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-[16px] sm:text-[13px] font-bold italic tracking-widest text-white outline-none focus:border-transparent focus:ring-2 focus:ring-fuchsia-500/50 focus:bg-white/5 transition-all uppercase appearance-none cursor-pointer shadow-inner">
+              <label htmlFor="form-category" className="mb-2 block text-[9px] sm:text-[11px] font-black italic tracking-[0.2em] text-slate-400 uppercase ml-1">Category</label>
+              <select id="form-category" name="category" required className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-[16px] sm:text-[13px] font-bold italic tracking-widest text-white outline-none focus:border-transparent focus:ring-2 focus:ring-fuchsia-500/50 focus:bg-white/5 transition-all uppercase appearance-none cursor-pointer shadow-inner">
                 {activeCategories.map((cat) => (
                   <option key={cat} value={cat} className="bg-[#080b12] text-white">{cat}</option>
                 ))}
               </select>
             </div>
+
           </div>
 
           <button
-            ref={submitBtnRef} // 🚀 Burst origin point
+            ref={submitBtnRef}
             type="submit"
             disabled={pending}
-            className={`click-pop mt-4 sm:mt-6 rounded-2xl py-4 sm:py-5 text-[10px] sm:text-[12px] font-black italic tracking-[0.3em] uppercase text-white transition-all duration-300 shadow-xl ${isIncome
+            className={`click-pop mt-4 sm:mt-6 rounded-2xl py-4 sm:py-5 text-[10px] sm:text-[12px] font-black italic tracking-[0.3em] uppercase text-white transition-all duration-300 shadow-xl disabled:opacity-60 ${isIncome
               ? "bg-emerald-500/20 border border-emerald-500/40 hover:bg-emerald-500/30 hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] hover:border-emerald-400/60"
               : "bg-rose-500/20 border border-rose-500/40 hover:bg-rose-500/30 hover:shadow-[0_0_25px_rgba(244,63,94,0.3)] hover:border-rose-400/60"
               }`}>
             {pending ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 EXECUTING...
               </span>
             ) : (
@@ -178,30 +192,45 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
       </section>
 
       {/* ── 2. CATEGORY MANAGER ── */}
-      <section className="animate-vibe rounded-[30px] sm:rounded-[40px] border border-white/5 premium-glass p-5 sm:p-10 shadow-2xl relative overflow-hidden" style={{ animationDelay: '0.1s' }}>
+      <section className="animate-vibe rounded-[30px] sm:rounded-[40px] border border-white/5 premium-glass p-5 sm:p-10 shadow-2xl relative overflow-hidden" style={{ animationDelay: "0.1s" }}>
 
-        <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-[50px] pointer-events-none opacity-20 ${isIncome ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+        <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-[50px] pointer-events-none opacity-20 ${isIncome ? "bg-emerald-500" : "bg-rose-500"}`} />
 
         <div className="mb-6 sm:mb-8 flex items-center gap-3 sm:gap-4 border-b border-white/5 pb-4 sm:pb-5 relative z-10">
-          <div className={`h-2 w-2 rounded-full animate-pulse ${isIncome ? 'bg-emerald-400 shadow-[0_0_10px_#34d399]' : 'bg-rose-400 shadow-[0_0_10px_#fb7185]'}`}></div>
-          <h3 className={`text-[11px] sm:text-[14px] font-black italic tracking-[0.3em] uppercase truncate ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
+          <div className={`h-2 w-2 rounded-full animate-pulse ${isIncome ? "bg-emerald-400 shadow-[0_0_10px_#34d399]" : "bg-rose-400 shadow-[0_0_10px_#fb7185]"}`} />
+          <h3 className={`text-[11px] sm:text-[14px] font-black italic tracking-[0.3em] uppercase truncate ${isIncome ? "text-emerald-400" : "text-rose-400"}`}>
             {type.toUpperCase()} MANAGER
           </h3>
         </div>
 
         <form onSubmit={handleAddCategory} className="mb-8 sm:mb-10 flex gap-2 sm:gap-3 relative z-10">
-          <input type="text" value={newCatInput} onChange={(e) => setNewCatInput(e.target.value)} placeholder={`ADD NEW ${type.toUpperCase()}...`} className="flex-1 rounded-2xl border border-white/10 bg-black/40 px-5 py-3 sm:py-4 text-[16px] sm:text-[11px] font-bold italic tracking-widest text-white outline-none focus:border-transparent focus:ring-2 focus:ring-white/20 transition-all uppercase shadow-inner placeholder:text-slate-600" />
-          <button type="submit" onClick={() => haptic.light()} className="click-pop rounded-2xl border border-white/10 bg-white/5 px-6 sm:px-10 py-3 sm:py-4 text-[10px] sm:text-[11px] font-black italic tracking-[0.2em] text-white hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all">ADD</button>
+          <label htmlFor="new-cat-input" className="sr-only">Add new category</label>
+          <input
+            id="new-cat-input"
+            type="text"
+            value={newCatInput}
+            onChange={(e) => setNewCatInput(e.target.value)}
+            placeholder={`ADD NEW ${type.toUpperCase()}...`}
+            // UX-02: text-[16px] on mobile
+            className="flex-1 rounded-2xl border border-white/10 bg-black/40 px-5 py-3 sm:py-4 text-[16px] sm:text-[11px] font-bold italic tracking-widest text-white outline-none focus:border-transparent focus:ring-2 focus:ring-white/20 transition-all uppercase shadow-inner placeholder:text-slate-600"
+          />
+          <button
+            type="submit"
+            onClick={() => haptic.light()}
+            className="click-pop rounded-2xl border border-white/10 bg-white/5 px-6 sm:px-10 py-3 sm:py-4 text-[10px] sm:text-[11px] font-black italic tracking-[0.2em] text-white hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all"
+          >
+            ADD
+          </button>
         </form>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 relative z-10">
-          {activeCategories.map(cat => (
+          {activeCategories.map((cat) => (
             <div key={cat} className="group flex items-center justify-between rounded-xl sm:rounded-2xl border border-white/5 bg-black/30 px-4 sm:px-5 py-3 transition-all duration-300 hover:border-white/20 hover:bg-white/5 hover:shadow-[0_5px_15px_rgba(0,0,0,0.3)]">
               <span className="text-[9px] sm:text-[11px] font-bold italic tracking-widest text-slate-300 uppercase truncate max-w-[80px] sm:max-w-[120px]">{cat}</span>
-
               <button
                 type="button"
-                onClick={() => { haptic.error(); deleteCat(cat); }} // Warning vibration on delete
+                onClick={() => { haptic.error(); deleteCat(cat); }}
+                aria-label={`Delete category: ${cat}`}
                 className="click-pop text-slate-500 hover:text-rose-400 hover:bg-rose-500/20 p-2 rounded-lg transition-all flex shrink-0 items-center justify-center"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">

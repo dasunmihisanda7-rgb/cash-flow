@@ -1,18 +1,17 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { deleteTransaction, updateTransaction } from "@/app/actions";
 import { useRouter } from "next/navigation";
 import { useHaptic } from "@/lib/useHaptic";
-import { createPortal } from "react-dom"; // 🚀 React Portal — escapes overflow:hidden stacking context
-
-const CATEGORY_EMOJI = {
-  Salary: "💼", Freelance: "🖊️", Investments: "📈", Business: "🏢", Bonus: "🎁",
-  Food: "🍔", Transport: "🚌", Utilities: "⚡",
-  Health: "🏥", Entertainment: "🎬", Education: "📚", Other: "📦",
-};
+import { createPortal } from "react-dom";
+// PERF-02 FIX: Import shared CATEGORY_EMOJI from constants instead of duplicating it.
+import { CATEGORY_EMOJI } from "@/lib/constants";
 
 const fmt = (n) => `Rs. ${new Intl.NumberFormat("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)}`;
-const fmtDate = (dateStr) => new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+const fmtDate = (dateStr) => {
+  if (!dateStr) return "";
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+};
 
 export default function TransactionTable({ transactions, expenseCats = [], capitalCats = [] }) {
   const router = useRouter();
@@ -29,21 +28,60 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
   const [editingTxn, setEditingTxn] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // ── Bug #1 Fix: Per-row independent swipe state ──────────────────────────
-  // swipeOffsets: { [txnId]: number } — tracks live drag offset per row
-  // swipedId: which row is fully snapped open at -90px
-  // rowStartPositions: ref map so pointer capture doesn't cause re-renders during drag
+  // UX-07 FIX: Toast state replaces jarring browser alert() on errors.
+  const [toastMsg, setToastMsg] = useState(null);
+  const toastTimer = useRef(null);
+
+  const showToast = useCallback((msg) => {
+    clearTimeout(toastTimer.current);
+    setToastMsg(msg);
+    toastTimer.current = setTimeout(() => setToastMsg(null), 4000);
+  }, []);
+
+  // UX-01 FIX: Track the element that triggered the modal so we can restore
+  // focus when the modal closes (keyboard / screen reader accessibility).
+  const lastFocusRef = useRef(null);
+
+  // Per-row swipe state
   const [swipedId, setSwipedId] = useState(null);
   const [swipeOffsets, setSwipeOffsets] = useState({});
   const rowStartPositions = useRef({});
 
-  // ── Bug #4 Fix: Only render portals after client mount ───────────────────
+  // Only render portals after client mount (avoids SSR mismatch)
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // BUG-09 FIX: Prune orphaned swipe offsets when the transaction list changes.
   useEffect(() => {
     setLocalTransactions(transactions);
+    const ids = new Set(transactions.map((t) => t.id));
+    setSwipeOffsets((prev) => {
+      const next = {};
+      for (const [k, v] of Object.entries(prev)) {
+        if (ids.has(k)) next[k] = v;
+      }
+      return next;
+    });
   }, [transactions]);
+
+  // UX-05 FIX: "Peek" animation on the first row on first load so users
+  // discover the swipe-to-delete gesture, stored in sessionStorage so it
+  // only plays once per session.
+  useEffect(() => {
+    const shown = sessionStorage.getItem("swipe-hint-shown");
+    if (!shown && transactions.length > 0) {
+      const firstId = transactions[0].id;
+      const t1 = setTimeout(() => {
+        setSwipeOffsets((prev) => ({ ...prev, [firstId]: -22 }));
+        const t2 = setTimeout(() => {
+          setSwipeOffsets((prev) => ({ ...prev, [firstId]: 0 }));
+        }, 600);
+        return () => clearTimeout(t2);
+      }, 900);
+      sessionStorage.setItem("swipe-hint-shown", "1");
+      return () => clearTimeout(t1);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = localTransactions.filter((t) => {
     const matchType = filter === "all" || t.type === filter;
@@ -54,23 +92,29 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
   });
 
   // ── Delete flow ──────────────────────────────────────────────────────────
-  const askDelete = (id) => {
+  const askDelete = useCallback((id, triggerEl) => {
     haptic.error();
+    lastFocusRef.current = triggerEl || document.activeElement;
     setIdToDelete(id);
     setShowConfirm(true);
-  };
+  }, [haptic]);
 
-  async function confirmDelete() {
+  const confirmDelete = useCallback(async () => {
     if (!idToDelete) return;
     const targetId = idToDelete;
-    setDeletingId(targetId);
+    // BUG-03 FIX: Capture snapshot BEFORE mutation so error recovery is always
+    // correct even if a router.refresh() happens between the async call and catch.
+    const snapshot = [...localTransactions];
 
-    // Immediately close modal & reset swipe so row doesn't stay stuck at -90px
+    setDeletingId(targetId);
     setShowConfirm(false);
     setSwipedId(null);
     setSwipeOffsets((prev) => ({ ...prev, [targetId]: 0 }));
-
     setLocalTransactions((prev) => prev.filter((t) => t.id !== targetId));
+    setIdToDelete(null);
+
+    // Restore focus to the triggering element after modal closes
+    setTimeout(() => lastFocusRef.current?.focus(), 50);
 
     const fd = new FormData();
     fd.set("id", targetId);
@@ -80,36 +124,42 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
       router.refresh();
       haptic.success();
     } catch (error) {
-      alert("Error deleting: " + error.message);
-      setLocalTransactions(transactions);
+      // BUG-03 FIX: Use the local snapshot, not the `transactions` prop.
+      setLocalTransactions(snapshot);
+      // UX-07 FIX: Toast instead of alert()
+      showToast("Failed to delete. Please try again.");
     } finally {
       setDeletingId(null);
-      setIdToDelete(null);
     }
-  }
+  }, [idToDelete, localTransactions, router, haptic, showToast]);
 
-  // ── Bug #3 Fix: cancelDelete also resets the swipe offset ───────────────
-  const cancelDelete = () => {
+  const cancelDelete = useCallback(() => {
     setShowConfirm(false);
     if (idToDelete) {
       setSwipedId(null);
       setSwipeOffsets((prev) => ({ ...prev, [idToDelete]: 0 }));
     }
     setIdToDelete(null);
-  };
+    setTimeout(() => lastFocusRef.current?.focus(), 50);
+  }, [idToDelete]);
 
   // ── Edit flow ────────────────────────────────────────────────────────────
-  const openEdit = (txn) => {
+  const openEdit = useCallback((txn, triggerEl) => {
     haptic.light();
+    lastFocusRef.current = triggerEl || document.activeElement;
     setEditingTxn(txn);
-    // Snap any open swipe row closed when edit modal opens
     if (swipedId) {
       setSwipedId(null);
       setSwipeOffsets((prev) => ({ ...prev, [swipedId]: 0 }));
     }
-  };
+  }, [haptic, swipedId]);
 
-  const handleUpdate = async (e) => {
+  const closeEdit = useCallback(() => {
+    setEditingTxn(null);
+    setTimeout(() => lastFocusRef.current?.focus(), 50);
+  }, []);
+
+  const handleUpdate = useCallback(async (e) => {
     e.preventDefault();
     setIsUpdating(true);
 
@@ -117,6 +167,8 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
     const updatedId = editingTxn.id;
     formData.set("id", updatedId);
 
+    // BUG-03 FIX: Capture optimistic snapshot before mutation.
+    const snapshot = [...localTransactions];
     const updatedTxnObj = {
       ...editingTxn,
       type: formData.get("type"),
@@ -126,45 +178,53 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
       date: formData.get("date"),
     };
 
-    setLocalTransactions((prev) =>
-      prev.map((t) => (t.id === updatedId ? updatedTxnObj : t))
-    );
-    setEditingTxn(null);
+    setLocalTransactions((prev) => prev.map((t) => (t.id === updatedId ? updatedTxnObj : t)));
+    closeEdit();
 
     try {
       await updateTransaction(formData);
       router.refresh();
       haptic.success();
     } catch (error) {
-      alert("Error updating: " + error.message);
-      setLocalTransactions(transactions);
+      setLocalTransactions(snapshot);
+      showToast("Failed to update. Please try again.");
     } finally {
       setIsUpdating(false);
     }
-  };
+  }, [editingTxn, localTransactions, router, haptic, closeEdit, showToast]);
 
   const activeEditCategories = editingTxn?.type === "income" ? capitalCats : expenseCats;
 
-  // ── Bug #4 Fix: Portals render into document.body, escaping any ──────────
-  // transform: translateZ(0) stacking context from .gpu-promote / .scroll-glass
+  // ── Confirm Delete Modal (Portal) ────────────────────────────────────────
   const renderConfirmModal = () => {
     if (!showConfirm) return null;
     return createPortal(
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-300">
-        <div className="w-full max-w-[320px] sm:max-w-sm rounded-[24px] sm:rounded-[32px] border border-white/10 bg-[#161b27]/95 p-6 sm:p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl ring-1 ring-white/20">
+      // UX-01 FIX: role="dialog", aria-modal, aria-labelledby for screen readers.
+      <div
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-300"
+        onClick={(e) => { if (e.target === e.currentTarget) cancelDelete(); }}
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-modal-title"
+          aria-describedby="confirm-modal-desc"
+          className="w-full max-w-[320px] sm:max-w-sm rounded-[24px] sm:rounded-[32px] border border-white/10 bg-[#161b27]/95 p-6 sm:p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl ring-1 ring-white/20"
+        >
           <div className="mb-6 flex flex-col items-center text-center">
             <div className="mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.3)]">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-6 h-6 sm:w-8 sm:h-8">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-2.25a2.25 2.25 0 00-2.25-2.25h-4.5a2.25 2.25 0 00-2.25 2.25v2.25m6.75 0h-13.5" />
               </svg>
             </div>
-            <h3 className="text-[16px] sm:text-lg font-black italic tracking-widest text-white uppercase leading-tight">System Override</h3>
-            <p className="mt-2 text-[10px] sm:text-xs font-bold italic tracking-widest text-slate-400 uppercase leading-relaxed">
+            <h3 id="confirm-modal-title" className="text-[16px] sm:text-lg font-black italic tracking-widest text-white uppercase leading-tight">System Override</h3>
+            <p id="confirm-modal-desc" className="mt-2 text-[10px] sm:text-xs font-bold italic tracking-widest text-slate-400 uppercase leading-relaxed">
               Confirm permanent deletion?
             </p>
           </div>
           <div className="flex gap-3">
             <button
+              autoFocus
               onClick={cancelDelete}
               className="flex-1 rounded-2xl border border-white/5 bg-white/5 py-3 sm:py-3.5 text-[9px] sm:text-[10px] font-black italic tracking-widest text-slate-400 uppercase transition-all hover:bg-white/10"
             >
@@ -183,13 +243,22 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
     );
   };
 
+  // ── Edit Modal (Portal) ──────────────────────────────────────────────────
   const renderEditModal = () => {
     if (!editingTxn) return null;
     return createPortal(
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-        {/* max-h-[90dvh] + overflow-y-auto: form is scrollable on iPhone SE — Save button always reachable */}
-        <div className="w-full max-w-md rounded-[24px] sm:rounded-[32px] border border-white/10 bg-[#161b27]/95 p-5 sm:p-6 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl ring-1 ring-white/20 max-h-[90dvh] overflow-y-auto">
-          {/* Sticky header so title stays visible while scrolling long forms */}
+      <div
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300"
+        onClick={(e) => { if (e.target === e.currentTarget) closeEdit(); }}
+      >
+        {/* UX-01 FIX: role="dialog", aria-modal, aria-labelledby */}
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-modal-title"
+          className="w-full max-w-md rounded-[24px] sm:rounded-[32px] border border-white/10 bg-[#161b27]/95 p-5 sm:p-6 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl ring-1 ring-white/20 max-h-[90dvh] overflow-y-auto"
+        >
+          {/* Sticky Header */}
           <div className="mb-5 sm:mb-6 flex items-center gap-3 sm:gap-4 sticky top-0 bg-[#161b27]/95 pt-1 pb-4 z-10 border-b border-white/5">
             <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-400 border border-sky-500/20 shadow-[0_0_15px_rgba(56,189,248,0.3)]">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
@@ -197,56 +266,64 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
               </svg>
             </div>
             <div>
-              <h3 className="text-[12px] sm:text-[14px] font-black italic tracking-widest text-white uppercase">Edit Record</h3>
+              <h3 id="edit-modal-title" className="text-[12px] sm:text-[14px] font-black italic tracking-widest text-white uppercase">Edit Record</h3>
               <p className="text-[8px] sm:text-[9px] font-bold italic text-slate-400 uppercase tracking-widest mt-0.5">Update Data Values</p>
             </div>
           </div>
 
           <form onSubmit={handleUpdate} className="flex flex-col gap-4">
-            {/* grid-cols-1 on mobile fixes cramped inputs on narrow screens */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[8px] sm:text-[9px] font-black italic tracking-widest text-slate-500 uppercase ml-1">Type</label>
+                <label htmlFor="edit-type" className="text-[8px] sm:text-[9px] font-black italic tracking-widest text-slate-500 uppercase ml-1">Type</label>
                 <select
+                  id="edit-type"
                   name="type"
                   value={editingTxn.type}
                   onChange={(e) => setEditingTxn({ ...editingTxn, type: e.target.value })}
-                  className="rounded-xl border border-white/5 bg-black/40 p-3.5 text-[14px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase"
+                  // UX-02 FIX: text-[16px] on mobile prevents iOS Safari auto-zoom
+                  className="rounded-xl border border-white/5 bg-black/40 p-3.5 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase"
                 >
                   <option value="income">Income</option>
                   <option value="expense">Expense</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[8px] sm:text-[9px] font-black italic tracking-widest text-slate-500 uppercase ml-1">Date</label>
+                <label htmlFor="edit-date" className="text-[8px] sm:text-[9px] font-black italic tracking-widest text-slate-500 uppercase ml-1">Date</label>
                 <input
+                  id="edit-date"
                   type="date"
                   name="date"
                   defaultValue={editingTxn.date}
                   required
-                  className="rounded-xl border border-white/5 bg-black/40 p-3.5 text-[14px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 [color-scheme:dark] uppercase"
+                  // UX-02 FIX: text-[16px] on mobile prevents iOS Safari auto-zoom
+                  className="rounded-xl border border-white/5 bg-black/40 p-3.5 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 [color-scheme:dark] uppercase"
                 />
               </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[8px] sm:text-[9px] font-black italic tracking-widest text-slate-500 uppercase ml-1">Amount (Rs.)</label>
+              <label htmlFor="edit-amount" className="text-[8px] sm:text-[9px] font-black italic tracking-widest text-slate-500 uppercase ml-1">Amount (Rs.)</label>
               <input
+                id="edit-amount"
+                autoFocus
                 type="number"
                 step="0.01"
                 name="amount"
                 defaultValue={editingTxn.amount}
                 required
-                className="rounded-xl border border-white/5 bg-black/40 p-3.5 text-[14px] sm:text-lg font-black italic text-white outline-none focus:border-sky-500/50"
+                // UX-02 FIX: text-[16px] on mobile prevents iOS Safari auto-zoom
+                className="rounded-xl border border-white/5 bg-black/40 p-3.5 text-[16px] sm:text-lg font-black italic text-white outline-none focus:border-sky-500/50"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[8px] sm:text-[9px] font-black italic tracking-widest text-slate-500 uppercase ml-1">Category</label>
+              <label htmlFor="edit-category" className="text-[8px] sm:text-[9px] font-black italic tracking-widest text-slate-500 uppercase ml-1">Category</label>
               <select
+                id="edit-category"
                 name="category"
                 defaultValue={editingTxn.category}
-                className="rounded-xl border border-white/5 bg-black/40 p-3.5 text-[14px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase appearance-none"
+                // UX-02 FIX: text-[16px] on mobile prevents iOS Safari auto-zoom
+                className="rounded-xl border border-white/5 bg-black/40 p-3.5 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase appearance-none"
               >
                 {activeEditCategories.map((cat) => (
                   <option key={cat} value={cat} className="bg-[#161b27]">
@@ -262,21 +339,23 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[8px] sm:text-[9px] font-black italic tracking-widest text-slate-500 uppercase ml-1">Description</label>
+              <label htmlFor="edit-description" className="text-[8px] sm:text-[9px] font-black italic tracking-widest text-slate-500 uppercase ml-1">Description</label>
               <input
+                id="edit-description"
                 type="text"
                 name="description"
                 defaultValue={editingTxn.description}
                 required
-                className="rounded-xl border border-white/5 bg-black/40 p-3.5 text-[14px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase"
+                // UX-02 FIX: text-[16px] on mobile prevents iOS Safari auto-zoom
+                className="rounded-xl border border-white/5 bg-black/40 p-3.5 text-[16px] sm:text-xs font-bold italic text-white outline-none focus:border-sky-500/50 uppercase"
               />
             </div>
 
-            {/* Sticky footer so buttons are always visible on scroll */}
+            {/* Sticky footer */}
             <div className="flex gap-3 mt-2 pt-4 border-t border-white/5 sticky bottom-0 bg-[#161b27]/95 pb-1">
               <button
                 type="button"
-                onClick={() => setEditingTxn(null)}
+                onClick={closeEdit}
                 className="flex-1 rounded-xl border border-white/5 bg-white/5 py-3 sm:py-3.5 text-[9px] sm:text-[10px] font-black italic tracking-widest text-slate-400 uppercase transition-all hover:bg-white/10"
               >
                 Cancel
@@ -284,7 +363,7 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
               <button
                 type="submit"
                 disabled={isUpdating}
-                className="click-pop flex-1 rounded-xl bg-sky-600/20 border border-sky-500/50 py-3 sm:py-3.5 text-[9px] sm:text-[10px] font-black italic tracking-widest text-sky-400 uppercase transition-all shadow-[0_0_20px_rgba(56,189,248,0.2)] hover:bg-sky-500/30"
+                className="click-pop flex-1 rounded-xl bg-sky-600/20 border border-sky-500/50 py-3 sm:py-3.5 text-[9px] sm:text-[10px] font-black italic tracking-widest text-sky-400 uppercase transition-all shadow-[0_0_20px_rgba(56,189,248,0.2)] hover:bg-sky-500/30 disabled:opacity-50"
               >
                 {isUpdating ? "Saving..." : "Save Changes"}
               </button>
@@ -299,9 +378,18 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
   return (
     <section className="flex flex-col gap-6 relative w-full">
 
-      {/* Portals: rendered into document.body — Bug #4 fix */}
+      {/* Portals */}
       {mounted && renderConfirmModal()}
       {mounted && renderEditModal()}
+
+      {/* UX-07 FIX: Premium toast replaces native alert() for error feedback */}
+      {toastMsg && (
+        <div className="fixed bottom-28 left-4 right-4 z-[99999] flex items-center gap-3 rounded-2xl border border-rose-500/40 bg-[#161b27]/95 px-5 py-4 shadow-[0_0_30px_rgba(244,63,94,0.2)] backdrop-blur-xl toast-animate">
+          <span className="h-2 w-2 rounded-full bg-rose-400 animate-pulse shrink-0" />
+          <p className="text-[10px] font-bold italic tracking-widest text-rose-400 uppercase">{toastMsg}</p>
+          <button onClick={() => setToastMsg(null)} className="ml-auto text-slate-500 hover:text-white transition-colors shrink-0" aria-label="Dismiss">✕</button>
+        </div>
+      )}
 
       {/* ── Header & Controls ── */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-2 w-full">
@@ -314,7 +402,7 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
           <div>
             <h2 className="text-[12px] sm:text-[15px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] text-white uppercase">System Log</h2>
             <div className="flex items-center gap-2 mt-0.5 sm:mt-1">
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <p className="text-[8px] sm:text-[10px] font-bold italic tracking-widest text-slate-500 uppercase">
                 {filtered.length} Records Synced
               </p>
@@ -328,13 +416,16 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="QUERY LOG..."
+            aria-label="Search transactions"
+            // UX-02 FIX: text-[16px] prevents iOS auto-zoom
             className="w-full sm:w-56 rounded-2xl border border-white/5 bg-[#161b27]/30 backdrop-blur-md px-4 sm:px-5 py-2 sm:py-2.5 text-[16px] sm:text-[11px] font-bold italic text-white outline-none focus:border-sky-500/50 uppercase"
           />
-          <div className="flex gap-1.5 sm:gap-2 bg-[#161b27]/30 backdrop-blur-md p-1 rounded-2xl border border-white/5 w-full sm:w-auto">
+          <div className="flex gap-1.5 sm:gap-2 bg-[#161b27]/30 backdrop-blur-md p-1 rounded-2xl border border-white/5 w-full sm:w-auto" role="group" aria-label="Filter transactions">
             {["all", "income", "expense"].map((f) => (
               <button
                 key={f}
                 onClick={() => { haptic.light(); setFilter(f); }}
+                aria-pressed={filter === f}
                 className={`flex-1 sm:flex-none rounded-xl px-2 sm:px-4 py-1.5 sm:py-2 text-[8px] sm:text-[10px] font-black italic tracking-widest uppercase transition-all ${filter === f ? "bg-sky-500/20 text-sky-400" : "text-slate-500"}`}
               >
                 {f}
@@ -344,7 +435,7 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
         </div>
       </div>
 
-      {/* ── Transaction List with Bulletproof Per-Row Swipe-to-Delete ── */}
+      {/* ── Transaction List ── */}
       <div className="rounded-[24px] sm:rounded-[40px] border border-white/5 scroll-glass p-3 sm:p-5 flex flex-col gap-2 w-full">
         {filtered.map((txn) => {
           const currentOffset = swipeOffsets[txn.id] || 0;
@@ -353,11 +444,10 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
           return (
             <div
               key={txn.id}
-              className="relative overflow-hidden rounded-2xl border border-transparent bg-transparent hover:border-white/10"
-              // ── Bug #1+2+3 fixes: per-row capture, stopPropagation, no onPointerLeave ──
+              className="relative overflow-hidden rounded-2xl border border-transparent bg-transparent hover:border-white/10 swipe-row-container"
               onPointerDown={(e) => {
-                e.stopPropagation(); // Bug #2: prevent bubbling to <main> tab-swipe handler
-                e.currentTarget.setPointerCapture(e.pointerId); // Bug #3: pointer never lost mid-drag
+                e.stopPropagation();
+                e.currentTarget.setPointerCapture(e.pointerId);
                 rowStartPositions.current[txn.id] = e.clientX;
               }}
               onPointerMove={(e) => {
@@ -365,10 +455,8 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
                 const dx = e.clientX - rowStartPositions.current[txn.id];
 
                 if (dx < 0 && !isSwipedOpen) {
-                  // Dragging left to reveal delete button
                   setSwipeOffsets((prev) => ({ ...prev, [txn.id]: Math.max(dx, -90) }));
                 } else if (dx > 0 && isSwipedOpen) {
-                  // Dragging right to close an already-open row
                   setSwipeOffsets((prev) => ({ ...prev, [txn.id]: Math.min(-90 + dx, 0) }));
                 }
               }}
@@ -377,19 +465,16 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
                 const offset = swipeOffsets[txn.id] || 0;
 
                 if (offset < -60) {
-                  // Swiped far enough — snap fully open
                   haptic.medium();
                   setSwipedId(txn.id);
                   setSwipeOffsets((prev) => ({ ...prev, [txn.id]: -90 }));
                 } else {
-                  // Not far enough — snap closed
                   setSwipedId(null);
                   setSwipeOffsets((prev) => ({ ...prev, [txn.id]: 0 }));
                 }
                 rowStartPositions.current[txn.id] = null;
               }}
               onPointerCancel={(e) => {
-                // Bug #3: handles mid-gesture interruptions (incoming call, etc.)
                 e.currentTarget.releasePointerCapture(e.pointerId);
                 if (!isSwipedOpen) {
                   setSwipeOffsets((prev) => ({ ...prev, [txn.id]: 0 }));
@@ -397,14 +482,16 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
                 rowStartPositions.current[txn.id] = null;
               }}
             >
-              {/* ── Delete Zone (hidden behind, revealed by swipe) ── */}
+              {/* Delete Zone */}
               <div
                 className="absolute right-0 top-0 bottom-0 w-24 flex items-center justify-center bg-rose-500/20 border-l border-rose-500/30"
                 style={{ opacity: isSwipedOpen ? 1 : Math.abs(currentOffset) / 100 }}
+                aria-hidden="true"
               >
-                {/* Bug #5: NO .click-pop here — its :active scale conflicts with parent translateX */}
                 <button
-                  onClick={() => askDelete(txn.id)}
+                  tabIndex={isSwipedOpen ? 0 : -1}
+                  onClick={(e) => askDelete(txn.id, e.currentTarget)}
+                  aria-label={`Delete transaction: ${txn.description}`}
                   className="w-full h-full flex flex-col items-center justify-center text-rose-400 gap-1 active:bg-rose-500/20 transition-colors duration-150"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
@@ -414,12 +501,11 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
                 </button>
               </div>
 
-              {/* ── Sliding Content Row ── */}
+              {/* Sliding Content Row */}
               <div
-                className="flex items-center justify-between p-3 sm:p-4 bg-[#161b27]/40 cursor-grab active:cursor-grabbing select-none"
+                className="flex items-center justify-between p-3 sm:p-4 bg-[#161b27]/40 cursor-grab active:cursor-grabbing swipe-row-content"
                 style={{
                   transform: `translateX(${isSwipedOpen ? -90 : currentOffset}px)`,
-                  // Transition active only when NOT dragging — prevents lag during gesture
                   transition: rowStartPositions.current[txn.id] != null
                     ? "none"
                     : "transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
@@ -428,9 +514,12 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
                 <div
                   className="flex items-center gap-3 sm:gap-4 overflow-hidden"
                   onClick={() => { if (!isSwipedOpen) openEdit(txn); }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Edit transaction: ${txn.description}`}
+                  onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && !isSwipedOpen) openEdit(txn, e.currentTarget); }}
                 >
-                  <div className={`flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl text-lg sm:text-xl border transition-all duration-300 group-hover:scale-110 group-hover:rotate-[-3deg] ${txn.type === "income" ? "bg-emerald-500/10 border-emerald-500/20" : "bg-rose-500/10 border-rose-500/20"}`}>
-                    <span className={`absolute inset-0 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity ${txn.type === "income" ? "border border-emerald-500/40" : "border border-rose-500/40"}`} />
+                  <div className={`flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl text-lg sm:text-xl border transition-all duration-300 ${txn.type === "income" ? "bg-emerald-500/10 border-emerald-500/20" : "bg-rose-500/10 border-rose-500/20"}`}>
                     {CATEGORY_EMOJI[txn.category] ?? "📦"}
                   </div>
                   <div className="min-w-0">
@@ -441,7 +530,7 @@ export default function TransactionTable({ transactions, expenseCats = [], capit
                   </div>
                 </div>
                 <div className={`text-right text-[12px] sm:text-[15px] font-black italic truncate shrink-0 ml-4 ${txn.type === "income" ? "text-emerald-400" : "text-rose-400"}`}>
-                  {txn.type === "income" ? "+ " : "- "} {fmt(txn.amount)}
+                  {txn.type === "income" ? "+ " : "- "}{fmt(txn.amount)}
                 </div>
               </div>
             </div>

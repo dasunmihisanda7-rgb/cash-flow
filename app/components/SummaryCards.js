@@ -1,6 +1,6 @@
 "use client";
-import React from 'react';
-import AnimatedNumber from "@/lib/AnimatedNumber"; // 🚀 අලුත් Component එක Import කළා
+import React, { useMemo } from "react";
+import AnimatedNumber from "@/lib/AnimatedNumber";
 
 // ── ELITE MINIMALIST ICONS ──
 const IconIn = () => (
@@ -23,31 +23,35 @@ const IconBalance = () => (
 
 export default function SummaryCards({ totalIncome, totalExpenses, balance, transactions = [], currentUser = "", selectedMonth = "ALL" }) {
 
-  let incStr = "";
-  let expStr = "";
-  let incChange = 0;
-  let expChange = 0;
+  // REFACTOR-04 FIX: Previous-month computation was running on every render.
+  // Wrapped in useMemo so it only recomputes when the actual dependencies change.
+  const { incStr, expStr, incChange, expChange } = useMemo(() => {
+    if (selectedMonth === "ALL") {
+      return { incStr: "LIFETIME TOTAL", expStr: "LIFETIME TOTAL", incChange: 0, expChange: 0 };
+    }
 
-  if (selectedMonth === "ALL") {
-    incStr = "LIFETIME TOTAL";
-    expStr = "LIFETIME TOTAL";
-  } else {
-    const [y, m] = selectedMonth.split('-');
-    let prevDate = new Date(parseInt(y), parseInt(m) - 2, 1);
+    const [y, m] = selectedMonth.split("-");
+    const prevDate = new Date(parseInt(y), parseInt(m) - 2, 1);
     const prevY = prevDate.getFullYear();
     const prevM = String(prevDate.getMonth() + 1).padStart(2, "0");
     const prevMonthStr = `${prevY}-${prevM}`;
 
-    const prevT = transactions.filter(t => t.date?.startsWith(prevMonthStr) && t.user?.toUpperCase() === currentUser.toUpperCase());
-    const prevInc = prevT.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-    const prevExp = prevT.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    const prevT = transactions.filter(
+      (t) => t.date?.startsWith(prevMonthStr) && t.user?.toUpperCase() === currentUser.toUpperCase()
+    );
+    const prevInc = prevT.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+    const prevExp = prevT.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
 
-    incChange = prevInc === 0 ? (totalIncome > 0 ? 100 : 0) : ((totalIncome - prevInc) / prevInc) * 100;
-    expChange = prevExp === 0 ? (totalExpenses > 0 ? 100 : 0) : ((totalExpenses - prevExp) / prevExp) * 100;
+    const incChange = prevInc === 0 ? (totalIncome > 0 ? 100 : 0) : ((totalIncome - prevInc) / prevInc) * 100;
+    const expChange = prevExp === 0 ? (totalExpenses > 0 ? 100 : 0) : ((totalExpenses - prevExp) / prevExp) * 100;
 
-    incStr = `${Math.abs(incChange).toFixed(1)}% VS PREV`;
-    expStr = `${Math.abs(expChange).toFixed(1)}% VS PREV`;
-  }
+    return {
+      incStr: `${Math.abs(incChange).toFixed(1)}% VS PREV`,
+      expStr: `${Math.abs(expChange).toFixed(1)}% VS PREV`,
+      incChange,
+      expChange,
+    };
+  }, [selectedMonth, transactions, currentUser, totalIncome, totalExpenses]);
 
   const cards = [
     {
@@ -59,7 +63,7 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       isGood: selectedMonth === "ALL" ? true : (incChange >= 0),
       color: "emerald",
       icon: <IconIn />,
-      delay: "0.1s"
+      delay: "0.1s",
     },
     {
       id: "card-total-expenses",
@@ -70,7 +74,7 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       isGood: selectedMonth === "ALL" ? false : (expChange <= 0),
       color: "rose",
       icon: <IconOut />,
-      delay: "0.2s"
+      delay: "0.2s",
     },
     {
       id: "card-current-balance",
@@ -79,9 +83,11 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       change: balance > 0 ? "HEALTHY SURPLUS" : balance < 0 ? "IN DEFICIT" : "ZERO BALANCE",
       arrow: balance >= 0 ? "▲" : "▼",
       isGood: balance >= 0,
-      color: "sky",
+      // UX-09 FIX: Balance card was hardcoded sky-blue even when in deficit.
+      // Now it dynamically switches to rose when balance is negative.
+      color: balance >= 0 ? "sky" : "rose",
       icon: <IconBalance />,
-      delay: "0.3s"
+      delay: "0.3s",
     },
   ];
 
@@ -90,15 +96,14 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       {cards.map((card) => (
         <article
           key={card.id}
-          // 🔴 iOS FPS Fix: premium-glass වෙනුවට scroll-glass දැම්මා. gpu-promote දැම්මා.
           className={`animate-vibe click-pop group relative overflow-hidden rounded-[24px] sm:rounded-[40px] border border-white/5 scroll-glass gpu-promote p-3 sm:p-5 transition-all duration-500 hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[110px] sm:min-h-[140px]
-            ${card.color === 'emerald' ? 'hover:border-emerald-500/30 hover:shadow-[0_15px_40px_-15px_rgba(52,211,153,0.3)]' :
-              card.color === 'rose' ? 'hover:border-rose-500/30 hover:shadow-[0_15px_40px_-15px_rgba(244,63,94,0.3)]' :
-                'hover:border-sky-500/30 hover:shadow-[0_15px_40px_-15px_rgba(56,189,248,0.3)]'}`}
+            ${card.color === "emerald" ? "hover:border-emerald-500/30 hover:shadow-[0_15px_40px_-15px_rgba(52,211,153,0.3)]" :
+              card.color === "rose" ? "hover:border-rose-500/30 hover:shadow-[0_15px_40px_-15px_rgba(244,63,94,0.3)]" :
+                "hover:border-sky-500/30 hover:shadow-[0_15px_40px_-15px_rgba(56,189,248,0.3)]"}`}
           style={{ animationDelay: card.delay }}
         >
           <div className={`absolute -right-5 -top-5 sm:-right-10 sm:-top-10 h-16 w-16 sm:h-32 sm:w-32 rounded-full blur-[30px] sm:blur-[50px] transition-opacity duration-500 opacity-10 group-hover:opacity-30 pointer-events-none
-            ${card.color === 'emerald' ? 'bg-emerald-500' : card.color === 'rose' ? 'bg-rose-500' : 'bg-sky-500'}`}
+            ${card.color === "emerald" ? "bg-emerald-500" : card.color === "rose" ? "bg-rose-500" : "bg-sky-500"}`}
           />
 
           <div className="relative z-10 flex flex-col h-full justify-between gap-3 sm:gap-4">
@@ -108,9 +113,9 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
               </p>
 
               <div className={`flex shrink-0 items-center justify-center transition-all duration-500 group-hover:scale-110 w-5 h-5 sm:w-8 sm:h-8 rounded-md sm:rounded-xl border
-                ${card.color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:shadow-[0_0_15px_rgba(52,211,153,0.4)]' :
-                  card.color === 'rose' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:shadow-[0_0_15px_rgba(244,63,94,0.4)]' :
-                    'bg-sky-500/10 border-sky-500/20 text-sky-400 group-hover:shadow-[0_0_15px_rgba(56,189,248,0.4)]'}`}
+                ${card.color === "emerald" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:shadow-[0_0_15px_rgba(52,211,153,0.4)]" :
+                  card.color === "rose" ? "bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:shadow-[0_0_15px_rgba(244,63,94,0.4)]" :
+                    "bg-sky-500/10 border-sky-500/20 text-sky-400 group-hover:shadow-[0_0_15px_rgba(56,189,248,0.4)]"}`}
               >
                 <div className="w-3 h-3 sm:w-4 sm:h-4">
                   {card.icon}
@@ -120,17 +125,17 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
 
             <div className="flex flex-col gap-1 sm:gap-1.5">
               <h3 className={`text-[11px] sm:text-2xl font-black italic tracking-tighter leading-none truncate bg-clip-text text-transparent
-                ${card.color === 'emerald' ? 'bg-gradient-to-br from-emerald-300 to-emerald-500' :
-                  card.color === 'rose' ? 'bg-gradient-to-br from-rose-300 to-rose-500' :
-                    'bg-gradient-to-br from-sky-300 to-sky-500'}`}
+                ${card.color === "emerald" ? "bg-gradient-to-br from-emerald-300 to-emerald-500" :
+                  card.color === "rose" ? "bg-gradient-to-br from-rose-300 to-rose-500" :
+                    "bg-gradient-to-br from-sky-300 to-sky-500"}`}
               >
                 Rs. <AnimatedNumber value={card.value} decimals={2} />
               </h3>
 
               <div className="flex items-center mt-1 sm:mt-0">
                 <span className={`inline-flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg text-[6px] sm:text-[9px] font-bold italic border transition-all duration-500 w-full sm:w-auto overflow-hidden
-                  ${card.isGood ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/40' :
-                    'bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:bg-rose-500/20 group-hover:border-rose-500/40'}`}
+                  ${card.isGood ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/40" :
+                    "bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:bg-rose-500/20 group-hover:border-rose-500/40"}`}
                 >
                   <span className="shrink-0">{card.arrow}</span>
                   <span className="ml-0.5 sm:ml-1 tracking-wider uppercase truncate">{card.change}</span>
