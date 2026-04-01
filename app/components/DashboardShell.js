@@ -420,10 +420,14 @@ export default function DashboardShell({ transactions }) {
             )}
 
           </div>
+
+          {/* 👇 යටින් හිස් ඉඩක් තියන Spacer එක (මේක අලුතෙන් දැම්මේ) 👇 */}
+          <div className="h-36 sm:h-40 shrink-0 w-full pointer-events-none" />
+
         </main>
 
         <QuickAddFAB
-          ref={quickAddRef} // <--- මේ ලයින් එක අලුතෙන් දැම්මේ
+          ref={quickAddRef}
           currentUser={currentUser}
           expenseCats={expenseCats}
           capitalCats={capitalCats}
