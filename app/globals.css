@@ -47,7 +47,6 @@ html {
 
 body {
   min-height: 100%;
-  /* 🚀 UI Upgrade: පසුබිමට පොඩි Ambient Dark ගතියක් දුන්නා */
   background-color: #080b12;
   color: #e2e8f0;
   font-family: var(--font-sans), system-ui, sans-serif;
@@ -84,13 +83,14 @@ body {
 
 /* ─── 🚀 UI Upgrade: Premium Glassmorphism 2.0 (3D Feel) ──────────── */
 .premium-glass {
-  background-color: rgba(22, 27, 39, 0.45) !important;
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
-  backdrop-filter: blur(24px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
-  /* 🚀 Inner Shadow එකක් දාලා 3D කරලා තියෙන්නේ */
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 20px 40px -10px rgba(0, 0, 0, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* 🚀 වෙනස් කළ තැන: Glass එක ටිකක් Dark කළා පිටිපස්සේ එළිය වදින්නෙ නැති වෙන්න */
+  background-color: rgba(11, 15, 24, 0.75) !important;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.005) 100%) !important;
+  backdrop-filter: blur(30px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(150%) !important;
+  /* 🚀 Shadow එක ටිකක් වැඩි කළා තව 3D ගතිය එන්න */
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 20px 40px -10px rgba(0, 0, 0, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* ─── 🚀 UI Upgrade: Premium Text Gradients ────────────────────────── */
