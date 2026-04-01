@@ -24,8 +24,10 @@ export default async function DashboardPage() {
 
         {/* ── Branding Header ── */}
         <div className="flex w-full flex-col items-center justify-center text-center pt-8 pb-4 ios-safe-top mt-2">
+          {/* 👇 මෙතන "FLOW" කියන span එකට අලුතෙන් pr-2 එකතු කළා 👇 */}
           <h1 className="text-4xl font-black italic tracking-tighter md:text-5xl uppercase leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-            <span className="text-white">CASH</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-sky-400">FLOW</span>
+            <span className="text-white">CASH</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-sky-400 pr-2">FLOW</span>
           </h1>
           <p className="mt-2 text-[9px] sm:text-[10px] italic font-bold tracking-[0.6em] text-slate-500/80 uppercase">
             V7 ELITE PLUS - BY DASUN MIHISANDA

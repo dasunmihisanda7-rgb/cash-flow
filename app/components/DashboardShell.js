@@ -75,8 +75,6 @@ export default function DashboardShell({ transactions }) {
   const [expenseCats, setExpenseCats] = useState(INITIAL_EXPENSE_CATEGORIES);
   const [capitalCats, setCapitalCats] = useState(INITIAL_CAPITAL_CATEGORIES);
 
-  // OPT-21: Use refs for debounce timers so they don't trigger re-renders
-  // and don't stale-close over an obsolete state value.
   const expenseTimerRef = useRef(null);
   const capitalTimerRef = useRef(null);
 
@@ -135,7 +133,6 @@ export default function DashboardShell({ transactions }) {
     router.push("/login");
   };
 
-  // ── Filtered data ─────────────────────────────────────────────────────────
   const monthFilteredTransactions = useMemo(
     () => transactions.filter((t) => selectedMonth === "ALL" ? true : t.date?.startsWith(selectedMonth)),
     [transactions, selectedMonth]
@@ -185,22 +182,9 @@ export default function DashboardShell({ transactions }) {
     <>
       {!bootComplete && <SplashScreen onComplete={handleBootComplete} />}
 
-      {/*
-        OPT-22: Root shell is a flex column filling available height.
-        `flex-1 min-h-0` ensures it doesn't overflow bounds provided by page.js.
-        `overflow-hidden` prevents the shell itself from scrolling — that is delegated to <main>.
-      */}
       <div
         className={`flex flex-col w-full flex-1 min-h-0 overflow-hidden relative transition-opacity duration-[800ms] ${bootComplete ? "opacity-100" : "opacity-0"}`}
       >
-        {/* ── Dynamic Financial Health Background Orbs ── */}
-        {/*
-          OPT-23: Health orbs animate only `background-color` via a 3s CSS
-          transition. They are on a fixed stacking layer below content.
-          `gpu-promote` is NOT applied here — these blurred divs don't animate
-          transforms so promoting them would waste a GPU layer on a static paint.
-          `pointer-events-none` prevents touch interference.
-        */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
           <div
             className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full blur-[180px] transition-all duration-[3000ms]"
@@ -219,19 +203,9 @@ export default function DashboardShell({ transactions }) {
           setCurrentUser={setCurrentUser}
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
-          onQuickAddClick={() => quickAddRef.current?.openSheet()} // <--- මේ ලයින් එක අලුතෙන් දැම්මේ
+          onQuickAddClick={() => quickAddRef.current?.openSheet()}
         />
 
-        {/*
-          OPT-24: <main> is the ONLY scrollable region.
-          - `flex-1 min-h-0` allows it to fill available height between the
-            sticky top bar and nothing else, without growing past the viewport.
-          - `overflow-y-auto` + `overscroll-behavior-y: contain` (set in CSS)
-            keeps scroll internal — no bounce propagates to body.
-          - `pb-safe-nav` clears the floating bottom nav + home indicator.
-          - `touch-action: pan-y` on the swipe wrapper tells iOS the vertical
-            scroll gesture belongs to this container, not to a swipe nav handler.
-        */}
         <main
           {...(loading ? {} : swipeHandlers)}
           className="flex-1 min-h-0 mx-auto w-full max-w-7xl overflow-y-auto px-4 py-4 sm:px-6 pb-safe-nav"
@@ -240,189 +214,190 @@ export default function DashboardShell({ transactions }) {
           {loading ? (
             <SkeletonLoader />
           ) : (
-          <div className="space-y-10">
+            <div className="space-y-10">
 
-            {/* ── SUMMARY TAB ── */}
-            {activeTab === "SUMMARY" && (
-              <div
-                id="panel-summary"
-                role="tabpanel"
-                aria-labelledby="tab-summary"
-                key={`summary-${selectedMonth}`}
-                className="space-y-10"
-              >
-                {/* Health Badge */}
-                <div className={`flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full w-fit text-[9px] font-black italic tracking-widest uppercase border animate-vibe
+              {/* ── SUMMARY TAB ── */}
+              {activeTab === "SUMMARY" && (
+                <div
+                  id="panel-summary"
+                  role="tabpanel"
+                  aria-labelledby="tab-summary"
+                  key={`summary-${selectedMonth}`}
+                  className="space-y-10"
+                >
+                  {/* Health Badge */}
+                  <div className={`flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full w-fit text-[9px] font-black italic tracking-widest uppercase border animate-vibe
                   ${health === "SURPLUS" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.1)]" :
-                    health === "WARNING" ? "bg-amber-500/10  border-amber-500/20  text-amber-400" :
-                      health === "DANGER" ? "bg-rose-500/10   border-rose-500/20   text-rose-400 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.1)]" :
-                        "bg-slate-500/10 border-slate-500/20 text-slate-400"}`}>
-                  <span className="w-1 h-1 rounded-full bg-current" />
-                  {hc.label}
-                </div>
-
-                {/* Wallet Cards — Dynamic Animated Reordering */}
-                <div className="relative h-[160px] sm:h-[220px] mb-16 w-full">
-                  <div className={`absolute top-0 bottom-0 w-[calc(50%-6px)] sm:w-[calc(50%-12px)] transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] gpu-promote ${isDasun ? "translate-x-0 z-10" : "translate-x-[calc(100%+12px)] sm:translate-x-[calc(100%+24px)] z-0"}`}>
-                    <article
-                      onClick={() => { haptic.select(); setCurrentUser("DASUN"); }}
-                      className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between h-full w-full ${isDasun ? "scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(56,189,248,0.55)]" : "border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60 hover:opacity-80 hover:scale-[0.98]"}`}
-                    >
-                      {isDasun && <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/20 blur-[50px] rounded-full pointer-events-none" />}
-                      <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? "opacity-[0.15]" : "opacity-[0.03] text-slate-500"}`}><WalletOutlineIcon /></div>
-                      <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
-                        <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? "text-white drop-shadow-md" : "text-slate-500"}`}>DASUN</p>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-0.5 sm:gap-1.5 w-full">
-                          <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isDasun ? "text-sky-400" : "text-slate-500"}`}>Rs.</span>
-                          <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? "text-gradient-premium" : "text-slate-300"}`}>
-                            <AnimatedNumber value={dasunBalance} decimals={0} />
-                          </p>
-                        </div>
-                      </div>
-                    </article>
+                      health === "WARNING" ? "bg-amber-500/10  border-amber-500/20  text-amber-400" :
+                        health === "DANGER" ? "bg-rose-500/10   border-rose-500/20   text-rose-400 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.1)]" :
+                          "bg-slate-500/10 border-slate-500/20 text-slate-400"}`}>
+                    <span className="w-1 h-1 rounded-full bg-current" />
+                    {hc.label}
                   </div>
 
-                  <div className={`absolute top-0 bottom-0 w-[calc(50%-6px)] sm:w-[calc(50%-12px)] transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] gpu-promote ${isKavindya ? "translate-x-0 z-10" : "translate-x-[calc(100%+12px)] sm:translate-x-[calc(100%+24px)] z-0"}`}>
-                    <article
-                      onClick={() => { haptic.select(); setCurrentUser("KAVINDYA"); }}
-                      className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between h-full w-full ${isKavindya ? "scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(246,211,101,0.45)]" : "border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60 hover:opacity-80 hover:scale-[0.98]"}`}
-                    >
-                      {isKavindya && <div className="absolute top-0 left-0 w-32 h-32 bg-orange-500/15 blur-[50px] rounded-full pointer-events-none" />}
-                      <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isKavindya ? "opacity-[0.15]" : "opacity-[0.03] text-slate-500"}`}><BankOutlineIcon /></div>
-                      <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
-                        <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isKavindya ? "text-white drop-shadow-md" : "text-slate-500 truncate w-full"}`}>KAVINDYA</p>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-0.5 sm:gap-1.5 w-full">
-                          <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isKavindya ? "text-[#f6d365]" : "text-slate-500"}`}>Rs.</span>
-                          <p className={`text-xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? "text-gradient-gold" : "text-slate-300"}`}>
-                            <AnimatedNumber value={kavindyaBalance} decimals={0} />
-                          </p>
+                  {/* Wallet Cards — Dynamic Animated Reordering */}
+                  <div className="relative h-[160px] sm:h-[220px] mb-16 w-full">
+                    <div className={`absolute top-0 bottom-0 w-[calc(50%-6px)] sm:w-[calc(50%-12px)] transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] gpu-promote ${isDasun ? "translate-x-0 z-10" : "translate-x-[calc(100%+12px)] sm:translate-x-[calc(100%+24px)] z-0"}`}>
+                      <article
+                        onClick={() => { haptic.select(); setCurrentUser("DASUN"); }}
+                        className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between h-full w-full ${isDasun ? "scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(56,189,248,0.55)]" : "border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60 hover:opacity-80 hover:scale-[0.98]"}`}
+                      >
+                        {isDasun && <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/20 blur-[50px] rounded-full pointer-events-none" />}
+                        <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? "opacity-[0.15]" : "opacity-[0.03] text-slate-500"}`}><WalletOutlineIcon /></div>
+                        <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
+                          <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? "text-white drop-shadow-md" : "text-slate-500"}`}>DASUN</p>
+                          <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-0.5 sm:gap-1.5 w-full">
+                            <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isDasun ? "text-sky-400" : "text-slate-500"}`}>Rs.</span>
+                            {/* Added pr-2 to prevent italic clipping */}
+                            <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all pr-2 ${isDasun ? "text-gradient-premium" : "text-slate-300"}`}>
+                              <AnimatedNumber value={dasunBalance} decimals={0} />
+                            </p>
+                          </div>
                         </div>
+                      </article>
+                    </div>
+
+                    <div className={`absolute top-0 bottom-0 w-[calc(50%-6px)] sm:w-[calc(50%-12px)] transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] gpu-promote ${isKavindya ? "translate-x-0 z-10" : "translate-x-[calc(100%+12px)] sm:translate-x-[calc(100%+24px)] z-0"}`}>
+                      <article
+                        onClick={() => { haptic.select(); setCurrentUser("KAVINDYA"); }}
+                        className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between h-full w-full ${isKavindya ? "scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(246,211,101,0.45)]" : "border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60 hover:opacity-80 hover:scale-[0.98]"}`}
+                      >
+                        {isKavindya && <div className="absolute top-0 left-0 w-32 h-32 bg-orange-500/15 blur-[50px] rounded-full pointer-events-none" />}
+                        <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isKavindya ? "opacity-[0.15]" : "opacity-[0.03] text-slate-500"}`}><BankOutlineIcon /></div>
+                        <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
+                          <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isKavindya ? "text-white drop-shadow-md" : "text-slate-500 truncate w-full"}`}>KAVINDYA</p>
+                          <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-0.5 sm:gap-1.5 w-full">
+                            <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isKavindya ? "text-[#f6d365]" : "text-slate-500"}`}>Rs.</span>
+                            {/* Added pr-2 to prevent italic clipping */}
+                            <p className={`text-xl sm:text-4xl font-black italic tracking-tighter break-all pr-2 ${isKavindya ? "text-gradient-gold" : "text-slate-300"}`}>
+                              <AnimatedNumber value={kavindyaBalance} decimals={0} />
+                            </p>
+                          </div>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+
+                  {/* Summary Cards */}
+                  <div key={`summary-cards-${currentUser}`} className="animate-in fade-in duration-500 slide-in-from-bottom-2" style={{ animationFillMode: "both", animationDelay: "0.1s" }}>
+                    <SummaryCards
+                      totalIncome={income}
+                      totalExpenses={expense}
+                      balance={balance}
+                      transactions={transactions}
+                      currentUser={currentUser}
+                      selectedMonth={selectedMonth}
+                    />
+                  </div>
+
+                  {/* Recent Activity */}
+                  <div key={`recent-activity-${currentUser}`} className="mt-12 animate-in fade-in duration-500 slide-in-from-bottom-2" style={{ animationFillMode: "both", animationDelay: "0.15s" }}>
+                    <div className="flex items-center justify-between mb-4 px-2">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <h3 className="text-[12px] sm:text-[14px] font-black italic tracking-widest text-white uppercase">Recent Activity</h3>
                       </div>
-                    </article>
+                      <button
+                        onClick={() => { haptic.light(); setActiveTab("LOG"); }}
+                        className="relative flex items-center justify-center min-h-[44px] px-2 text-[9px] font-bold italic tracking-widest text-slate-500 hover:text-purple-400 uppercase transition-colors click-pop"
+                      >
+                        View Log →
+                      </button>
+                    </div>
+
+                    <div className="rounded-[24px] sm:rounded-[40px] scroll-glass gpu-promote p-3 sm:p-5 flex flex-col gap-2">
+                      {recentTransactions.length > 0 ? (
+                        recentTransactions.map((txn, idx) => (
+                          <div
+                            key={txn.id}
+                            className="animate-vibe click-pop group flex items-center justify-between p-3 sm:p-4 rounded-2xl transition-all hover:bg-white/[0.05] border border-transparent hover:border-white/10 cursor-pointer min-h-[52px]"
+                            style={{ animationDelay: `${0.4 + idx * 0.1}s` }}
+                            onClick={() => haptic.light()}
+                          >
+                            <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                              <div className={`flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl text-lg sm:text-xl border transition-transform duration-300 group-hover:scale-110 ${txn.type === "income" ? "bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(52,211,153,0.1)]" : "bg-rose-500/10 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]"}`}>
+                                {CATEGORY_EMOJI[txn.category] ?? "📦"}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-[11px] sm:text-[14px] font-bold text-slate-200 uppercase truncate">{txn.description}</p>
+                                <p className="text-[9px] sm:text-[10px] font-bold italic text-slate-500 uppercase truncate mt-0.5">{txn.category} • {fmtDate(txn.date)}</p>
+                              </div>
+                            </div>
+                            <div className={`text-right text-[12px] sm:text-[14px] font-black italic truncate shrink-0 ml-4 pr-1 ${txn.type === "income" ? "text-emerald-400" : "text-rose-400"}`}>
+                              {txn.type === "income" ? "+ " : "- "}{fmtNum(txn.amount)}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <EmptyState variant="noActivity" setActiveTab={setActiveTab} />
+                      )}
+                    </div>
                   </div>
                 </div>
+              )}
 
-                {/* Summary Cards */}
-                <div key={`summary-cards-${currentUser}`} className="animate-in fade-in duration-500 slide-in-from-bottom-2" style={{ animationFillMode: "both", animationDelay: "0.1s" }}>
-                  <SummaryCards
-                    totalIncome={income}
-                    totalExpenses={expense}
-                    balance={balance}
-                    transactions={transactions}
-                    currentUser={currentUser}
-                    selectedMonth={selectedMonth}
+              {/* ── ANALYTICS TAB ── */}
+              {activeTab === "ANALYTICS" && (
+                <div id="panel-analytics" role="tabpanel" aria-labelledby="tab-analytics" key="analytics" className="py-6 space-y-10">
+                  {userTransactions.length > 0 ? (
+                    <>
+                      <SpendingBreakdown transactions={userTransactions} />
+                      <div className="animate-vibe" style={{ animationDelay: "0.3s" }}>
+                        <CashFlowTrend transactions={userTransactions} />
+                      </div>
+                    </>
+                  ) : (
+                    <EmptyState variant="noAnalytics" />
+                  )}
+                </div>
+              )}
+
+              {/* ── LOG TAB ── */}
+              {activeTab === "LOG" && (
+                <div id="panel-log" role="tabpanel" aria-labelledby="tab-log" key="log" className="animate-vibe py-6">
+                  <TransactionTable
+                    transactions={userTransactions}
+                    expenseCats={expenseCats}
+                    capitalCats={capitalCats}
+                    setActiveTab={setActiveTab}
                   />
                 </div>
+              )}
 
-                {/* Recent Activity */}
-                <div key={`recent-activity-${currentUser}`} className="mt-12 animate-in fade-in duration-500 slide-in-from-bottom-2" style={{ animationFillMode: "both", animationDelay: "0.15s" }}>
-                  <div className="flex items-center justify-between mb-4 px-2">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      </div>
-                      <h3 className="text-[12px] sm:text-[14px] font-black italic tracking-widest text-white uppercase">Recent Activity</h3>
+              {/* ── CONTROL TAB ── */}
+              {activeTab === "CONTROL" && (
+                <div id="panel-control" role="tabpanel" aria-labelledby="tab-control" key="control" className="animate-vibe py-6 max-w-4xl mx-auto flex flex-col gap-10">
+                  <AddTransactionForm
+                    currentUser={currentUser}
+                    expenseCats={expenseCats}
+                    setExpenseCats={handleUpdateExpenseCats}
+                    capitalCats={capitalCats}
+                    setCapitalCats={handleUpdateCapitalCats}
+                  />
+
+                  <div className="w-full rounded-[32px] border border-rose-500/20 scroll-glass gpu-promote p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)] mt-10">
+                    <div>
+                      <h3 className="text-[14px] sm:text-[16px] font-black italic tracking-widest text-white uppercase leading-none">System Disconnect</h3>
+                      <p className="text-[10px] sm:text-[12px] font-bold italic text-slate-400 uppercase tracking-widest mt-2">Safely terminate current session</p>
                     </div>
                     <button
-                      onClick={() => { haptic.light(); setActiveTab("LOG"); }}
-                      className="relative flex items-center justify-center min-h-[44px] px-2 text-[9px] font-bold italic tracking-widest text-slate-500 hover:text-purple-400 uppercase transition-colors click-pop"
+                      ref={logoutMagnet.ref}
+                      onMouseMove={logoutMagnet.onMouseMove}
+                      onMouseLeave={logoutMagnet.onMouseLeave}
+                      onClick={handleLogout}
+                      className="click-pop group relative flex w-full sm:w-auto items-center justify-center gap-3 overflow-hidden rounded-2xl bg-rose-500/10 px-8 py-4 border border-rose-500/30 transition-all duration-300 hover:bg-rose-500/20 hover:border-rose-500/50 hover:shadow-[0_0_20px_rgba(244,63,94,0.3)] font-black italic tracking-widest uppercase text-[11px] text-rose-400 min-h-[52px]"
                     >
-                      View Log →
+                      Logout
                     </button>
                   </div>
-
-                  <div className="rounded-[24px] sm:rounded-[40px] scroll-glass gpu-promote p-3 sm:p-5 flex flex-col gap-2">
-                    {recentTransactions.length > 0 ? (
-                      recentTransactions.map((txn, idx) => (
-                        <div
-                          key={txn.id}
-                          className="animate-vibe click-pop group flex items-center justify-between p-3 sm:p-4 rounded-2xl transition-all hover:bg-white/[0.05] border border-transparent hover:border-white/10 cursor-pointer min-h-[52px]"
-                          style={{ animationDelay: `${0.4 + idx * 0.1}s` }}
-                          onClick={() => haptic.light()}
-                        >
-                          <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
-                            <div className={`flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl text-lg sm:text-xl border transition-transform duration-300 group-hover:scale-110 ${txn.type === "income" ? "bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(52,211,153,0.1)]" : "bg-rose-500/10 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]"}`}>
-                              {CATEGORY_EMOJI[txn.category] ?? "📦"}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-[11px] sm:text-[14px] font-bold text-slate-200 uppercase truncate">{txn.description}</p>
-                              <p className="text-[9px] sm:text-[10px] font-bold italic text-slate-500 uppercase truncate mt-0.5">{txn.category} • {fmtDate(txn.date)}</p>
-                            </div>
-                          </div>
-                          <div className={`text-right text-[12px] sm:text-[14px] font-black italic truncate shrink-0 ml-4 ${txn.type === "income" ? "text-emerald-400" : "text-rose-400"}`}>
-                            {txn.type === "income" ? "+ " : "- "}{fmtNum(txn.amount)}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <EmptyState variant="noActivity" setActiveTab={setActiveTab} />
-                    )}
-                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* ── ANALYTICS TAB ── */}
-            {activeTab === "ANALYTICS" && (
-              <div id="panel-analytics" role="tabpanel" aria-labelledby="tab-analytics" key="analytics" className="py-6 space-y-10">
-                {userTransactions.length > 0 ? (
-                  <>
-                    <SpendingBreakdown transactions={userTransactions} />
-                    <div className="animate-vibe" style={{ animationDelay: "0.3s" }}>
-                      <CashFlowTrend transactions={userTransactions} />
-                    </div>
-                  </>
-                ) : (
-                  <EmptyState variant="noAnalytics" />
-                )}
-              </div>
-            )}
-
-            {/* ── LOG TAB ── */}
-            {activeTab === "LOG" && (
-              <div id="panel-log" role="tabpanel" aria-labelledby="tab-log" key="log" className="animate-vibe py-6">
-                <TransactionTable
-                  transactions={userTransactions}
-                  expenseCats={expenseCats}
-                  capitalCats={capitalCats}
-                  setActiveTab={setActiveTab}
-                />
-              </div>
-            )}
-
-            {/* ── CONTROL TAB ── */}
-            {activeTab === "CONTROL" && (
-              <div id="panel-control" role="tabpanel" aria-labelledby="tab-control" key="control" className="animate-vibe py-6 max-w-4xl mx-auto flex flex-col gap-10">
-                <AddTransactionForm
-                  currentUser={currentUser}
-                  expenseCats={expenseCats}
-                  setExpenseCats={handleUpdateExpenseCats}
-                  capitalCats={capitalCats}
-                  setCapitalCats={handleUpdateCapitalCats}
-                />
-
-                <div className="w-full rounded-[32px] border border-rose-500/20 scroll-glass gpu-promote p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)] mt-10">
-                  <div>
-                    <h3 className="text-[14px] sm:text-[16px] font-black italic tracking-widest text-white uppercase leading-none">System Disconnect</h3>
-                    <p className="text-[10px] sm:text-[12px] font-bold italic text-slate-400 uppercase tracking-widest mt-2">Safely terminate current session</p>
-                  </div>
-                  <button
-                    ref={logoutMagnet.ref}
-                    onMouseMove={logoutMagnet.onMouseMove}
-                    onMouseLeave={logoutMagnet.onMouseLeave}
-                    onClick={handleLogout}
-                    className="click-pop group relative flex w-full sm:w-auto items-center justify-center gap-3 overflow-hidden rounded-2xl bg-rose-500/10 px-8 py-4 border border-rose-500/30 transition-all duration-300 hover:bg-rose-500/20 hover:border-rose-500/50 hover:shadow-[0_0_20px_rgba(244,63,94,0.3)] font-black italic tracking-widest uppercase text-[11px] text-rose-400 min-h-[52px]"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
-            )}
-
-          </div>
+            </div>
           )}
 
-          {/* 👇 යටින් හිස් ඉඩක් තියන Spacer එක (මේක අලුතෙන් දැම්මේ) 👇 */}
           <div className="h-36 sm:h-40 shrink-0 w-full pointer-events-none" />
 
         </main>
