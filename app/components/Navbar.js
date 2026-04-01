@@ -23,17 +23,17 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
         }}
       >
         <div className="w-full pb-3 px-4 flex justify-center transition-all pointer-events-auto">
-          {/* Action Buttons Container - Totally Clean */}
-          <div className="flex items-center justify-center gap-6 w-full max-w-sm mx-auto pt-1">
+          {/* Action Buttons Container */}
+          <div className="flex items-center justify-center gap-3 w-full max-w-sm mx-auto pt-1">
 
-            {/* User toggle pill - No box, just glowing text */}
+            {/* User Toggle Pill - Premium Glass Card */}
             <button
               onClick={toggleUser}
               aria-label={`Active user: ${currentUser}. Tap to switch.`}
-              className={`click-pop no-select flex items-center shrink-0 gap-2 rounded-full px-2 py-2.5 text-[12px] font-bold italic transition-all duration-300 cursor-pointer min-h-[44px]
+              className={`click-pop no-select flex items-center shrink-0 gap-2 rounded-full px-4 py-2.5 text-[12px] font-bold italic transition-all duration-300 cursor-pointer min-h-[44px] bg-[#161b27]/80 backdrop-blur-md border shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_8px_20px_rgba(0,0,0,0.5)]
                 ${currentUser === "DASUN"
-                  ? "text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.6)]"
-                  : "text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"}`}
+                  ? "border-sky-500/30 ring-1 ring-sky-500/20 text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.6)]"
+                  : "border-purple-500/30 ring-1 ring-purple-500/20 text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"}`}
             >
               <span className="relative flex h-1.5 w-1.5 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -42,37 +42,39 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
               {currentUser}
             </button>
 
-            {/* Month filter group - No box, just glowing text */}
-            <div className="flex items-center shrink-0">
+            {/* Month filter group */}
+            <div className="flex items-center gap-2 shrink-0">
 
-              {/* ALL TIME button */}
+              {/* ALL TIME button - Premium Glass Card */}
               <button
                 onClick={() => { haptic.light(); setSelectedMonth("ALL"); }}
                 aria-pressed={selectedMonth === "ALL"}
-                className={`click-pop no-select rounded-full px-2 py-2.5 text-[11px] font-black italic tracking-widest transition-all duration-300 min-h-[44px] ${selectedMonth === "ALL"
-                  ? "text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"
-                  : "text-slate-500 hover:text-white"
+                className={`click-pop no-select rounded-full px-4 py-2.5 text-[10px] font-black italic tracking-widest transition-all duration-300 min-h-[44px] bg-[#161b27]/80 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_8px_20px_rgba(0,0,0,0.5)] border
+                  ${selectedMonth === "ALL"
+                    ? "border-purple-500/30 ring-1 ring-purple-500/20 text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"
+                    : "border-white/10 text-slate-400 hover:text-white"
                   }`}
               >
                 ALL TIME
               </button>
 
+              {/* MONTH SELECTOR - Premium Glass Card */}
               {selectedMonth === "ALL" ? (
                 <button
                   type="button"
                   onClick={() => { haptic.light(); setSelectedMonth(getCurrentMonthStr()); }}
-                  className="click-pop no-select rounded-full px-2 py-2.5 text-[11px] font-black italic tracking-widest text-slate-500 hover:text-white transition-all duration-300 min-h-[44px]"
+                  className="click-pop no-select rounded-full px-4 py-2.5 text-[10px] font-black italic tracking-widest transition-all duration-300 min-h-[44px] bg-[#161b27]/80 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_8px_20px_rgba(0,0,0,0.5)] border border-white/10 text-slate-400 hover:text-white"
                 >
                   THIS MONTH
                 </button>
               ) : (
-                <div className="rounded-full px-2 py-2.5 transition-all duration-300 text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.6)]">
+                <div className="rounded-full px-4 py-2.5 transition-all duration-300 bg-[#161b27]/80 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_8px_20px_rgba(0,0,0,0.5)] border border-sky-500/30 ring-1 ring-sky-500/20 text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.6)] flex items-center min-h-[44px]">
                   <input
                     type="month"
                     value={selectedMonth}
                     onChange={(e) => { haptic.light(); setSelectedMonth(e.target.value || "ALL"); }}
                     aria-label="Select month"
-                    className="bg-transparent outline-none text-[16px] font-bold italic tracking-widest cursor-pointer uppercase [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:h-4 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-1"
+                    className="bg-transparent outline-none text-[12px] sm:text-[14px] font-bold italic tracking-widest cursor-pointer uppercase [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:h-4 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-1"
                   />
                 </div>
               )}
