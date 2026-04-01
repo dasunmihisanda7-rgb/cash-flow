@@ -11,13 +11,15 @@ import SpendingBreakdown from "@/app/components/SpendingBreakdown";
 import CashFlowTrend from "@/app/components/CashFlowTrend";
 import { INITIAL_EXPENSE_CATEGORIES, INITIAL_CAPITAL_CATEGORIES } from "@/lib/constants";
 
-// 🚀 Shared & Custom Hooks Imports
+// 🚀 Sprint 1-4 Imports
 import AnimatedNumber from "@/lib/AnimatedNumber";
 import SkeletonLoader from "@/app/components/SkeletonLoader";
 import BootSequence from "@/app/components/BootSequence";
 import { useSwipe } from "@/lib/useSwipe";
 import { useHaptic } from "@/lib/useHaptic";
-import { useFinancialHealth, HEALTH_CONFIG } from "@/lib/useFinancialHealth"; // 🚀 Sprint 3 අලුත්
+import { useFinancialHealth, HEALTH_CONFIG } from "@/lib/useFinancialHealth";
+import { useMagnet } from "@/lib/useMagnet";
+import EmptyState from "@/app/components/EmptyState";
 
 const CATEGORY_EMOJI = {
   Salary: "💼", Freelance: "🖊️", Investments: "📈", Business: "🏢", Bonus: "🎁",
@@ -61,6 +63,7 @@ const TABS = ["SUMMARY", "ANALYTICS", "LOG", "CONTROL"];
 export default function DashboardShell({ transactions }) {
   const router = useRouter();
   const haptic = useHaptic();
+  const logoutMagnet = useMagnet(0.3);
 
   const [activeTab, setActiveTab] = useState("SUMMARY");
   const [currentUser, setCurrentUser] = useState("DASUN");
@@ -107,17 +110,6 @@ export default function DashboardShell({ transactions }) {
     router.push("/login");
   };
 
-  // Stats Calculations
-  const getAllTimeStats = (userName) => {
-    const userT = transactions.filter((t) => t.user?.toUpperCase() === userName.toUpperCase());
-    const income = userT.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
-    const expense = userT.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-    return { balance: income - expense };
-  };
-
-  const dasunAllTimeBalance = getAllTimeStats("DASUN").balance;
-  const kavindyaAllTimeBalance = getAllTimeStats("KAVINDYA").balance;
-
   const monthFilteredTransactions = transactions.filter((t) => selectedMonth === "ALL" ? true : t.date?.startsWith(selectedMonth));
 
   const getMonthlyStats = (userName) => {
@@ -137,25 +129,15 @@ export default function DashboardShell({ transactions }) {
   const isDasun = currentUser === "DASUN";
   const isKavindya = currentUser === "KAVINDYA";
 
-  // 🚀 Sprint 3: Health Logic
+  [span_0](start_span)// Financial Health Calculation[span_0](end_span)
   const health = useFinancialHealth(currentMonthlyStats.income, currentMonthlyStats.expense);
   const hc = HEALTH_CONFIG[health];
 
-  [span_0](start_span)// Swipe Logic[span_0](end_span)
+  [span_1](start_span)// Swipe Logic[span_1](end_span)
   const currentIndex = TABS.indexOf(activeTab);
   const swipeHandlers = useSwipe({
-    onSwipeLeft: () => {
-      if (currentIndex < TABS.length - 1) {
-        haptic.light();
-        setActiveTab(TABS[currentIndex + 1]);
-      }
-    },
-    onSwipeRight: () => {
-      if (currentIndex > 0) {
-        haptic.light();
-        setActiveTab(TABS[currentIndex - 1]);
-      }
-    },
+    onSwipeLeft: () => { if (currentIndex < TABS.length - 1) { haptic.light(); setActiveTab(TABS[currentIndex + 1]); } },
+    onSwipeRight: () => { if (currentIndex > 0) { haptic.light(); setActiveTab(TABS[currentIndex - 1]); } },
     threshold: 50,
   });
 
@@ -163,12 +145,12 @@ export default function DashboardShell({ transactions }) {
 
   return (
     <>
-      [span_1](start_span)[span_2](start_span){/* 🚀 Sprint 1: Boot Sequence[span_1](end_span)[span_2](end_span) */}
+      [span_2](start_span){/* Boot Experience[span_2](end_span) */}
       {!bootComplete && <BootSequence onComplete={() => setBootComplete(true)} />}
 
       <div className={`flex flex-col relative w-full transition-opacity duration-[800ms] ${bootComplete ? 'opacity-100' : 'opacity-0'}`}>
 
-        {/* 🚀 Sprint 3: Dynamic Ambient Background */}
+        [span_3](start_span){/* Dynamic Ambient Background[span_3](end_span) */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
           <div className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full blur-[140px] transition-all duration-[3000ms]"
             style={{ backgroundColor: hc.orb1 }} />
@@ -178,16 +160,13 @@ export default function DashboardShell({ transactions }) {
 
         <Navbar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} setCurrentUser={setCurrentUser} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
 
-        <main
-          {...swipeHandlers}
-          className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-safe-nav overflow-hidden"
-        >
+        <main {...swipeHandlers} className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-safe-nav overflow-hidden">
           <div className="space-y-10">
 
             {activeTab === "SUMMARY" && (
               <div key={`summary-${currentUser}-${selectedMonth}`} className="space-y-10">
 
-                {/* 🚀 Sprint 3: Health Status Badge */}
+                [span_4](start_span){/* Health Status Badge[span_4](end_span) */}
                 <div className={`flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full w-fit text-[9px] font-black italic tracking-widest uppercase border animate-vibe
                   ${health === 'SURPLUS' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.1)]' :
                     health === 'WARNING' ? 'bg-amber-500/10  border-amber-500/20  text-amber-400' :
@@ -198,7 +177,7 @@ export default function DashboardShell({ transactions }) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16 relative">
-                  {/* Dasun's Card */}
+                  {/* User Cards */}
                   <article onClick={() => { haptic.select(); setCurrentUser("DASUN"); }} className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(56,189,248,0.4)]' : 'border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60'}`}>
                     {isDasun && <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/20 blur-[50px] rounded-full pointer-events-none"></div>}
                     <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? 'opacity-[0.15]' : 'opacity-[0.03] text-slate-500'}`}><WalletOutlineIcon /></div>
@@ -206,12 +185,11 @@ export default function DashboardShell({ transactions }) {
                       <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? 'text-white drop-shadow-md' : 'text-slate-500'}`}>DASUN</p>
                       <div className="flex items-baseline gap-1.5 w-full">
                         <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isDasun ? 'text-sky-400' : 'text-slate-500'}`}>Rs.</span>
-                        <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? 'text-gradient-premium' : 'text-slate-300'}`}><AnimatedNumber value={dasunAllTimeBalance} decimals={0} /></p>
+                        <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? 'text-gradient-premium' : 'text-slate-300'}`}><AnimatedNumber value={transactions.filter(t => t.user === "DASUN").reduce((s, t) => t.type === 'income' ? s + t.amount : s - t.amount, 0)} decimals={0} /></p>
                       </div>
                     </div>
                   </article>
 
-                  {/* Kavindya's Card */}
                   <article onClick={() => { haptic.select(); setCurrentUser("KAVINDYA"); }} className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? 'scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(246,211,101,0.3)]' : 'border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60'}`} style={{ animationDelay: '0.1s' }}>
                     {isKavindya && <div className="absolute top-0 left-0 w-32 h-32 bg-orange-500/15 blur-[50px] rounded-full pointer-events-none"></div>}
                     <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isKavindya ? 'opacity-[0.15]' : 'opacity-[0.03] text-slate-500'}`}><BankOutlineIcon /></div>
@@ -219,21 +197,14 @@ export default function DashboardShell({ transactions }) {
                       <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isKavindya ? 'text-white drop-shadow-md' : 'text-slate-500'}`}>KAVINDYA</p>
                       <div className="flex items-baseline gap-1.5 w-full">
                         <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isKavindya ? 'text-[#f6d365]' : 'text-slate-500'}`}>Rs.</span>
-                        <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? 'text-gradient-gold' : 'text-slate-300'}`}><AnimatedNumber value={kavindyaAllTimeBalance} decimals={0} /></p>
+                        <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? 'text-gradient-gold' : 'text-slate-300'}`}><AnimatedNumber value={transactions.filter(t => t.user === "KAVINDYA").reduce((s, t) => t.type === 'income' ? s + t.amount : s - t.amount, 0)} decimals={0} /></p>
                       </div>
                     </div>
                   </article>
                 </div>
 
                 <div className="animate-vibe" style={{ animationDelay: '0.2s' }}>
-                  <SummaryCards
-                    totalIncome={currentMonthlyStats.income}
-                    totalExpenses={currentMonthlyStats.expense}
-                    balance={currentMonthlyStats.balance}
-                    transactions={transactions}
-                    currentUser={currentUser}
-                    selectedMonth={selectedMonth}
-                  />
+                  <SummaryCards totalIncome={currentMonthlyStats.income} totalExpenses={currentMonthlyStats.expense} balance={currentMonthlyStats.balance} transactions={transactions} currentUser={currentUser} selectedMonth={selectedMonth} />
                 </div>
 
                 {/* Recent Activity */}
@@ -269,29 +240,32 @@ export default function DashboardShell({ transactions }) {
                         </div>
                       ))
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-8 text-center opacity-50">
-                        <p className="text-[10px] font-bold italic tracking-widest text-slate-400 uppercase">No recent activity found</p>
-                      </div>
+                      [span_5](start_span)/* Empty State 2.0[span_5](end_span) */
+                      < EmptyState variant="noActivity" setActiveTab={setActiveTab} />
                     )}
                   </div>
                 </div>
-
               </div>
             )}
 
-            {/* Other Tabs */}
             {activeTab === "ANALYTICS" && (
               <div key="analytics" className="py-6 space-y-10">
-                <SpendingBreakdown transactions={userFilteredTransactions} />
-                <div className="animate-vibe" style={{ animationDelay: '0.3s' }}>
-                  <CashFlowTrend transactions={userFilteredTransactions} />
-                </div>
+                {userFilteredTransactions.length > 0 ? (
+                  <>
+                    <SpendingBreakdown transactions={userFilteredTransactions} />
+                    <div className="animate-vibe" style={{ animationDelay: '0.3s' }}>
+                      <CashFlowTrend transactions={userFilteredTransactions} />
+                    </div>
+                  </>
+                ) : (
+                  <EmptyState variant="noAnalytics" />
+                )}
               </div>
             )}
 
             {activeTab === "LOG" && (
               <div key="log" className="animate-vibe py-6">
-                <TransactionTable transactions={userFilteredTransactions} expenseCats={expenseCats} capitalCats={capitalCats} />
+                <TransactionTable transactions={userFilteredTransactions} expenseCats={expenseCats} capitalCats={capitalCats} setActiveTab={setActiveTab} />
               </div>
             )}
 
@@ -299,12 +273,19 @@ export default function DashboardShell({ transactions }) {
               <div key="control" className="animate-vibe py-6 max-w-4xl mx-auto flex flex-col gap-10">
                 <AddTransactionForm currentUser={currentUser} expenseCats={expenseCats} setExpenseCats={handleUpdateExpenseCats} capitalCats={capitalCats} setCapitalCats={handleUpdateCapitalCats} />
 
+                [span_6](start_span){/* System Disconnect Section with Magnetic Logout[span_6](end_span) */}
                 <div className="w-full rounded-[32px] border border-rose-500/20 scroll-glass gpu-promote p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)] mt-10">
                   <div>
-                    <h3 className="text-[14px] sm:text-[16px] font-black italic tracking-widest text-white uppercase">System Disconnect</h3>
-                    <p className="text-[10px] sm:text-[12px] font-bold italic text-slate-400 uppercase tracking-widest mt-1">Safely terminate current session</p>
+                    <h3 className="text-[14px] sm:text-[16px] font-black italic tracking-widest text-white uppercase leading-none">System Disconnect</h3>
+                    <p className="text-[10px] sm:text-[12px] font-bold italic text-slate-400 uppercase tracking-widest mt-2">Safely terminate current session</p>
                   </div>
-                  <button onClick={handleLogout} className="click-pop group flex items-center gap-3 rounded-2xl bg-rose-500/10 px-8 py-4 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 transition-all font-black italic tracking-widest uppercase text-[11px]">
+                  <button
+                    ref={logoutMagnet.ref}
+                    onMouseMove={logoutMagnet.onMouseMove}
+                    onMouseLeave={logoutMagnet.onMouseLeave}
+                    onClick={handleLogout}
+                    className="click-pop group relative flex w-full sm:w-auto items-center justify-center gap-3 overflow-hidden rounded-2xl bg-rose-500/10 px-8 py-4 border border-rose-500/30 transition-all duration-300 hover:bg-rose-500/20 hover:border-rose-500/50 hover:shadow-[0_0_20px_rgba(244,63,94,0.3)] font-black italic tracking-widest uppercase text-[11px] text-rose-400"
+                  >
                     Logout
                   </button>
                 </div>
