@@ -13,6 +13,7 @@ import { INITIAL_EXPENSE_CATEGORIES, INITIAL_CAPITAL_CATEGORIES } from "@/lib/co
 import AnimatedNumber from "@/lib/AnimatedNumber";
 import SkeletonLoader from "@/app/components/SkeletonLoader"; // 🚀 Sprint 1 අලුත් Component එක
 import BootSequence from "@/app/components/BootSequence";     // 🚀 Sprint 1 අලුත් Component එක
+import { useSwipe } from "@/lib/useSwipe";
 
 const CATEGORY_EMOJI = {
   Salary: "💼", Freelance: "🖊️", Investments: "📈", Business: "🏢", Bonus: "🎁",
@@ -133,6 +134,19 @@ export default function DashboardShell({ transactions }) {
 
   const isDasun = currentUser === "DASUN";
   const isKavindya = currentUser === "KAVINDYA";
+  // 🚀 Swipe to change tabs!
+  const TABS = ["SUMMARY", "ANALYTICS", "LOG", "CONTROL"];
+  const currentIndex = TABS.indexOf(activeTab);
+
+  const swipeHandlers = useSwipe({
+    onSwipeLeft: () => {
+      if (currentIndex < TABS.length - 1) setActiveTab(TABS[currentIndex + 1]);
+    },
+    onSwipeRight: () => {
+      if (currentIndex > 0) setActiveTab(TABS[currentIndex - 1]);
+    },
+    threshold: 50,
+  });
 
   return (
     <>
@@ -143,7 +157,10 @@ export default function DashboardShell({ transactions }) {
       <div className={`flex flex-col relative w-full transition-opacity duration-[800ms] ${bootComplete ? 'opacity-100' : 'opacity-0'}`}>
         <Navbar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} setCurrentUser={setCurrentUser} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
 
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-safe-nav overflow-hidden">
+        <main
+          {...swipeHandlers}
+          className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-safe-nav overflow-hidden"
+        >
           <div className="space-y-10">
 
             {activeTab === "SUMMARY" && (
