@@ -12,8 +12,8 @@
   --color-brand-600: #0284c7;
 
   /* Surface tokens */
-  --color-surface-0: #0f1117;
-  --color-surface-1: #161b27;
+  --color-surface-0: #0c1020;
+  --color-surface-1: #131824;
   --color-surface-2: #1e273a;
   --color-surface-3: #243044;
   --color-border: #2a3347;
@@ -47,7 +47,7 @@ html {
 
 body {
   min-height: 100%;
-  background-color: #080b12;
+  background-color: #05080f;
   color: #e2e8f0;
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -58,6 +58,34 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-text-stroke: 0;
   font-variant-numeric: tabular-nums;
+}
+
+/* ─── Animated Chromatic Mesh Gradient (Base Ambient Layer) ──────────── */
+/*
+ * A pure-CSS radial gradient mesh pinned to the viewport via body::after.
+ * Sits at z-index: -2, beneath the health orbs at z-index: -10 (via Tailwind's
+ * -z-10). Uses very low HSL lightness (≤10%) so it never competes with text.
+ * The bg-drift animation is a slow background-position pan for a living,
+ * breathing quality — no JS, no layout reflow, GPU-composited paint only.
+ */
+@keyframes bg-drift {
+  0%,  100% { background-position: 0%   0%,   100% 100%, 50%  50%; }
+  33%        { background-position: 8%   4%,   92%  96%,  54%  47%; }
+  66%        { background-position: 4%   9%,   96%  91%,  46%  53%; }
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 50% at 15% 20%,  hsl(245 80% 10% / 0.9)  0%, transparent 70%),
+    radial-gradient(ellipse 70% 60% at 85% 80%,  hsl(215 90% 8%  / 0.85) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 70% at 50% 50%,  hsl(270 60% 7%  / 0.70) 0%, transparent 80%);
+  background-size: 120% 120%;
+  animation: bg-drift 20s ease-in-out infinite;
 }
 
 /* Subtle scrollbar styling */
@@ -71,12 +99,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a3347;
+  background: linear-gradient(160deg, #1a2240 0%, #2a2050 100%);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #38bdf8;
+  background: linear-gradient(160deg, #38bdf8 0%, #c084fc 100%);
 }
 
 /* ─── iOS Fix: Native App Utilities ────────────────────────────────── */
@@ -89,22 +117,28 @@ body {
 /* ─── Premium Glassmorphism 2.0 (3D Feel) ──────────────────────────── */
 /* Tier-1: Used for always-fixed UI chrome (nav bars) */
 .premium-glass {
-  background-color: rgba(11, 15, 24, 0.80) !important;
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.005) 100%) !important;
-  backdrop-filter: blur(24px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), inset 0 -1px 1px rgba(0, 0, 0, 0.5), 0 20px 40px -10px rgba(0, 0, 0, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: rgba(8, 12, 22, 0.86) !important;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.14),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.60),
+    0 24px 48px -12px rgba(0, 0, 0, 0.90) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09);
 }
 
-/* Tier-2: Used for scrollable content cards (Better FPS) */
+/* Tier-2: Used for scrollable content cards */
 .scroll-glass {
-  background-color: rgba(11, 15, 24, 0.85) !important;
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.005) 100%) !important;
-  backdrop-filter: blur(12px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), inset 0 -1px 1px rgba(0, 0, 0, 0.4), 0 15px 35px -10px rgba(0, 0, 0, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: rgba(8, 12, 22, 0.88) !important;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.008) 100%) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.10),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.45),
+    0 16px 40px -10px rgba(0, 0, 0, 0.70) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /*
