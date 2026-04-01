@@ -50,7 +50,7 @@ export default function DialPad({ onKeyPress }) {
             if (e.nativeEvent.pointerType === "mouse") haptic.light();
             handlePress(key);
           }}
-          className="relative flex items-center justify-center h-[60px] sm:h-[70px] rounded-[20px] bg-[#161b27] border border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_4px_10px_rgba(0,0,0,0.3)] active:bg-[#1e273a] transition-colors duration-100 touch-manipulation no-select"
+          className="relative flex items-center justify-center h-[60px] max-h-[8dvh] sm:h-[70px] rounded-[20px] bg-[#161b27] border border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_4px_10px_rgba(0,0,0,0.3)] active:bg-[#1e273a] transition-all duration-100 touch-manipulation no-select"
         >
           {key === "DEL" ? (
              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6 sm:w-8 sm:h-8 text-slate-500">

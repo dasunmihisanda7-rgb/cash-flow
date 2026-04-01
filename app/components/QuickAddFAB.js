@@ -146,7 +146,7 @@ export default function QuickAddFAB({ currentUser, expenseCats, capitalCats, act
             role="dialog"
             aria-modal="true"
             aria-labelledby="quick-add-title"
-            className="w-full bg-[#080b12]/95 backdrop-blur-xl border-t border-white/10 rounded-t-[32px] sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] pb-safe-nav max-w-lg mx-auto transform animate-in slide-in-from-bottom flex flex-col max-h-[92dvh] sm:max-h-[90dvh]"
+            className="w-full bg-[#080b12]/95 backdrop-blur-xl border-t border-white/10 rounded-t-[32px] sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] pb-[max(1rem,env(safe-area-inset-bottom))] max-w-lg mx-auto transform animate-in slide-in-from-bottom flex flex-col max-h-[96dvh] sm:max-h-[90dvh]"
           >
             {/* Drag Handle */}
             <div className="w-full flex justify-center pt-3 pb-2 cursor-pointer no-select shrink-0 z-10" onClick={closeSheet}>
@@ -217,16 +217,19 @@ export default function QuickAddFAB({ currentUser, expenseCats, capitalCats, act
                 </div>
 
                 {/* Custom DialPad */}
-                <div className="shrink-0 my-2">
+                <div className="shrink-0 my-1 sm:my-2">
                   <DialPad onKeyPress={handleDialPad} />
                 </div>
 
+                {/* Spacer to prevent overlap with sticky footer */}
+                <div className="h-6 sm:h-8 shrink-0" />
+
                 {/* Submit Container */}
-                <div className="sticky bottom-0 bg-[#080b12]/95 pt-2 pb-4 z-20 border-t border-white/5 -mb-4 shrink-0">
+                <div className="sticky bottom-0 bg-[#080b12]/95 pt-4 pb-4 sm:pb-6 z-20 border-t border-white/5 -mx-6 px-6 sm:-mx-8 sm:px-8 mt-auto shrink-0">
                   <button
                     type="submit"
                     disabled={isSubmitting || amountStr === "0" || amountStr === "0." || !description}
-                    className={`w-full py-4 sm:py-5 rounded-[20px] text-[11px] sm:text-xs font-black italic tracking-[0.2em] uppercase transition-all click-pop disabled:opacity-50 ${type === "income"
+                    className={`w-full py-4 sm:py-5 rounded-[20px] text-[12px] sm:text-sm font-black italic tracking-[0.2em] uppercase transition-all click-pop disabled:opacity-50 ${type === "income"
                         ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
                         : "bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30 shadow-[0_0_20px_rgba(244,63,94,0.2)]"
                       }`}
