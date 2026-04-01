@@ -1,0 +1,71 @@
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="cg" x1="380" y1="28" x2="65" y2="468" gradientUnits="userSpaceOnUse">
+    <stop offset="0%"   stop-color="#38ddff"/>
+    <stop offset="14%"  stop-color="#4466ff"/>
+    <stop offset="38%"  stop-color="#7733ee"/>
+    <stop offset="62%"  stop-color="#9922cc"/>
+    <stop offset="82%"  stop-color="#cc33ee"/>
+    <stop offset="100%" stop-color="#ff44ee"/>
+  </linearGradient>
+  <radialGradient id="hl" cx="322" cy="110" r="150" gradientUnits="userSpaceOnUse">
+    <stop offset="0%"   stop-color="#aaeeff" stop-opacity="0.52"/>
+    <stop offset="48%"  stop-color="#88ccff" stop-opacity="0.1"/>
+    <stop offset="100%" stop-color="#ffffff"  stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="sh" cx="168" cy="182" r="105" gradientUnits="userSpaceOnUse">
+    <stop offset="0%"   stop-color="#000" stop-opacity="0.62"/>
+    <stop offset="58%"  stop-color="#000" stop-opacity="0.18"/>
+    <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="sh2" cx="168" cy="358" r="88" gradientUnits="userSpaceOnUse">
+    <stop offset="0%"   stop-color="#000" stop-opacity="0.28"/>
+    <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="bgg" cx="250" cy="250" r="240" gradientUnits="userSpaceOnUse">
+    <stop offset="0%"   stop-color="#1a0033" stop-opacity="0.75"/>
+    <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="gl" x="-38%" y="-38%" width="176%" height="176%">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="13" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <clipPath id="cm">
+    <path d="M250 50 L395 195 L325 195 L250 120 L120 250 L250 380 L325 305 L395 305 L250 450 L50 250 Z"/>
+  </clipPath>
+</defs>
+
+<!-- Background -->
+<rect width="500" height="500" fill="#000"/>
+<rect width="500" height="500" fill="url(#bgg)"/>
+
+<!-- Glow aura -->
+<path d="M250 50 L395 195 L325 195 L250 120 L120 250 L250 380 L325 305 L395 305 L250 450 L50 250 Z"
+      fill="#7733dd" filter="url(#gl)" opacity="0.42"/>
+
+<!-- Main C band -->
+<path d="M250 50 L395 195 L325 195 L250 120 L120 250 L250 380 L325 305 L395 305 L250 450 L50 250 Z"
+      fill="url(#cg)"/>
+
+<!-- Top arm highlight -->
+<rect width="500" height="500" fill="url(#hl)" clip-path="url(#cm)"/>
+
+<!-- Weave junction shadow (top arm over spine) -->
+<rect width="500" height="500" fill="url(#sh)" clip-path="url(#cm)"/>
+
+<!-- Lower arm depth shadow -->
+<rect width="500" height="500" fill="url(#sh2)" clip-path="url(#cm)"/>
+
+<!-- Outer top-right edge highlight -->
+<path d="M250 50 L395 195" fill="none" stroke="#88eeff" stroke-width="2.5" stroke-opacity="0.4" stroke-linecap="round"/>
+
+<!-- Outer top-left edge highlight -->
+<path d="M50 250 L250 50" fill="none" stroke="#aaddff" stroke-width="1.5" stroke-opacity="0.18" stroke-linecap="round"/>
+
+<!-- Inner top-left face glow -->
+<path d="M250 120 L120 250" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.2" stroke-linecap="round"/>
+
+<!-- Inner boundary outline -->
+<path d="M250 120 L120 250 L250 380 L325 305 L325 195 Z"
+      fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.1"/>
+</svg>
