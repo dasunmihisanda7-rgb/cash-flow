@@ -50,6 +50,7 @@ const fmtNum = (n) => new Intl.NumberFormat("en-LK").format(n);
 const TABS = ["SUMMARY", "ANALYTICS", "LOG", "CONTROL"];
 
 export default function DashboardShell({ transactions }) {
+  const quickAddRef = useRef(null);
   const router = useRouter();
   const haptic = useHaptic();
   const logoutMagnet = useMagnet(0.3);
@@ -221,6 +222,7 @@ export default function DashboardShell({ transactions }) {
           setCurrentUser={setCurrentUser}
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
+          onQuickAddClick={() => quickAddRef.current?.openSheet()} // <--- මේ ලයින් එක අලුතෙන් දැම්මේ
         />
 
         {/*
@@ -421,6 +423,7 @@ export default function DashboardShell({ transactions }) {
         </main>
 
         <QuickAddFAB
+          ref={quickAddRef} // <--- මේ ලයින් එක අලුතෙන් දැම්මේ
           currentUser={currentUser}
           expenseCats={expenseCats}
           capitalCats={capitalCats}

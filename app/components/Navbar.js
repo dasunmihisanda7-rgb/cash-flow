@@ -5,7 +5,7 @@ import { getCurrentMonthStr } from "@/lib/utils";
 
 const tabs = ["SUMMARY", "ANALYTICS", "LOG", "CONTROL"];
 
-export default function Navbar({ activeTab, setActiveTab, currentUser, setCurrentUser, selectedMonth, setSelectedMonth }) {
+export default function Navbar({ activeTab, setActiveTab, currentUser, setCurrentUser, selectedMonth, setSelectedMonth, onQuickAddClick }) {
   const haptic = useHaptic();
 
   const toggleUser = () => {
@@ -18,15 +18,12 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
       {/* ── Top Bar ── */}
       <div
         className="sticky top-0 z-40 w-full gpu-promote pointer-events-none"
-        style={{
-          paddingTop: "max(1rem, env(safe-area-inset-top))",
-        }}
+        style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}
       >
         <div className="w-full pb-3 px-4 flex justify-center transition-all pointer-events-auto">
           {/* Action Buttons Container */}
           <div className="flex items-center justify-center gap-3 w-full max-w-sm mx-auto pt-1">
-
-            {/* User Toggle Pill - Premium Glass Card */}
+            {/* User Toggle Pill */}
             <button
               onClick={toggleUser}
               aria-label={`Active user: ${currentUser}. Tap to switch.`}
@@ -44,8 +41,7 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
 
             {/* Month filter group */}
             <div className="flex items-center gap-2 shrink-0">
-
-              {/* ALL TIME button - Premium Glass Card */}
+              {/* ALL TIME button */}
               <button
                 onClick={() => { haptic.light(); setSelectedMonth("ALL"); }}
                 aria-pressed={selectedMonth === "ALL"}
@@ -58,7 +54,7 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
                 ALL TIME
               </button>
 
-              {/* MONTH SELECTOR - Premium Glass Card */}
+              {/* MONTH SELECTOR */}
               {selectedMonth === "ALL" ? (
                 <button
                   type="button"
@@ -83,59 +79,80 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
         </div>
       </div>
 
-      {/* ── Floating Bottom Nav ── */}
+      {/* ── App Store Style Bottom Nav ── */}
       <div
         className="fixed z-50 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md pointer-events-none transition-all gpu-promote"
         style={{ bottom: 0, paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
       >
-        <nav
-          role="tablist"
-          aria-label="Main Navigation"
-          className="bg-[#080b12]/60 rounded-[2rem] p-2 relative flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border border-white/10 ring-1 ring-white/5"
-          style={{
-            WebkitBackdropFilter: "blur(28px) saturate(2)",
-            backdropFilter: "blur(28px) saturate(2)",
-          }}
-        >
-          {/* Sliding Active Pill */}
-          <div
-            className="absolute top-2 bottom-2 bg-white/[0.08] rounded-full border border-white/[0.05] pointer-events-none gpu-promote"
-            style={{
-              width: `calc((100% - 16px) / ${tabs.length})`,
-              transform: `translateX(calc(${tabs.indexOf(activeTab)} * 100%))`,
-              transition: "transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1)",
-              boxShadow: "inset 0 1px 1px rgba(255,255,255,0.1)",
-            }}
-            aria-hidden="true"
-          />
+        <div className="flex items-center gap-3 w-full pointer-events-auto">
 
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab;
-            return (
-              <button
-                key={tab}
-                role="tab"
-                aria-selected={isActive}
-                aria-controls={`panel-${tab.toLowerCase()}`}
-                onClick={() => {
-                  if (!isActive) haptic.medium();
-                  setActiveTab(tab);
-                }}
-                className={`click-pop no-select relative z-10 flex-1 flex flex-col items-center justify-center min-h-[52px] py-3 rounded-full transition-all duration-300
-                  ${isActive ? "" : "hover:bg-white/5"}
-                `}
-              >
-                {isActive && (
-                  <span className="absolute -top-2 w-1 h-1 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
-                )}
-                <span className={`text-[9px] sm:text-[10px] font-black italic tracking-widest uppercase transition-all duration-300
-                    ${isActive ? "text-purple-300 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]" : "text-slate-500"}`}>
-                  {tab}
-                </span>
-              </button>
-            );
-          })}
-        </nav>
+          {/* Main Tabs Capsule */}
+          <nav
+            role="tablist"
+            aria-label="Main Navigation"
+            className="flex-1 bg-[#080b12]/60 rounded-[2rem] p-2 relative flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 ring-1 ring-white/5"
+            style={{ WebkitBackdropFilter: "blur(28px) saturate(2)", backdropFilter: "blur(28px) saturate(2)" }}
+          >
+            {/* Sliding Active Pill */}
+            <div
+              className="absolute top-2 bottom-2 bg-white/[0.08] rounded-full border border-white/[0.05] pointer-events-none gpu-promote"
+              style={{
+                width: `calc((100% - 16px) / ${tabs.length})`,
+                transform: `translateX(calc(${tabs.indexOf(activeTab)} * 100%))`,
+                transition: "transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+                boxShadow: "inset 0 1px 1px rgba(255,255,255,0.1)",
+              }}
+              aria-hidden="true"
+            />
+
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls={`panel-${tab.toLowerCase()}`}
+                  onClick={() => {
+                    if (!isActive) haptic.medium();
+                    setActiveTab(tab);
+                  }}
+                  className={`click-pop no-select relative z-10 flex-1 flex flex-col items-center justify-center min-h-[52px] py-3 rounded-full transition-all duration-300
+                    ${isActive ? "" : "hover:bg-white/5"}
+                  `}
+                >
+                  {isActive && (
+                    <span className="absolute -top-2 w-1 h-1 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
+                  )}
+                  <span className={`text-[9px] sm:text-[10px] font-black italic tracking-widest uppercase transition-all duration-300
+                      ${isActive ? "text-purple-300 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]" : "text-slate-500"}`}>
+                    {tab}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Quick Add (+) Circle Button */}
+          <button
+            onClick={onQuickAddClick}
+            aria-label="Quick add transaction"
+            className="group shrink-0 flex items-center justify-center w-[68px] h-[68px] rounded-full bg-[#080b12]/60 border border-sky-400/30 text-sky-400 shadow-[0_10px_40px_rgba(56,189,248,0.4)] pointer-events-auto transition-all click-pop gpu-promote ring-1 ring-white/5"
+            style={{ WebkitBackdropFilter: "blur(28px) saturate(2)", backdropFilter: "blur(28px) saturate(2)" }}
+            onTouchStart={(e) => {
+              haptic.light();
+              e.currentTarget.style.transform = "scale(0.9) translateZ(0)";
+            }}
+            onTouchEnd={(e) => {
+              e.currentTarget.style.transform = "scale(1) translateZ(0)";
+            }}
+          >
+            <div className="absolute inset-0 rounded-full bg-sky-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-8 h-8 relative z-10 transition-transform group-hover:rotate-90 duration-300">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+          </button>
+        </div>
       </div>
     </>
   );
