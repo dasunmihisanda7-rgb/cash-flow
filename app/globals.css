@@ -202,3 +202,26 @@ textarea {
 .animate-vibe[data-settled] {
   will-change: auto;
 }
+
+/* ─── Cyberpunk Skeleton Shimmer (Sprint 1) ────────────────────────────── */
+@keyframes skeleton-pulse {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.02) 0%,
+      rgba(56, 189, 248, 0.08) 30%,
+      /* sky-400 neon flash */
+      rgba(192, 132, 252, 0.08) 50%,
+      /* purple-400 neon flash */
+      rgba(255, 255, 255, 0.02) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 2s ease-in-out infinite;
+}
