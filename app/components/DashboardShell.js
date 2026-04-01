@@ -183,7 +183,7 @@ export default function DashboardShell({ transactions }) {
       {!bootComplete && <SplashScreen onComplete={handleBootComplete} />}
 
       <div
-        className={`flex flex-col w-full flex-1 min-h-0 overflow-hidden relative transition-opacity duration-[800ms] ${bootComplete ? "opacity-100" : "opacity-0"}`}
+        className={`flex flex-col w-full h-[100dvh] h-screen overflow-hidden relative transition-opacity duration-[800ms] ${bootComplete ? "opacity-100" : "opacity-0"}`}
       >
         <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
           <div

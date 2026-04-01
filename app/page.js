@@ -6,7 +6,7 @@ export default async function DashboardPage() {
   const transactions = await getTransactions();
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#05070a] text-white"
+    <div className="relative flex h-[100dvh] h-screen flex-col bg-[#05070a] text-white overflow-hidden"
       style={{ backgroundImage: "radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.08), transparent 50%), radial-gradient(circle at 100% 100%, rgba(192, 132, 252, 0.05), transparent 50%)" }}>
 
       {/* ── Background Glows ── */}
