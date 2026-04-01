@@ -181,20 +181,17 @@ export default function DashboardShell({ transactions }) {
     threshold: 50,
   });
 
-  if (loading) return <SkeletonLoader />;
-
   return (
     <>
       {!bootComplete && <SplashScreen onComplete={handleBootComplete} />}
 
       {/*
-        OPT-22: Root shell is a flex column filling the full viewport height.
-        `h-[100dvh]` uses the dynamic viewport height unit so the shell
-        accounts for the iOS address bar shrinking/expanding. `overflow-hidden`
-        prevents the shell itself from scrolling — that is delegated to <main>.
+        OPT-22: Root shell is a flex column filling available height.
+        `flex-1 min-h-0` ensures it doesn't overflow bounds provided by page.js.
+        `overflow-hidden` prevents the shell itself from scrolling — that is delegated to <main>.
       */}
       <div
-        className={`flex flex-col w-full h-[100dvh] overflow-hidden relative transition-opacity duration-[800ms] ${bootComplete ? "opacity-100" : "opacity-0"}`}
+        className={`flex flex-col w-full flex-1 min-h-0 overflow-hidden relative transition-opacity duration-[800ms] ${bootComplete ? "opacity-100" : "opacity-0"}`}
       >
         {/* ── Dynamic Financial Health Background Orbs ── */}
         {/*
@@ -236,10 +233,13 @@ export default function DashboardShell({ transactions }) {
             scroll gesture belongs to this container, not to a swipe nav handler.
         */}
         <main
-          {...swipeHandlers}
+          {...(loading ? {} : swipeHandlers)}
           className="flex-1 min-h-0 mx-auto w-full max-w-7xl overflow-y-auto px-4 py-4 sm:px-6 pb-safe-nav"
           style={{ touchAction: "pan-y" }}
         >
+          {loading ? (
+            <SkeletonLoader />
+          ) : (
           <div className="space-y-10">
 
             {/* ── SUMMARY TAB ── */}
@@ -420,6 +420,7 @@ export default function DashboardShell({ transactions }) {
             )}
 
           </div>
+          )}
 
           {/* 👇 යටින් හිස් ඉඩක් තියන Spacer එක (මේක අලුතෙන් දැම්මේ) 👇 */}
           <div className="h-36 sm:h-40 shrink-0 w-full pointer-events-none" />

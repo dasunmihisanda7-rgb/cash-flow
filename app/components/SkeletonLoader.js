@@ -2,8 +2,7 @@
 
 export default function SkeletonLoader() {
     return (
-        <div className="flex flex-col relative w-full min-h-screen pt-[max(5rem,env(safe-area-inset-top))]">
-            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 space-y-10 animate-vibe">
+        <div className="w-full animate-vibe space-y-10">
 
                 {/* User Card Skeletons */}
                 <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16">
@@ -63,7 +62,6 @@ export default function SkeletonLoader() {
                     </div>
                 </div>
 
-            </div>
         </div>
     );
 }
