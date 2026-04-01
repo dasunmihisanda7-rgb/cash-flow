@@ -155,7 +155,7 @@ export default function DashboardShell({ transactions }) {
 
         <Navbar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} setCurrentUser={setCurrentUser} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
 
-        <main {...swipeHandlers} className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-safe-nav overflow-hidden">
+        <main {...swipeHandlers} className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-safe-nav overflow-hidden" style={{ touchAction: "pan-y" }}>
           <div className="space-y-10">
 
             {activeTab === "SUMMARY" && (

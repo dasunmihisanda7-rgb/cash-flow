@@ -227,7 +227,6 @@ textarea {
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -236,4 +235,38 @@ textarea {
   50% {
     transform: translateY(-8px);
   }
+}
+
+/* ─── Bug #5 Fix: Swipe Row Utilities ────────────────────────────────────── */
+/*
+ * Problem: .click-pop:active { transform: scale(0.94) } on the delete trigger
+ * button INSIDE the swipe panel resets the parent's transform transition timing,
+ * causing a visible jitter. We replace it with a color-only feedback.
+ *
+ * Problem: touch-action on the list container tells the browser that this area
+ * scrolls vertically only, helping the OS-level gesture engine hand off
+ * horizontal touches to our JS handlers rather than to page scroll.
+ */
+
+/* Applied to the outer swipe row container — horizontal gesture is handled by JS */
+.swipe-row-container {
+  touch-action: pan-y;
+}
+
+/* Applied to the sliding inner content div — disables text selection during drag */
+.swipe-row-content {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
+}
+
+/* ─── Animate-in utility (for modal fade-in) ─────────────────────────────── */
+/* If animate-in / fade-in are not available from a plugin, define them here  */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+}
+
+.animate-in.fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
