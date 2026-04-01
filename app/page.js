@@ -6,16 +6,15 @@ export default async function DashboardPage() {
   const transactions = await getTransactions();
 
   return (
-    // 🚀 UI Upgrade: පසුබිම තවත් Dark කළා (Opacity 0.1 -> 0.03)
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#05070a] bg-animated-mesh text-white"
-      style={{ backgroundImage: "radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.03), transparent 50%), radial-gradient(circle at 100% 100%, rgba(192, 132, 252, 0.03), transparent 50%)" }}>
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#05070a] text-white"
+      style={{ backgroundImage: "radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.05), transparent 50%), radial-gradient(circle at 100% 100%, rgba(192, 132, 252, 0.05), transparent 50%)" }}>
 
-      {/* ── Background Glows (Subtle Ambient Lights) ── */}
-      {/* 🚀 වෙනස් කළ තැන: Glow එකේ සැර ගොඩක් අඩු කළා (opacity /20 -> /5 සහ mix-blend අයින් කළා) */}
+      {/* ── Background Glows (Glassmorphism එකට පණ දෙන්නේ මේවා) ── */}
+      {/* 🚀 වෙනස් කළ තැන: එළිය ආයෙත් වැඩි කළා (Opacity 5% ඉඳන් 20% කළා). දැන් කාඩ් ටික Dark නිසා මේ එළිය පට්ටෙට පෙනේවි! */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute -top-[10%] -left-[10%] h-[400px] w-[400px] rounded-full bg-sky-500/5 blur-[150px]" />
-        <div className="absolute top-[30%] -right-[10%] h-[400px] w-[400px] rounded-full bg-purple-600/5 blur-[150px]" />
-        <div className="absolute -bottom-[10%] left-[10%] h-[500px] w-[500px] rounded-full bg-fuchsia-500/5 blur-[150px]" />
+        <div className="absolute -top-[10%] -left-[10%] h-[400px] w-[400px] rounded-full bg-sky-500/20 blur-[100px] mix-blend-screen" />
+        <div className="absolute top-[30%] -right-[10%] h-[400px] w-[400px] rounded-full bg-purple-600/20 blur-[120px] mix-blend-screen" />
+        <div className="absolute -bottom-[10%] left-[10%] h-[500px] w-[500px] rounded-full bg-fuchsia-500/20 blur-[120px] mix-blend-screen" />
       </div>
 
       <div className="relative z-10 flex flex-col flex-1">
