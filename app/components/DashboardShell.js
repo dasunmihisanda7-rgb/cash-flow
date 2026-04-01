@@ -11,7 +11,32 @@ import SpendingBreakdown from "@/app/components/SpendingBreakdown";
 import CashFlowTrend from "@/app/components/CashFlowTrend";
 import { INITIAL_EXPENSE_CATEGORIES, INITIAL_CAPITAL_CATEGORIES } from "@/lib/constants";
 
-// 🚀 Category Emojis & Date Formatter
+// 🚀 UI Upgrade: 0 ඉඳන් සල්ලි ගාණ උඩට යන ඇනිමේෂන් එක ලොකු කාඩ්ස් වලටත් දානවා
+const AnimatedNumber = ({ value }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let startTimestamp = null;
+    const duration = 1500; // ලොකු ගණන් වලට ටිකක් වෙලා යන්න දුන්නා (1.5s)
+
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      setDisplayValue(easeProgress * value);
+
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+
+    window.requestAnimationFrame(step);
+  }, [value]);
+
+  return new Intl.NumberFormat("en-LK", { maximumFractionDigits: 0 }).format(displayValue);
+};
+
 const CATEGORY_EMOJI = {
   Salary: "💼", Freelance: "🖊️", Investments: "📈", Business: "🏢", Bonus: "🎁",
   Food: "🍔", Transport: "🚌", Utilities: "⚡",
@@ -99,7 +124,7 @@ export default function DashboardShell({ transactions }) {
     router.push("/login");
   };
 
-  if (loading) return <div className="flex h-screen w-full items-center justify-center bg-[#080b12] text-white"><div className="h-12 w-12 animate-spin rounded-full border-4 border-fuchsia-500 border-t-transparent shadow-[0_0_20px_rgba(217,70,239,0.5)]"></div></div>;
+  if (loading) return <div className="flex h-screen w-full items-center justify-center bg-[#080b12] text-white"><div className="h-12 w-12 animate-spin rounded-full border-4 border-purple-500 border-t-transparent shadow-[0_0_20px_rgba(168,85,247,0.5)]"></div></div>;
 
   const getAllTimeStats = (userName) => {
     const userT = transactions.filter((t) => t.user?.toUpperCase() === userName.toUpperCase());
@@ -131,23 +156,19 @@ export default function DashboardShell({ transactions }) {
   const isKavindya = currentUser === "KAVINDYA";
 
   return (
-    // 🚀 වෙනස් කළ තැන: මෙතන තිබ්බ Background එක අයින් කළා. එතකොට page.js එකේ එළි ටික පේනවා!
     <div className="flex flex-col relative w-full">
-
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} setCurrentUser={setCurrentUser} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-safe-nav">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 pb-safe-nav overflow-hidden">
         <div className="space-y-10">
 
           {activeTab === "SUMMARY" && (
-            <div key={`summary-${currentUser}-${selectedMonth}`} className="animate-vibe space-y-10">
+            <div key={`summary-${currentUser}-${selectedMonth}`} className="space-y-10">
 
-              {/* 🚀 UI Upgrade: Top Big Cards (Premium 3D Look & Text Gradients) */}
               <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16 relative">
 
-                {/* Dasun's Card (Premium Blue/Purple) */}
-                <article onClick={() => setCurrentUser("DASUN")} className={`click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'premium-glass shadow-[0_20px_60px_-15px_rgba(56,189,248,0.4)]' : 'border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60'}`}>
-                  {/* Glowing Orb */}
+                {/* Dasun's Card */}
+                <article onClick={() => setCurrentUser("DASUN")} className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'premium-glass shadow-[0_20px_60px_-15px_rgba(56,189,248,0.4)]' : 'border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60'}`}>
                   {isDasun && <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/20 blur-[50px] rounded-full pointer-events-none"></div>}
 
                   <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? 'opacity-[0.15]' : 'opacity-[0.03] text-slate-500'}`}><WalletOutlineIcon /></div>
@@ -155,14 +176,14 @@ export default function DashboardShell({ transactions }) {
                     <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? 'text-white drop-shadow-md' : 'text-slate-500'}`}>DASUN</p>
                     <div className="flex items-baseline gap-1.5 w-full">
                       <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isDasun ? 'text-sky-400' : 'text-slate-500'}`}>Rs.</span>
-                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? 'text-gradient-premium' : 'text-slate-300'}`}>{fmtNum(dasunAllTimeBalance)}</p>
+                      {/* 🚀 UI Upgrade: Animated Number */}
+                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? 'text-gradient-premium' : 'text-slate-300'}`}><AnimatedNumber value={dasunAllTimeBalance} /></p>
                     </div>
                   </div>
                 </article>
 
-                {/* Kavindya's Card (Premium Gold/Peach) */}
-                <article onClick={() => setCurrentUser("KAVINDYA")} className={`click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? 'premium-glass shadow-[0_20px_60px_-15px_rgba(246,211,101,0.3)]' : 'border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60'}`}>
-                  {/* Glowing Orb */}
+                {/* Kavindya's Card */}
+                <article onClick={() => setCurrentUser("KAVINDYA")} className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? 'premium-glass shadow-[0_20px_60px_-15px_rgba(246,211,101,0.3)]' : 'border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60'}`} style={{ animationDelay: '0.1s' }}>
                   {isKavindya && <div className="absolute top-0 left-0 w-32 h-32 bg-orange-500/15 blur-[50px] rounded-full pointer-events-none"></div>}
 
                   <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isKavindya ? 'opacity-[0.15]' : 'opacity-[0.03] text-slate-500'}`}><BankOutlineIcon /></div>
@@ -170,24 +191,28 @@ export default function DashboardShell({ transactions }) {
                     <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isKavindya ? 'text-white drop-shadow-md' : 'text-slate-500'}`}>KAVINDYA</p>
                     <div className="flex items-baseline gap-1.5 w-full">
                       <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isKavindya ? 'text-[#f6d365]' : 'text-slate-500'}`}>Rs.</span>
-                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? 'text-gradient-gold' : 'text-slate-300'}`}>{fmtNum(kavindyaAllTimeBalance)}</p>
+                      {/* 🚀 UI Upgrade: Animated Number */}
+                      <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? 'text-gradient-gold' : 'text-slate-300'}`}><AnimatedNumber value={kavindyaAllTimeBalance} /></p>
                     </div>
                   </div>
                 </article>
               </div>
 
               {/* Monthly Stat Cards */}
-              <SummaryCards
-                totalIncome={currentMonthlyStats.income}
-                totalExpenses={currentMonthlyStats.expense}
-                balance={currentMonthlyStats.balance}
-                transactions={transactions}
-                currentUser={currentUser}
-                selectedMonth={selectedMonth}
-              />
+              {/* 🚀 UI Upgrade: Staggered animation */}
+              <div className="animate-vibe" style={{ animationDelay: '0.2s' }}>
+                <SummaryCards
+                  totalIncome={currentMonthlyStats.income}
+                  totalExpenses={currentMonthlyStats.expense}
+                  balance={currentMonthlyStats.balance}
+                  transactions={transactions}
+                  currentUser={currentUser}
+                  selectedMonth={selectedMonth}
+                />
+              </div>
 
-              {/* 🚀 UI Upgrade: Recent Activity Widget */}
-              <div className="mt-12">
+              {/* 🚀 UI Upgrade: Recent Activity Widget with Staggered animations per item */}
+              <div className="mt-12 animate-vibe" style={{ animationDelay: '0.3s' }}>
                 <div className="flex items-center justify-between mb-4 px-2">
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
@@ -204,8 +229,8 @@ export default function DashboardShell({ transactions }) {
 
                 <div className="rounded-[24px] sm:rounded-[40px] premium-glass p-3 sm:p-5 flex flex-col gap-2">
                   {recentTransactions.length > 0 ? (
-                    recentTransactions.map((txn) => (
-                      <div key={txn.id} className="click-pop group flex items-center justify-between p-3 sm:p-4 rounded-2xl transition-all hover:bg-white/[0.05] border border-transparent hover:border-white/10 cursor-pointer">
+                    recentTransactions.map((txn, idx) => (
+                      <div key={txn.id} className="animate-vibe click-pop group flex items-center justify-between p-3 sm:p-4 rounded-2xl transition-all hover:bg-white/[0.05] border border-transparent hover:border-white/10 cursor-pointer" style={{ animationDelay: `${0.4 + (idx * 0.1)}s` }}>
                         <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
                           <div className={`flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl text-lg sm:text-xl border transition-transform duration-300 group-hover:scale-110 ${txn.type === "income" ? "bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(52,211,153,0.1)]" : "bg-rose-500/10 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]"}`}>
                             {CATEGORY_EMOJI[txn.category] ?? "📦"}
@@ -237,9 +262,11 @@ export default function DashboardShell({ transactions }) {
           )}
 
           {activeTab === "ANALYTICS" && (
-            <div key={`analytics-${currentUser}-${selectedMonth}`} className="animate-vibe py-6 space-y-10">
+            <div key={`analytics-${currentUser}-${selectedMonth}`} className="py-6 space-y-10">
               <SpendingBreakdown transactions={userFilteredTransactions} />
-              <CashFlowTrend transactions={userFilteredTransactions} />
+              <div className="animate-vibe" style={{ animationDelay: '0.3s' }}>
+                <CashFlowTrend transactions={userFilteredTransactions} />
+              </div>
             </div>
           )}
 
@@ -263,7 +290,7 @@ export default function DashboardShell({ transactions }) {
                 setCapitalCats={handleUpdateCapitalCats}
               />
 
-              <div className="w-full rounded-[32px] border border-rose-500/20 premium-glass p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)]">
+              <div className="w-full rounded-[32px] border border-rose-500/20 premium-glass p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)] mt-10" style={{ animationDelay: '0.2s' }}>
                 <div>
                   <h3 className="text-[14px] sm:text-[16px] font-black italic tracking-widest text-white uppercase">System Disconnect</h3>
                   <p className="text-[10px] sm:text-[12px] font-bold italic text-slate-400 uppercase tracking-widest mt-1">Safely terminate current session</p>

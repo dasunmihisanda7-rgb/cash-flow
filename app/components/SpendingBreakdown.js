@@ -1,17 +1,16 @@
 "use client";
-import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import React, { useState } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts';
 
 // ── 1. CATEGORY CONFIGURATION ─────────────────────
 const CATEGORY_COLORS = {
-  Salary: "#22c55e", Freelance: "#10b981", Investments: "#34d399", Business: "#059669", Bonus: "#15803d",
-  Food: "#f43f5e", Transport: "#fb923c", Utilities: "#facc15",
-  Health: "#a78bfa", Entertainment: "#38bdf8", Education: "#818cf8", Other: "#94a3b8",
+  Salary: "#34d399", Freelance: "#10b981", Investments: "#059669", Business: "#047857", Bonus: "#064e3b",
+  Food: "#fb7185", Transport: "#f43f5e", Utilities: "#e11d48",
+  Health: "#be123c", Entertainment: "#9f1239", Education: "#881337", Other: "#475569",
 };
 
-// 🚀 අලුත්: Fallback (විකල්ප) පාට දෙක (Income එකටයි Expense එකටයි)
-const DEFAULT_INCOME_COLOR = "#10b981"; // Emerald / Green
-const DEFAULT_EXPENSE_COLOR = "#f43f5e"; // Rose / Red
+const DEFAULT_INCOME_COLOR = "#34d399";
+const DEFAULT_EXPENSE_COLOR = "#fb7185";
 
 const fmt = (n) =>
   `Rs. ${new Intl.NumberFormat("en-LK", { minimumFractionDigits: 0 }).format(n)}`;
@@ -20,22 +19,21 @@ const fmt = (n) =>
 const CustomTooltip = ({ active, payload, type }) => {
   if (active && payload && payload.length) {
     const data = payload[0];
-    // 🚀 Fallback එකත් එක්ක පාට ගන්නවා
     const defaultColor = type === 'income' ? DEFAULT_INCOME_COLOR : DEFAULT_EXPENSE_COLOR;
     const categoryColor = CATEGORY_COLORS[data.name] || defaultColor;
 
     return (
-      <div className="pointer-events-none flex flex-col justify-center rounded-xl sm:rounded-2xl border border-white/10 bg-[#0f172a]/95 px-3 py-2 sm:px-4 sm:py-3 shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl outline-none">
-        <div className="flex items-center gap-2 mb-1">
+      <div className="pointer-events-none flex flex-col justify-center rounded-[20px] border border-white/10 bg-[#080b12]/80 px-4 py-3 sm:px-5 sm:py-4 shadow-[0_15px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl outline-none ring-1 ring-white/5">
+        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-white/5">
           <div
-            className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full"
+            className="h-2 w-2 rounded-full"
             style={{ backgroundColor: categoryColor, boxShadow: `0 0 10px ${categoryColor}` }}
           />
-          <p className="text-[8px] sm:text-[10px] font-black italic text-slate-400 uppercase tracking-[0.2em] sm:tracking-[0.3em]">
+          <p className="text-[9px] sm:text-[11px] font-black italic text-slate-400 uppercase tracking-[0.2em] sm:tracking-[0.3em]">
             {data.name}
           </p>
         </div>
-        <p className="text-[12px] sm:text-[14px] font-black text-white italic tracking-widest pl-3 sm:pl-4">
+        <p className="text-[14px] sm:text-[16px] font-black text-white italic tracking-widest pl-4">
           {fmt(data.value)}
         </p>
       </div>
@@ -44,7 +42,51 @@ const CustomTooltip = ({ active, payload, type }) => {
   return null;
 };
 
+// ── 3. ACTIVE SHAPE (HOVER EFFECT) ─────────────────────
+// 🚀 UI Upgrade: Chart එකේ කෑල්ලක් උඩට ගියාම ඒක Pop out වෙන ඇනිමේෂන් එක
+const renderActiveShape = (props) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+
+  return (
+    <g>
+      <text x={cx} y={cy - 10} dy={8} textAnchor="middle" fill="#94a3b8" className="text-[8px] sm:text-[10px] font-bold italic tracking-widest uppercase">
+        {payload.name}
+      </text>
+      <text x={cx} y={cy + 10} dy={8} textAnchor="middle" fill={fill} className="text-[10px] sm:text-[14px] font-black italic tracking-widest">
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 8} // Hover කරද්දි ලොකු වෙනවා
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        filter="url(#glow)"
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        innerRadius={outerRadius + 10}
+        outerRadius={outerRadius + 12}
+        fill={fill}
+      />
+    </g>
+  );
+};
+
 export default function SpendingBreakdown({ transactions }) {
+  const [activeIndexExp, setActiveIndexExp] = useState(-1);
+  const [activeIndexInc, setActiveIndexInc] = useState(-1);
+
+  const onPieEnterExp = (_, index) => { setActiveIndexExp(index); };
+  const onPieLeaveExp = () => { setActiveIndexExp(-1); };
+
+  const onPieEnterInc = (_, index) => { setActiveIndexInc(index); };
+  const onPieLeaveInc = () => { setActiveIndexInc(-1); };
 
   const processData = (type) => {
     const filtered = transactions.filter(t => t.type === type);
@@ -63,17 +105,14 @@ export default function SpendingBreakdown({ transactions }) {
   const totalExp = expenseData.reduce((s, d) => s + d.value, 0);
   const totalInc = incomeData.reduce((s, d) => s + d.value, 0);
 
-  // 🚀 අලුත්: Chart එකේ තියෙන ඔක්කොම නම් වලට (අලුත් ඒවාටත් එක්කම) Gradient හදනවා
   const renderDefs = (data, isIncome) => {
-    // දන්නා Categories ටිකට Gradient හදනවා
     const knownDefs = Object.entries(CATEGORY_COLORS).map(([key, color]) => (
       <linearGradient id={`color-${key}`} x1="0" y1="0" x2="1" y2="1" key={key}>
         <stop offset="0%" stopColor={color} stopOpacity={1} />
-        <stop offset="100%" stopColor={color} stopOpacity={0.4} />
+        <stop offset="100%" stopColor={color} stopOpacity={0.6} />
       </linearGradient>
     ));
 
-    // අලුතින් ආපු (දන්නේ නැති) Categories ටික හොයාගෙන ඒවටත් Gradient හදනවා
     const unknownDefs = data
       .filter(item => !CATEGORY_COLORS[item.name])
       .map((item) => {
@@ -81,7 +120,7 @@ export default function SpendingBreakdown({ transactions }) {
         return (
           <linearGradient id={`color-${item.name}`} x1="0" y1="0" x2="1" y2="1" key={`unknown-${item.name}`}>
             <stop offset="0%" stopColor={fallbackColor} stopOpacity={1} />
-            <stop offset="100%" stopColor={fallbackColor} stopOpacity={0.4} />
+            <stop offset="100%" stopColor={fallbackColor} stopOpacity={0.6} />
           </linearGradient>
         );
       });
@@ -91,149 +130,168 @@ export default function SpendingBreakdown({ transactions }) {
         {knownDefs}
         {unknownDefs}
         <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#000" floodOpacity="0.5" />
+          <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="#000" floodOpacity="0.6" />
+        </filter>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+          <feMerge>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
         </filter>
       </defs>
     );
   };
 
   return (
-    <section className="grid grid-cols-2 gap-3 sm:gap-8">
+    <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
 
       {/* ── EXPENSE BREAKDOWN (CASH OUT) ── */}
-      {/* 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා */}
-      <div className="group relative overflow-hidden rounded-[24px] sm:rounded-[32px] border border-white/5 premium-glass p-4 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] transition-all duration-500 hover:border-rose-500/30 hover:bg-white/[0.02] flex flex-col">
+      <div className="animate-vibe group relative overflow-hidden rounded-[30px] sm:rounded-[40px] border border-white/5 premium-glass p-5 sm:p-8 shadow-2xl flex flex-col">
+        {/* Subtle Background Glow */}
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-rose-500/10 blur-[60px] rounded-full pointer-events-none"></div>
 
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between mb-4 sm:mb-8 gap-2 sm:gap-0">
-          <div className="flex items-center gap-1.5 sm:gap-3 mt-1">
-            <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,1)] animate-pulse" />
-            <h2 className="text-[8px] sm:text-[12px] font-black italic tracking-widest sm:tracking-[0.3em] text-white uppercase truncate">Cash Out Analytics</h2>
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between mb-6 sm:mb-8 gap-3 sm:gap-0">
+          <div className="flex items-center gap-2 sm:gap-3 mt-1">
+            <div className="h-2 w-2 shrink-0 rounded-full bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,1)] animate-pulse" />
+            <h2 className="text-[10px] sm:text-[14px] font-black italic tracking-widest sm:tracking-[0.3em] text-white uppercase truncate">Cash Out Analytics</h2>
           </div>
-          <div className="text-left sm:text-right">
-            <p className="text-[6px] sm:text-[9px] font-bold text-slate-500 italic uppercase tracking-widest hidden sm:block">Total Outflow</p>
-            <p className="text-[12px] sm:text-lg font-black text-rose-500 italic mt-0.5 truncate">{fmt(totalExp)}</p>
+          <div className="text-left sm:text-right bg-black/20 px-3 py-2 sm:px-0 sm:py-0 sm:bg-transparent rounded-xl border border-white/5 sm:border-transparent w-fit sm:w-auto">
+            <p className="text-[7px] sm:text-[9px] font-bold text-slate-500 italic uppercase tracking-widest">Total Outflow</p>
+            <p className="text-[14px] sm:text-xl font-black text-rose-400 italic mt-0.5 truncate">{fmt(totalExp)}</p>
           </div>
         </div>
 
-        <div className="relative h-[120px] sm:h-[250px] w-full mb-4 sm:mb-6 flex-1">
+        <div className="relative h-[180px] sm:h-[250px] w-full mb-6 flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              {/* Expense Data එක pass කරනවා */}
               {renderDefs(expenseData, false)}
               <Pie
+                activeIndex={activeIndexExp}
+                activeShape={renderActiveShape}
                 data={expenseData}
-                innerRadius="65%"
-                outerRadius="90%"
-                paddingAngle={8}
-                cornerRadius={10}
+                innerRadius="60%"
+                outerRadius="85%"
+                paddingAngle={6}
+                cornerRadius={8}
                 dataKey="value"
-                stroke="#161b27"
-                strokeWidth={3}
-                animationBegin={0}
+                stroke="#080b12"
+                strokeWidth={4}
+                animationBegin={100}
                 animationDuration={1500}
                 filter="url(#shadow)"
+                onMouseEnter={onPieEnterExp}
+                onMouseLeave={onPieLeaveExp}
               >
                 {expenseData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={`url(#color-${entry.name})`} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip type="expense" />} cursor={false} wrapperStyle={{ outline: 'none', zIndex: 100 }} />
+              <Tooltip content={<CustomTooltip type="expense" />} cursor={false} />
             </PieChart>
           </ResponsiveContainer>
 
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-[6px] sm:text-[9px] font-bold text-slate-600 italic tracking-[0.2em] sm:tracking-[0.4em] uppercase">Overview</p>
-            <p className="text-[10px] sm:text-lg font-black text-rose-500/80 italic tracking-widest mt-0.5 sm:mt-1">OUTFLOW</p>
+          {/* Center Text (Hidden when hovering a slice) */}
+          <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 ${activeIndexExp !== -1 ? 'opacity-0' : 'opacity-100'}`}>
+            <p className="text-[7px] sm:text-[9px] font-bold text-slate-600 italic tracking-[0.2em] sm:tracking-[0.4em] uppercase">Overview</p>
+            <p className="text-[12px] sm:text-lg font-black text-rose-500/80 italic tracking-widest mt-0.5 sm:mt-1">OUTFLOW</p>
           </div>
         </div>
 
+        {/* Categories List */}
         {expenseData.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto relative z-10">
             {expenseData.slice(0, 4).map((item, i) => {
               const itemColor = CATEGORY_COLORS[item.name] || DEFAULT_EXPENSE_COLOR;
               return (
-                <div key={i} className="flex items-center justify-between p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl bg-black/20 border border-white/5">
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: itemColor, boxShadow: `0 0 8px ${itemColor}` }} />
-                    <span className="text-[7px] sm:text-[10px] font-bold text-slate-400 italic uppercase tracking-wider truncate max-w-[40px] sm:max-w-[60px]" title={item.name}>{item.name}</span>
+                <div key={i} className="flex items-center justify-between p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-black/30 border border-white/5 hover:bg-white/5 transition-colors cursor-default">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: itemColor, boxShadow: `0 0 10px ${itemColor}` }} />
+                    <span className="text-[8px] sm:text-[10px] font-bold text-slate-300 italic uppercase tracking-wider truncate max-w-[50px] sm:max-w-[80px]" title={item.name}>{item.name}</span>
                   </div>
-                  <span className="text-[7px] sm:text-[10px] font-black text-white italic">{((item.value / totalExp) * 100).toFixed(0)}%</span>
+                  <span className="text-[8px] sm:text-[11px] font-black text-rose-300 italic">{((item.value / totalExp) * 100).toFixed(0)}%</span>
                 </div>
               );
             })}
           </div>
         ) : (
           <div className="pt-4 sm:pt-6 border-t border-white/5 text-center mt-auto">
-            <p className="text-[7px] sm:text-[10px] font-bold italic tracking-widest text-slate-600 uppercase">NO OUTFLOW DATA</p>
+            <p className="text-[8px] sm:text-[10px] font-bold italic tracking-widest text-slate-600 uppercase">NO OUTFLOW DATA</p>
           </div>
         )}
       </div>
 
       {/* ── INCOME SOURCES (CASH IN) ── */}
-      {/* 🚀 වෙනස් කළ තැන: premium-glass class එක දැම්මා */}
-      <div className="group relative overflow-hidden rounded-[24px] sm:rounded-[32px] border border-white/5 premium-glass p-4 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] transition-all duration-500 hover:border-emerald-500/30 hover:bg-white/[0.02] flex flex-col">
+      <div className="animate-vibe group relative overflow-hidden rounded-[30px] sm:rounded-[40px] border border-white/5 premium-glass p-5 sm:p-8 shadow-2xl flex flex-col" style={{ animationDelay: '0.2s' }}>
+        {/* Subtle Background Glow */}
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/10 blur-[60px] rounded-full pointer-events-none"></div>
 
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between mb-4 sm:mb-8 gap-2 sm:gap-0">
-          <div className="flex items-center gap-1.5 sm:gap-3 mt-1">
-            <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,1)] animate-pulse" />
-            <h2 className="text-[8px] sm:text-[12px] font-black italic tracking-widest sm:tracking-[0.3em] text-white uppercase truncate">Cash In Analytics</h2>
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between mb-6 sm:mb-8 gap-3 sm:gap-0">
+          <div className="flex items-center gap-2 sm:gap-3 mt-1">
+            <div className="h-2 w-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,1)] animate-pulse" />
+            <h2 className="text-[10px] sm:text-[14px] font-black italic tracking-widest sm:tracking-[0.3em] text-white uppercase truncate">Cash In Analytics</h2>
           </div>
-          <div className="text-left sm:text-right">
-            <p className="text-[6px] sm:text-[9px] font-bold text-slate-500 italic uppercase tracking-widest hidden sm:block">Total Inflow</p>
-            <p className="text-[12px] sm:text-lg font-black text-emerald-500 italic mt-0.5 truncate">{fmt(totalInc)}</p>
+          <div className="text-left sm:text-right bg-black/20 px-3 py-2 sm:px-0 sm:py-0 sm:bg-transparent rounded-xl border border-white/5 sm:border-transparent w-fit sm:w-auto">
+            <p className="text-[7px] sm:text-[9px] font-bold text-slate-500 italic uppercase tracking-widest">Total Inflow</p>
+            <p className="text-[14px] sm:text-xl font-black text-emerald-400 italic mt-0.5 truncate">{fmt(totalInc)}</p>
           </div>
         </div>
 
-        <div className="relative h-[120px] sm:h-[250px] w-full mb-4 sm:mb-6 flex-1">
+        <div className="relative h-[180px] sm:h-[250px] w-full mb-6 flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              {/* Income Data එක pass කරනවා */}
               {renderDefs(incomeData, true)}
               <Pie
+                activeIndex={activeIndexInc}
+                activeShape={renderActiveShape}
                 data={incomeData}
-                innerRadius="65%"
-                outerRadius="90%"
-                paddingAngle={8}
-                cornerRadius={10}
+                innerRadius="60%"
+                outerRadius="85%"
+                paddingAngle={6}
+                cornerRadius={8}
                 dataKey="value"
-                stroke="#161b27"
-                strokeWidth={3}
-                animationBegin={300}
+                stroke="#080b12"
+                strokeWidth={4}
+                animationBegin={400} // Start slightly after Expense chart
                 animationDuration={1500}
                 filter="url(#shadow)"
+                onMouseEnter={onPieEnterInc}
+                onMouseLeave={onPieLeaveInc}
               >
                 {incomeData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={`url(#color-${entry.name})`} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip type="income" />} cursor={false} wrapperStyle={{ outline: 'none', zIndex: 100 }} />
+              <Tooltip content={<CustomTooltip type="income" />} cursor={false} />
             </PieChart>
           </ResponsiveContainer>
 
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-[6px] sm:text-[9px] font-bold text-slate-600 italic tracking-[0.2em] sm:tracking-[0.4em] uppercase">Sources</p>
-            <p className="text-[10px] sm:text-lg font-black text-emerald-500/80 italic tracking-widest mt-0.5 sm:mt-1">INFLOW</p>
+          {/* Center Text (Hidden when hovering a slice) */}
+          <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 ${activeIndexInc !== -1 ? 'opacity-0' : 'opacity-100'}`}>
+            <p className="text-[7px] sm:text-[9px] font-bold text-slate-600 italic tracking-[0.2em] sm:tracking-[0.4em] uppercase">Sources</p>
+            <p className="text-[12px] sm:text-lg font-black text-emerald-500/80 italic tracking-widest mt-0.5 sm:mt-1">INFLOW</p>
           </div>
         </div>
 
+        {/* Categories List */}
         {incomeData.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-white/5 mt-auto relative z-10">
             {incomeData.slice(0, 4).map((item, i) => {
               const itemColor = CATEGORY_COLORS[item.name] || DEFAULT_INCOME_COLOR;
               return (
-                <div key={i} className="flex items-center justify-between p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl bg-black/20 border border-white/5">
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: itemColor, boxShadow: `0 0 8px ${itemColor}` }} />
-                    <span className="text-[7px] sm:text-[10px] font-bold text-slate-400 italic uppercase tracking-wider truncate max-w-[40px] sm:max-w-[60px]" title={item.name}>{item.name}</span>
+                <div key={i} className="flex items-center justify-between p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-black/30 border border-white/5 hover:bg-white/5 transition-colors cursor-default">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: itemColor, boxShadow: `0 0 10px ${itemColor}` }} />
+                    <span className="text-[8px] sm:text-[10px] font-bold text-slate-300 italic uppercase tracking-wider truncate max-w-[50px] sm:max-w-[80px]" title={item.name}>{item.name}</span>
                   </div>
-                  <span className="text-[7px] sm:text-[10px] font-black text-white italic">{((item.value / totalInc) * 100).toFixed(0)}%</span>
+                  <span className="text-[8px] sm:text-[11px] font-black text-emerald-300 italic">{((item.value / totalInc) * 100).toFixed(0)}%</span>
                 </div>
               );
             })}
           </div>
         ) : (
           <div className="pt-4 sm:pt-6 border-t border-white/5 text-center mt-auto">
-            <p className="text-[7px] sm:text-[10px] font-bold italic tracking-widest text-slate-600 uppercase">NO INFLOW DATA</p>
+            <p className="text-[8px] sm:text-[10px] font-bold italic tracking-widest text-slate-600 uppercase">NO INFLOW DATA</p>
           </div>
         )}
       </div>

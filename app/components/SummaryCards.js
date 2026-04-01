@@ -1,8 +1,38 @@
-// app/components/SummaryCards.js – Server Component
-import React from 'react';
+"use client"; // 🚀 AnimatedNumber නිසා මේක Client Component එකක් වෙනවා
+import React, { useState, useEffect } from 'react';
 
-// ── 1. ELITE MINIMALIST ICONS ─────────────────────
+// 🚀 UI Upgrade: 0 ඉඳන් සල්ලි ගාණ උඩට යන ඇනිමේෂන් එක
+const AnimatedNumber = ({ value }) => {
+  const [displayValue, setDisplayValue] = useState(0);
 
+  useEffect(() => {
+    let startTimestamp = null;
+    const duration = 1200; // කොච්චර වෙලාවක් කැරකෙන්න ඕනෙද (ms)
+
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+      // easeOutExpo effect - වේගෙන් පටන් අරන් අගදි හිමීට නතර වෙනවා
+      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+
+      setDisplayValue(easeProgress * value);
+
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+
+    window.requestAnimationFrame(step);
+  }, [value]);
+
+  return new Intl.NumberFormat("en-LK", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(displayValue);
+};
+
+// ── ELITE MINIMALIST ICONS ──
 const IconIn = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.0" stroke="currentColor" className="w-full h-full">
     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307L21.75 6.75m0 0H16.5m5.25 0v5.25" />
@@ -22,18 +52,12 @@ const IconBalance = () => (
 );
 
 export default function SummaryCards({ totalIncome, totalExpenses, balance, transactions = [], currentUser = "", selectedMonth = "ALL" }) {
-  const fmt = (n) =>
-    `Rs. ${new Intl.NumberFormat("en-LK", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(n)}`;
 
   let incStr = "";
   let expStr = "";
   let incChange = 0;
   let expChange = 0;
 
-  // ── PERCENTAGE LOGIC ──
   if (selectedMonth === "ALL") {
     incStr = "LIFETIME TOTAL";
     expStr = "LIFETIME TOTAL";
@@ -59,32 +83,35 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
     {
       id: "card-total-income",
       label: "CASH IN",
-      value: fmt(totalIncome),
+      value: totalIncome,
       change: incStr,
       arrow: selectedMonth === "ALL" ? "●" : (incChange >= 0 ? "▲" : "▼"),
       isGood: selectedMonth === "ALL" ? true : (incChange >= 0),
       color: "emerald",
       icon: <IconIn />,
+      delay: "0.1s" // 🚀 Staggered delay
     },
     {
       id: "card-total-expenses",
       label: "CASH OUT",
-      value: fmt(totalExpenses),
+      value: totalExpenses,
       change: expStr,
       arrow: selectedMonth === "ALL" ? "●" : (expChange >= 0 ? "▲" : "▼"),
       isGood: selectedMonth === "ALL" ? false : (expChange <= 0),
       color: "rose",
       icon: <IconOut />,
+      delay: "0.2s" // 🚀 Staggered delay
     },
     {
       id: "card-current-balance",
       label: selectedMonth === "ALL" ? "NET BALANCE" : "MONTH NET",
-      value: fmt(balance),
+      value: balance,
       change: balance > 0 ? "HEALTHY SURPLUS" : balance < 0 ? "IN DEFICIT" : "ZERO BALANCE",
       arrow: balance >= 0 ? "▲" : "▼",
       isGood: balance >= 0,
       color: "sky",
       icon: <IconBalance />,
+      delay: "0.3s" // 🚀 Staggered delay
     },
   ];
 
@@ -93,26 +120,23 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
       {cards.map((card) => (
         <article
           key={card.id}
-          // 🚀 UI Upgrade: click-pop සහ Dynamic Border Glows
-          className={`click-pop group relative overflow-hidden rounded-[24px] sm:rounded-[40px] border border-white/5 premium-glass p-3 sm:p-5 transition-all duration-500 hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[110px] sm:min-h-[140px]
+          // 🚀 UI Upgrade: Staggered animation (animate-vibe)
+          className={`animate-vibe click-pop group relative overflow-hidden rounded-[24px] sm:rounded-[40px] border border-white/5 premium-glass p-3 sm:p-5 transition-all duration-500 hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[110px] sm:min-h-[140px]
             ${card.color === 'emerald' ? 'hover:border-emerald-500/30 hover:shadow-[0_15px_40px_-15px_rgba(52,211,153,0.3)]' :
               card.color === 'rose' ? 'hover:border-rose-500/30 hover:shadow-[0_15px_40px_-15px_rgba(244,63,94,0.3)]' :
                 'hover:border-sky-500/30 hover:shadow-[0_15px_40px_-15px_rgba(56,189,248,0.3)]'}`}
+          style={{ animationDelay: card.delay }}
         >
-          {/* Enhanced Glow Effect on Hover */}
           <div className={`absolute -right-5 -top-5 sm:-right-10 sm:-top-10 h-16 w-16 sm:h-32 sm:w-32 rounded-full blur-[30px] sm:blur-[50px] transition-opacity duration-500 opacity-10 group-hover:opacity-30 pointer-events-none
             ${card.color === 'emerald' ? 'bg-emerald-500' : card.color === 'rose' ? 'bg-rose-500' : 'bg-sky-500'}`}
           />
 
           <div className="relative z-10 flex flex-col h-full justify-between gap-3 sm:gap-4">
-
-            {/* Top Row: Label & Premium Icon Box */}
             <div className="flex items-center justify-between">
               <p className="text-[7px] sm:text-[10px] font-black italic tracking-widest text-slate-400 uppercase truncate mr-1">
                 {card.label}
               </p>
 
-              {/* 🚀 UI Upgrade: Premium Icon Container */}
               <div className={`flex shrink-0 items-center justify-center transition-all duration-500 group-hover:scale-110 w-5 h-5 sm:w-8 sm:h-8 rounded-md sm:rounded-xl border
                 ${card.color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:shadow-[0_0_15px_rgba(52,211,153,0.4)]' :
                   card.color === 'rose' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:shadow-[0_0_15px_rgba(244,63,94,0.4)]' :
@@ -124,18 +148,17 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
               </div>
             </div>
 
-            {/* Bottom Row: Amount & Badge */}
             <div className="flex flex-col gap-1 sm:gap-1.5">
-              {/* 🚀 UI Upgrade: Gradient Text for Values */}
+              {/* 🚀 UI Upgrade: Animated Number පාවිච්චි කරනවා */}
               <h3 className={`text-[11px] sm:text-2xl font-black italic tracking-tighter leading-none truncate bg-clip-text text-transparent
                 ${card.color === 'emerald' ? 'bg-gradient-to-br from-emerald-300 to-emerald-500' :
                   card.color === 'rose' ? 'bg-gradient-to-br from-rose-300 to-rose-500' :
                     'bg-gradient-to-br from-sky-300 to-sky-500'}`}
               >
-                {card.value}
+                Rs. <AnimatedNumber value={card.value} />
               </h3>
 
-              <div className="flex items-center">
+              <div className="flex items-center mt-1 sm:mt-0">
                 <span className={`inline-flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg text-[6px] sm:text-[9px] font-bold italic border transition-all duration-500 w-full sm:w-auto overflow-hidden
                   ${card.isGood ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/40' :
                     'bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:bg-rose-500/20 group-hover:border-rose-500/40'}`}
@@ -145,7 +168,6 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance, tran
                 </span>
               </div>
             </div>
-
           </div>
         </article>
       ))}
