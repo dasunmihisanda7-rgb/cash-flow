@@ -1,6 +1,8 @@
 "use client";
 import { useState, useRef } from "react";
 import { addTransaction } from "@/app/actions";
+import { useHaptic } from "@/lib/useHaptic"; // 🚀 අලුත්
+import { useParticleBurst } from "@/lib/useParticleBurst"; // 🚀 අලුත්
 
 const today = () => new Date().toISOString().split("T")[0];
 
@@ -9,7 +11,10 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
   const [pending, setPending] = useState(false);
   const [success, setSuccess] = useState(false);
   const formRef = useRef(null);
+  const submitBtnRef = useRef(null); // 🚀 Particle burst එක පටන් ගන්න තැන
 
+  const haptic = useHaptic(); // 🚀 Haptic Initialize
+  const { burst } = useParticleBurst(); // 🚀 Particle Initialize
   const [newCatInput, setNewCatInput] = useState("");
 
   const isIncome = type === "income";
@@ -24,11 +29,17 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
 
     try {
       await addTransaction(formData);
+
+      // 🚀 Sprint 3: Success Effects
+      haptic.success(); // සාර්ථක බව දැනෙන්න Vibrate කරයි
+      if (type === "income") burst(submitBtnRef.current); // සල්ලි ලැබුණම මල්වෙඩි!
+
       setSuccess(true);
       formRef.current.reset();
       setType("expense");
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
+      haptic.error(); // වැරදීමක් වුණොත් දැනෙන්න Vibrate කරයි
       alert("Error adding transaction: " + error.message);
     } finally {
       setPending(false);
@@ -62,7 +73,6 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
 
   const userColor = currentUser === "DASUN" ? "text-sky-400" : "text-purple-400";
   const userBorder = currentUser === "DASUN" ? "border-sky-500/30" : "border-purple-500/30";
-  const glowColor = isIncome ? "fuchsia-500" : "fuchsia-500"; // Keep fuchsia for base focus
 
   return (
     <div className="flex flex-col gap-6 sm:gap-10">
@@ -70,7 +80,6 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
       {/* ── 1. DATA ENTRY TERMINAL ── */}
       <section className="animate-vibe rounded-[30px] sm:rounded-[40px] border border-white/5 premium-glass p-5 sm:p-10 shadow-2xl relative overflow-hidden">
 
-        {/* Subtle Background Orb */}
         <div className={`absolute -top-10 -left-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none ${isIncome ? 'bg-emerald-500/10' : 'bg-rose-500/10'}`}></div>
 
         <div className={`absolute top-0 right-4 sm:right-10 rounded-b-xl sm:rounded-b-2xl border-b border-x ${userBorder} bg-[#080b12]/80 px-4 sm:px-6 py-1.5 sm:py-2 backdrop-blur-md z-20 shadow-[0_5px_15px_rgba(0,0,0,0.5)]`}>
@@ -110,7 +119,7 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
 
             <div>
               <label className="mb-2 block text-[9px] sm:text-[11px] font-black italic tracking-[0.2em] text-slate-400 uppercase ml-1">Amount (LKR)</label>
-              <input name="amount" type="number" step="0.01" required placeholder="0.00" className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-[16px] sm:text-[14px] font-black italic tracking-wider text-white outline-none focus:border-transparent focus:ring-2 focus:ring-fuchsia-500/50 focus:bg-white/5 transition-all placeholder:text-slate-600 shadow-inner" />
+              <input name="amount" type="number" step="0.01" required placeholder="0.00" className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-[16px] sm:text-[14px] font-black italic text-white outline-none focus:border-transparent focus:ring-2 focus:ring-fuchsia-500/50 focus:bg-white/5 transition-all placeholder:text-slate-600 shadow-inner" />
             </div>
 
             <div>
@@ -118,7 +127,6 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
               <input name="date" type="date" required defaultValue={today()} className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-[16px] sm:text-[13px] font-bold italic tracking-wider text-white outline-none focus:border-transparent focus:ring-2 focus:ring-fuchsia-500/50 focus:bg-white/5 transition-all [color-scheme:dark] shadow-inner" />
             </div>
 
-            {/* 🚀 UI Upgrade: Premium Segmented Control */}
             <div>
               <label className="mb-2 block text-[9px] sm:text-[11px] font-black italic tracking-[0.2em] text-slate-400 uppercase ml-1">Classification</label>
               <div className="flex rounded-2xl border border-white/10 bg-black/50 p-1.5 gap-1.5 shadow-inner">
@@ -126,10 +134,10 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
                   <button
                     key={t}
                     type="button"
-                    onClick={() => setType(t)}
+                    onClick={() => { haptic.light(); setType(t); }} // 🚀 Interaction Vibe
                     className={`click-pop flex-1 py-2.5 sm:py-3 rounded-xl text-[9px] sm:text-[10px] font-black italic tracking-widest uppercase transition-all duration-300 ${type === t
-                        ? (t === "income" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]" : "bg-rose-500/20 text-rose-400 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.2)]")
-                        : "text-slate-500 hover:text-white border border-transparent hover:bg-white/5"
+                      ? (t === "income" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]" : "bg-rose-500/20 text-rose-400 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.2)]")
+                      : "text-slate-500 hover:text-white border border-transparent hover:bg-white/5"
                       }`}
                   >
                     {t === "income" ? "Capital" : "Expense"}
@@ -149,10 +157,14 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
             </div>
           </div>
 
-          <button type="submit" disabled={pending} className={`click-pop mt-4 sm:mt-6 rounded-2xl py-4 sm:py-5 text-[10px] sm:text-[12px] font-black italic tracking-[0.3em] uppercase text-white transition-all duration-300 shadow-xl ${isIncome
+          <button
+            ref={submitBtnRef} // 🚀 Burst origin point
+            type="submit"
+            disabled={pending}
+            className={`click-pop mt-4 sm:mt-6 rounded-2xl py-4 sm:py-5 text-[10px] sm:text-[12px] font-black italic tracking-[0.3em] uppercase text-white transition-all duration-300 shadow-xl ${isIncome
               ? "bg-emerald-500/20 border border-emerald-500/40 hover:bg-emerald-500/30 hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] hover:border-emerald-400/60"
               : "bg-rose-500/20 border border-rose-500/40 hover:bg-rose-500/30 hover:shadow-[0_0_25px_rgba(244,63,94,0.3)] hover:border-rose-400/60"
-            }`}>
+              }`}>
             {pending ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
@@ -179,7 +191,7 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
 
         <form onSubmit={handleAddCategory} className="mb-8 sm:mb-10 flex gap-2 sm:gap-3 relative z-10">
           <input type="text" value={newCatInput} onChange={(e) => setNewCatInput(e.target.value)} placeholder={`ADD NEW ${type.toUpperCase()}...`} className="flex-1 rounded-2xl border border-white/10 bg-black/40 px-5 py-3 sm:py-4 text-[16px] sm:text-[11px] font-bold italic tracking-widest text-white outline-none focus:border-transparent focus:ring-2 focus:ring-white/20 transition-all uppercase shadow-inner placeholder:text-slate-600" />
-          <button type="submit" className="click-pop rounded-2xl border border-white/10 bg-white/5 px-6 sm:px-10 py-3 sm:py-4 text-[10px] sm:text-[11px] font-black italic tracking-[0.2em] text-white hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all">ADD</button>
+          <button type="submit" onClick={() => haptic.light()} className="click-pop rounded-2xl border border-white/10 bg-white/5 px-6 sm:px-10 py-3 sm:py-4 text-[10px] sm:text-[11px] font-black italic tracking-[0.2em] text-white hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all">ADD</button>
         </form>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 relative z-10">
@@ -189,7 +201,7 @@ export default function AddTransactionForm({ currentUser, expenseCats, setExpens
 
               <button
                 type="button"
-                onClick={() => deleteCat(cat)}
+                onClick={() => { haptic.error(); deleteCat(cat); }} // Warning vibration on delete
                 className="click-pop text-slate-500 hover:text-rose-400 hover:bg-rose-500/20 p-2 rounded-lg transition-all flex shrink-0 items-center justify-center"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">

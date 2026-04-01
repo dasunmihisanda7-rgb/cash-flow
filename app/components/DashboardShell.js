@@ -11,12 +11,13 @@ import SpendingBreakdown from "@/app/components/SpendingBreakdown";
 import CashFlowTrend from "@/app/components/CashFlowTrend";
 import { INITIAL_EXPENSE_CATEGORIES, INITIAL_CAPITAL_CATEGORIES } from "@/lib/constants";
 
-// 🚀 අලුත් Imports ටික (වරහන් ගැන සැලකිලිමත් වෙන්න!)
+// 🚀 Shared & Custom Hooks Imports
 import AnimatedNumber from "@/lib/AnimatedNumber";
 import SkeletonLoader from "@/app/components/SkeletonLoader";
 import BootSequence from "@/app/components/BootSequence";
 import { useSwipe } from "@/lib/useSwipe";
 import { useHaptic } from "@/lib/useHaptic";
+import { useFinancialHealth, HEALTH_CONFIG } from "@/lib/useFinancialHealth"; // 🚀 Sprint 3 අලුත්
 
 const CATEGORY_EMOJI = {
   Salary: "💼", Freelance: "🖊️", Investments: "📈", Business: "🏢", Bonus: "🎁",
@@ -55,13 +56,11 @@ const getCurrentMonth = () => {
 };
 
 const fmtNum = (n) => new Intl.NumberFormat("en-LK").format(n);
-
-// 🚀 Tab Array එක එළියෙන් තියාගමු
 const TABS = ["SUMMARY", "ANALYTICS", "LOG", "CONTROL"];
 
 export default function DashboardShell({ transactions }) {
   const router = useRouter();
-  const haptic = useHaptic(); // 🚀 Haptic Initialize කළා
+  const haptic = useHaptic();
 
   const [activeTab, setActiveTab] = useState("SUMMARY");
   const [currentUser, setCurrentUser] = useState("DASUN");
@@ -75,13 +74,9 @@ export default function DashboardShell({ transactions }) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedExpense = localStorage.getItem("customExpenseCats");
-      if (savedExpense) {
-        setExpenseCats([...new Set([...INITIAL_EXPENSE_CATEGORIES, ...JSON.parse(savedExpense)])]);
-      }
+      if (savedExpense) setExpenseCats([...new Set([...INITIAL_EXPENSE_CATEGORIES, ...JSON.parse(savedExpense)])]);
       const savedCapital = localStorage.getItem("customCapitalCats");
-      if (savedCapital) {
-        setCapitalCats([...new Set([...INITIAL_CAPITAL_CATEGORIES, ...JSON.parse(savedCapital)])]);
-      }
+      if (savedCapital) setCapitalCats([...new Set([...INITIAL_CAPITAL_CATEGORIES, ...JSON.parse(savedCapital)])]);
     }
   }, []);
 
@@ -112,27 +107,7 @@ export default function DashboardShell({ transactions }) {
     router.push("/login");
   };
 
-  // 🚀 Swipe Logic: තිරය හරහා ඇඟිල්ල අදින විට ටැබ් මාරු වේ [cite: 23]
-  const currentIndex = TABS.indexOf(activeTab);
-  const swipeHandlers = useSwipe({
-    onSwipeLeft: () => {
-      if (currentIndex < TABS.length - 1) {
-        haptic.light();
-        setActiveTab(TABS[currentIndex + 1]);
-      }
-    },
-    onSwipeRight: () => {
-      if (currentIndex > 0) {
-        haptic.light();
-        setActiveTab(TABS[currentIndex - 1]);
-      }
-    },
-    threshold: 50,
-  });
-
-  // 🚀 Sprint 1: දත්ත ලෝඩ් වෙනකම් Skeleton පෙන්වයි
-  if (loading) return <SkeletonLoader />;
-
+  // Stats Calculations
   const getAllTimeStats = (userName) => {
     const userT = transactions.filter((t) => t.user?.toUpperCase() === userName.toUpperCase());
     const income = userT.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
@@ -162,12 +137,45 @@ export default function DashboardShell({ transactions }) {
   const isDasun = currentUser === "DASUN";
   const isKavindya = currentUser === "KAVINDYA";
 
+  // 🚀 Sprint 3: Health Logic
+  const health = useFinancialHealth(currentMonthlyStats.income, currentMonthlyStats.expense);
+  const hc = HEALTH_CONFIG[health];
+
+  [span_0](start_span)// Swipe Logic[span_0](end_span)
+  const currentIndex = TABS.indexOf(activeTab);
+  const swipeHandlers = useSwipe({
+    onSwipeLeft: () => {
+      if (currentIndex < TABS.length - 1) {
+        haptic.light();
+        setActiveTab(TABS[currentIndex + 1]);
+      }
+    },
+    onSwipeRight: () => {
+      if (currentIndex > 0) {
+        haptic.light();
+        setActiveTab(TABS[currentIndex - 1]);
+      }
+    },
+    threshold: 50,
+  });
+
+  if (loading) return <SkeletonLoader />;
+
   return (
     <>
-      {/* 🚀 Sprint 1: Cinematic Boot Sequence [cite: 1, 14] */}
+      [span_1](start_span)[span_2](start_span){/* 🚀 Sprint 1: Boot Sequence[span_1](end_span)[span_2](end_span) */}
       {!bootComplete && <BootSequence onComplete={() => setBootComplete(true)} />}
 
       <div className={`flex flex-col relative w-full transition-opacity duration-[800ms] ${bootComplete ? 'opacity-100' : 'opacity-0'}`}>
+
+        {/* 🚀 Sprint 3: Dynamic Ambient Background */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
+          <div className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full blur-[140px] transition-all duration-[3000ms]"
+            style={{ backgroundColor: hc.orb1 }} />
+          <div className="absolute bottom-1/3 right-1/4 w-72 h-72 rounded-full blur-[120px] transition-all duration-[3000ms]"
+            style={{ backgroundColor: hc.orb2 }} />
+        </div>
+
         <Navbar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} setCurrentUser={setCurrentUser} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
 
         <main
@@ -178,6 +186,16 @@ export default function DashboardShell({ transactions }) {
 
             {activeTab === "SUMMARY" && (
               <div key={`summary-${currentUser}-${selectedMonth}`} className="space-y-10">
+
+                {/* 🚀 Sprint 3: Health Status Badge */}
+                <div className={`flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full w-fit text-[9px] font-black italic tracking-widest uppercase border animate-vibe
+                  ${health === 'SURPLUS' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.1)]' :
+                    health === 'WARNING' ? 'bg-amber-500/10  border-amber-500/20  text-amber-400' :
+                      health === 'DANGER' ? 'bg-rose-500/10   border-rose-500/20   text-rose-400 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.1)]' :
+                        'bg-slate-500/10 border-slate-500/20 text-slate-400'}`}>
+                  <span className="w-1 h-1 rounded-full bg-current" />
+                  {hc.label}
+                </div>
 
                 <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16 relative">
                   {/* Dasun's Card */}
@@ -218,7 +236,7 @@ export default function DashboardShell({ transactions }) {
                   />
                 </div>
 
-                {/* Recent Activity Widget */}
+                {/* Recent Activity */}
                 <div className="mt-12 animate-vibe" style={{ animationDelay: '0.3s' }}>
                   <div className="flex items-center justify-between mb-4 px-2">
                     <div className="flex items-center gap-3">
@@ -227,7 +245,6 @@ export default function DashboardShell({ transactions }) {
                       </div>
                       <h3 className="text-[12px] sm:text-[14px] font-black italic tracking-widest text-white uppercase">Recent Activity</h3>
                     </div>
-                    {/* View Log Button with compliance [cite: 39, 43] */}
                     <button onClick={() => { haptic.light(); setActiveTab("LOG"); }} className="relative flex items-center justify-center min-h-[44px] px-2 text-[9px] font-bold italic tracking-widest text-slate-500 hover:text-purple-400 uppercase transition-colors click-pop">
                       View Log &rarr;
                     </button>
@@ -262,7 +279,7 @@ export default function DashboardShell({ transactions }) {
               </div>
             )}
 
-            {/* ANALYTICS Tab */}
+            {/* Other Tabs */}
             {activeTab === "ANALYTICS" && (
               <div key="analytics" className="py-6 space-y-10">
                 <SpendingBreakdown transactions={userFilteredTransactions} />
@@ -272,19 +289,16 @@ export default function DashboardShell({ transactions }) {
               </div>
             )}
 
-            {/* LOG Tab */}
             {activeTab === "LOG" && (
               <div key="log" className="animate-vibe py-6">
                 <TransactionTable transactions={userFilteredTransactions} expenseCats={expenseCats} capitalCats={capitalCats} />
               </div>
             )}
 
-            {/* CONTROL Tab */}
             {activeTab === "CONTROL" && (
               <div key="control" className="animate-vibe py-6 max-w-4xl mx-auto flex flex-col gap-10">
                 <AddTransactionForm currentUser={currentUser} expenseCats={expenseCats} setExpenseCats={handleUpdateExpenseCats} capitalCats={capitalCats} setCapitalCats={handleUpdateCapitalCats} />
 
-                {/* System Disconnect Section */}
                 <div className="w-full rounded-[32px] border border-rose-500/20 scroll-glass gpu-promote p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)] mt-10">
                   <div>
                     <h3 className="text-[14px] sm:text-[16px] font-black italic tracking-widest text-white uppercase">System Disconnect</h3>
