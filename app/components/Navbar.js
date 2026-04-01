@@ -24,7 +24,7 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
   return (
     <>
       {/* ── Top Bar ── */}
-      <div className="sticky top-0 z-40 w-full bg-[#080b12]/80 backdrop-blur-2xl border-b border-white/5 pt-[max(1rem,env(safe-area-inset-top))] pb-3 px-4 flex justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+      <div className="sticky top-0 z-40 w-full bg-[#080b12]/60 backdrop-blur-3xl saturate-[2] border-b border-white/5 pt-[max(1rem,env(safe-area-inset-top))] pb-3 px-4 flex justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all">
         <div className="flex items-center gap-3">
 
           {/* User toggle pill */}
@@ -87,12 +87,12 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
       </div>
 
       {/* ── Floating Bottom Nav ── */}
-      <div className="fixed z-50 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bottom-[max(1.5rem,env(safe-area-inset-bottom))] pointer-events-none">
+      <div className="fixed z-50 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bottom-0 pb-[max(1.5rem,env(safe-area-inset-bottom))] pointer-events-none transition-all">
         {/* UX-04 FIX: role="tablist" + per-button role="tab" + aria-selected + aria-controls */}
         <nav
           role="tablist"
           aria-label="Main Navigation"
-          className="premium-glass rounded-[2rem] p-2 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border border-white/10 ring-1 ring-white/5"
+          className="bg-[#080b12]/60 backdrop-blur-3xl saturate-[2] rounded-[2rem] p-2 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border border-white/10 ring-1 ring-white/5"
         >
           {tabs.map((tab) => {
             const isActive = activeTab === tab;

@@ -22,6 +22,7 @@ import { useHaptic } from "@/lib/useHaptic";
 import { useFinancialHealth, HEALTH_CONFIG } from "@/lib/useFinancialHealth";
 import { useMagnet } from "@/lib/useMagnet";
 import EmptyState from "@/app/components/EmptyState";
+import QuickAddFAB from "@/app/components/QuickAddFAB";
 
 const fmtDate = (dateStr) => {
   if (!dateStr) return "";
@@ -402,6 +403,12 @@ export default function DashboardShell({ transactions }) {
 
           </div>
         </main>
+
+        <QuickAddFAB 
+          currentUser={currentUser}
+          expenseCats={expenseCats}
+          capitalCats={capitalCats}
+        />
       </div>
     </>
   );
