@@ -161,20 +161,19 @@ export default function DashboardShell({ transactions }) {
     return { income, expense, balance: income - expense, userTransactions: userT };
   }, [monthFilteredTransactions, currentUser]);
 
-  // UX-10 FIX: Wallet cards now use monthFilteredTransactions, consistent with
-  // everything else on the page. Previously they used the raw `transactions` prop,
-  // always showing an ALL-TIME balance regardless of the selected month filter.
+  // UX-11 FIX: Top wallet cards must always show the true ALL-TIME running balance.
+  // We revert their dependency to the global `transactions` array, bypassing `monthFilteredTransactions`.
   const dasunBalance = useMemo(
-    () => monthFilteredTransactions
+    () => transactions
       .filter((t) => t.user === "DASUN")
       .reduce((s, t) => t.type === "income" ? s + t.amount : s - t.amount, 0),
-    [monthFilteredTransactions]
+    [transactions]
   );
   const kavindyaBalance = useMemo(
-    () => monthFilteredTransactions
+    () => transactions
       .filter((t) => t.user === "KAVINDYA")
       .reduce((s, t) => t.type === "income" ? s + t.amount : s - t.amount, 0),
-    [monthFilteredTransactions]
+    [transactions]
   );
 
   const recentTransactions = useMemo(
@@ -246,42 +245,45 @@ export default function DashboardShell({ transactions }) {
                   {hc.label}
                 </div>
 
-                {/* Wallet Cards — UX-10 FIX: now use monthFilteredTransactions via dasunBalance/kavindyaBalance */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16 relative">
-                  <article
-                    onClick={() => { haptic.select(); setCurrentUser("DASUN"); }}
-                    className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? "scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(56,189,248,0.4)]" : "border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60"}`}
-                  >
-                    {isDasun && <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/20 blur-[50px] rounded-full pointer-events-none" />}
-                    <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? "opacity-[0.15]" : "opacity-[0.03] text-slate-500"}`}><WalletOutlineIcon /></div>
-                    <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
-                      <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? "text-white drop-shadow-md" : "text-slate-500"}`}>DASUN</p>
-                      <div className="flex items-baseline gap-1.5 w-full">
-                        <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isDasun ? "text-sky-400" : "text-slate-500"}`}>Rs.</span>
-                        <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? "text-gradient-premium" : "text-slate-300"}`}>
-                          <AnimatedNumber value={dasunBalance} decimals={0} />
-                        </p>
+                {/* Wallet Cards — Dynamic Animated Reordering */}
+                <div className="relative h-[160px] sm:h-[220px] mb-16 w-full">
+                  <div className={`absolute top-0 bottom-0 w-[calc(50%-6px)] sm:w-[calc(50%-12px)] transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isDasun ? "translate-x-0 z-10" : "translate-x-[calc(100%+12px)] sm:translate-x-[calc(100%+24px)] z-0"}`}>
+                    <article
+                      onClick={() => { haptic.select(); setCurrentUser("DASUN"); }}
+                      className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between h-full w-full ${isDasun ? "scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(56,189,248,0.4)]" : "border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60 hover:opacity-80 hover:scale-[0.98]"}`}
+                    >
+                      {isDasun && <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/20 blur-[50px] rounded-full pointer-events-none" />}
+                      <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? "opacity-[0.15]" : "opacity-[0.03] text-slate-500"}`}><WalletOutlineIcon /></div>
+                      <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
+                        <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isDasun ? "text-white drop-shadow-md" : "text-slate-500"}`}>DASUN</p>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-0.5 sm:gap-1.5 w-full">
+                          <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isDasun ? "text-sky-400" : "text-slate-500"}`}>Rs.</span>
+                          <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isDasun ? "text-gradient-premium" : "text-slate-300"}`}>
+                            <AnimatedNumber value={dasunBalance} decimals={0} />
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </article>
+                    </article>
+                  </div>
 
-                  <article
-                    onClick={() => { haptic.select(); setCurrentUser("KAVINDYA"); }}
-                    className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isKavindya ? "scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(246,211,101,0.3)]" : "border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60"}`}
-                    style={{ animationDelay: "0.1s" }}
-                  >
-                    {isKavindya && <div className="absolute top-0 left-0 w-32 h-32 bg-orange-500/15 blur-[50px] rounded-full pointer-events-none" />}
-                    <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isKavindya ? "opacity-[0.15]" : "opacity-[0.03] text-slate-500"}`}><BankOutlineIcon /></div>
-                    <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
-                      <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isKavindya ? "text-white drop-shadow-md" : "text-slate-500"}`}>KAVINDYA</p>
-                      <div className="flex items-baseline gap-1.5 w-full">
-                        <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isKavindya ? "text-[#f6d365]" : "text-slate-500"}`}>Rs.</span>
-                        <p className={`text-2xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? "text-gradient-gold" : "text-slate-300"}`}>
-                          <AnimatedNumber value={kavindyaBalance} decimals={0} />
-                        </p>
+                  <div className={`absolute top-0 bottom-0 w-[calc(50%-6px)] sm:w-[calc(50%-12px)] transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isKavindya ? "translate-x-0 z-10" : "translate-x-[calc(100%+12px)] sm:translate-x-[calc(100%+24px)] z-0"}`} style={{ animationDelay: "0.1s" }}>
+                    <article
+                      onClick={() => { haptic.select(); setCurrentUser("KAVINDYA"); }}
+                      className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between h-full w-full ${isKavindya ? "scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(246,211,101,0.3)]" : "border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60 hover:opacity-80 hover:scale-[0.98]"}`}
+                    >
+                      {isKavindya && <div className="absolute top-0 left-0 w-32 h-32 bg-orange-500/15 blur-[50px] rounded-full pointer-events-none" />}
+                      <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isKavindya ? "opacity-[0.15]" : "opacity-[0.03] text-slate-500"}`}><BankOutlineIcon /></div>
+                      <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-0 w-full">
+                        <p className={`text-[12px] sm:text-[18px] font-black italic tracking-[0.2em] sm:tracking-[0.3em] uppercase ${isKavindya ? "text-white drop-shadow-md" : "text-slate-500 truncate w-full"}`}>KAVINDYA</p>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-0.5 sm:gap-1.5 w-full">
+                          <span className={`text-[9px] sm:text-[11px] font-bold italic shrink-0 ${isKavindya ? "text-[#f6d365]" : "text-slate-500"}`}>Rs.</span>
+                          <p className={`text-xl sm:text-4xl font-black italic tracking-tighter break-all ${isKavindya ? "text-gradient-gold" : "text-slate-300"}`}>
+                            <AnimatedNumber value={kavindyaBalance} decimals={0} />
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </article>
+                    </article>
+                  </div>
                 </div>
 
                 {/* Summary Cards */}
