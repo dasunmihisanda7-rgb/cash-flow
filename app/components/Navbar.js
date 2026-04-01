@@ -3,7 +3,7 @@
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { useHaptic } from "@/lib/useHaptic"; // 🚀 අලුත්
+import { useHaptic } from "@/lib/useHaptic";
 
 const getCurrentMonthStr = () => {
   const date = new Date();
@@ -15,10 +15,10 @@ const getCurrentMonthStr = () => {
 export default function Navbar({ activeTab, setActiveTab, currentUser, setCurrentUser, selectedMonth, setSelectedMonth }) {
   const tabs = ["SUMMARY", "ANALYTICS", "LOG", "CONTROL"];
   const router = useRouter();
-  const haptic = useHaptic(); // 🚀 අලුත්
+  const haptic = useHaptic();
 
   const toggleUser = () => {
-    haptic.select(); // 🚀 Vibrate වෙනවා
+    haptic.select();
     setCurrentUser(currentUser === "DASUN" ? "KAVINDYA" : "DASUN");
   };
 
@@ -53,7 +53,7 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
           <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] p-1 backdrop-blur-md shadow-inner">
             <button
               onClick={() => {
-                haptic.light(); // 🚀 Vibrate
+                haptic.light();
                 setSelectedMonth("ALL");
               }}
               className={`click-pop no-select rounded-full px-4 py-2.5 text-[10px] font-black italic tracking-widest transition-all duration-300 ${selectedMonth === "ALL"
@@ -80,7 +80,7 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
                 type="month"
                 value={selectedMonth === "ALL" ? getCurrentMonthStr() : selectedMonth}
                 onChange={(e) => {
-                  haptic.light(); // 🚀 Vibrate
+                  haptic.light();
                   setSelectedMonth(e.target.value || "ALL");
                 }}
                 className={`bg-transparent outline-none text-[16px] font-bold italic tracking-widest cursor-pointer uppercase transition-all
@@ -95,12 +95,6 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
 
       {/* Floating Bottom Nav */}
       <div className="fixed z-50 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bottom-[max(1.5rem,env(safe-area-inset-bottom))] pointer-events-none">
-
-        {/* 🚀 Swipe Hint */}
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 flex items-center gap-1 opacity-40">
-          <span className="text-[8px] italic font-black tracking-[0.3em] text-slate-400 uppercase">swipe to navigate</span>
-        </div>
-
         <div className="premium-glass rounded-[2rem] p-2 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border border-white/10 ring-1 ring-white/5">
           {tabs.map((tab) => {
             const isActive = activeTab === tab;
@@ -108,7 +102,7 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
               <button
                 key={tab}
                 onClick={() => {
-                  if (!isActive) haptic.medium(); // 🚀 Vibrate
+                  if (!isActive) haptic.medium();
                   setActiveTab(tab);
                 }}
                 className={`click-pop no-select relative flex-1 flex flex-col items-center justify-center min-h-[52px] py-3 rounded-full transition-all duration-300
