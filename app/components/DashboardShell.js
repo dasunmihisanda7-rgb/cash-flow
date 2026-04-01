@@ -11,7 +11,6 @@ import SpendingBreakdown from "@/app/components/SpendingBreakdown";
 import CashFlowTrend from "@/app/components/CashFlowTrend";
 import { INITIAL_EXPENSE_CATEGORIES, INITIAL_CAPITAL_CATEGORIES } from "@/lib/constants";
 
-// 🚀 Sprint 1-4 Imports
 import AnimatedNumber from "@/lib/AnimatedNumber";
 import SkeletonLoader from "@/app/components/SkeletonLoader";
 import BootSequence from "@/app/components/BootSequence";
@@ -129,11 +128,9 @@ export default function DashboardShell({ transactions }) {
   const isDasun = currentUser === "DASUN";
   const isKavindya = currentUser === "KAVINDYA";
 
-  [span_0](start_span)// Financial Health Calculation[span_0](end_span)
   const health = useFinancialHealth(currentMonthlyStats.income, currentMonthlyStats.expense);
   const hc = HEALTH_CONFIG[health];
 
-  [span_1](start_span)// Swipe Logic[span_1](end_span)
   const currentIndex = TABS.indexOf(activeTab);
   const swipeHandlers = useSwipe({
     onSwipeLeft: () => { if (currentIndex < TABS.length - 1) { haptic.light(); setActiveTab(TABS[currentIndex + 1]); } },
@@ -145,12 +142,10 @@ export default function DashboardShell({ transactions }) {
 
   return (
     <>
-      [span_2](start_span){/* Boot Experience[span_2](end_span) */}
       {!bootComplete && <BootSequence onComplete={() => setBootComplete(true)} />}
 
       <div className={`flex flex-col relative w-full transition-opacity duration-[800ms] ${bootComplete ? 'opacity-100' : 'opacity-0'}`}>
 
-        [span_3](start_span){/* Dynamic Ambient Background[span_3](end_span) */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
           <div className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full blur-[140px] transition-all duration-[3000ms]"
             style={{ backgroundColor: hc.orb1 }} />
@@ -166,7 +161,6 @@ export default function DashboardShell({ transactions }) {
             {activeTab === "SUMMARY" && (
               <div key={`summary-${currentUser}-${selectedMonth}`} className="space-y-10">
 
-                [span_4](start_span){/* Health Status Badge[span_4](end_span) */}
                 <div className={`flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full w-fit text-[9px] font-black italic tracking-widest uppercase border animate-vibe
                   ${health === 'SURPLUS' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.1)]' :
                     health === 'WARNING' ? 'bg-amber-500/10  border-amber-500/20  text-amber-400' :
@@ -177,7 +171,6 @@ export default function DashboardShell({ transactions }) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-16 relative">
-                  {/* User Cards */}
                   <article onClick={() => { haptic.select(); setCurrentUser("DASUN"); }} className={`animate-vibe click-pop group relative overflow-hidden rounded-[30px] sm:rounded-[60px] p-4 sm:p-10 transition-all duration-700 cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[200px] ${isDasun ? 'scroll-glass gpu-promote shadow-[0_20px_60px_-15px_rgba(56,189,248,0.4)]' : 'border border-white/5 bg-white/[0.02] scale-[0.96] opacity-60'}`}>
                     {isDasun && <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/20 blur-[50px] rounded-full pointer-events-none"></div>}
                     <div className={`absolute -right-2 -bottom-2 sm:right-4 sm:bottom-4 h-24 w-24 sm:h-32 sm:w-32 transition-all duration-700 pointer-events-none z-0 ${isDasun ? 'opacity-[0.15]' : 'opacity-[0.03] text-slate-500'}`}><WalletOutlineIcon /></div>
@@ -207,7 +200,6 @@ export default function DashboardShell({ transactions }) {
                   <SummaryCards totalIncome={currentMonthlyStats.income} totalExpenses={currentMonthlyStats.expense} balance={currentMonthlyStats.balance} transactions={transactions} currentUser={currentUser} selectedMonth={selectedMonth} />
                 </div>
 
-                {/* Recent Activity */}
                 <div className="mt-12 animate-vibe" style={{ animationDelay: '0.3s' }}>
                   <div className="flex items-center justify-between mb-4 px-2">
                     <div className="flex items-center gap-3">
@@ -240,8 +232,7 @@ export default function DashboardShell({ transactions }) {
                         </div>
                       ))
                     ) : (
-                      [span_5](start_span)/* Empty State 2.0[span_5](end_span) */
-                      < EmptyState variant="noActivity" setActiveTab={setActiveTab} />
+                      <EmptyState variant="noActivity" setActiveTab={setActiveTab} />
                     )}
                   </div>
                 </div>
@@ -273,7 +264,6 @@ export default function DashboardShell({ transactions }) {
               <div key="control" className="animate-vibe py-6 max-w-4xl mx-auto flex flex-col gap-10">
                 <AddTransactionForm currentUser={currentUser} expenseCats={expenseCats} setExpenseCats={handleUpdateExpenseCats} capitalCats={capitalCats} setCapitalCats={handleUpdateCapitalCats} />
 
-                [span_6](start_span){/* System Disconnect Section with Magnetic Logout[span_6](end_span) */}
                 <div className="w-full rounded-[32px] border border-rose-500/20 scroll-glass gpu-promote p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_10px_30px_rgba(244,63,94,0.05)] mt-10">
                   <div>
                     <h3 className="text-[14px] sm:text-[16px] font-black italic tracking-widest text-white uppercase leading-none">System Disconnect</h3>
