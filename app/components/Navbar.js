@@ -16,15 +16,6 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
   return (
     <>
       {/* ── Top Bar ── */}
-      {/*
-        OPT-16: Top bar uses env(safe-area-inset-top) via the .ios-safe-top
-        utility class (defined in globals.css) so content clears the notch
-        on iPhone 12 (34px) and the Dynamic Island on iPhone 14 Plus (59px).
-        The -webkit-backdrop-filter is listed FIRST so WebKit picks it up;
-        backdrop-filter is the standard fallback for non-WebKit browsers.
-        gpu-promote forces this fixed chrome into its own compositor layer
-        so it never causes a repaint when the content below it scrolls.
-      */}
       <div
         className="sticky top-0 z-40 w-full gpu-promote"
         style={{
@@ -37,13 +28,9 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
             backdropFilter: "blur(28px) saturate(2)",
           }}
         >
-          {/* Unified Command Bar Container */}
-          <div className="flex items-center gap-1.5 p-1.5 rounded-full bg-[#161b27]/60 border border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_10px_30px_rgba(0,0,0,0.5)] ring-1 ring-white/5"
-            style={{
-              WebkitBackdropFilter: "blur(12px)",
-              backdropFilter: "blur(12px)",
-            }}
-          >
+          {/* Action Buttons Container (Background box removed) */}
+          <div className="flex items-center justify-center gap-3 w-full max-w-sm mx-auto pt-1">
+
             {/* User toggle pill */}
             <button
               onClick={toggleUser}
@@ -60,9 +47,6 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
               {currentUser}
             </button>
 
-            {/* Minimal Separator */}
-            <div className="w-[1px] h-5 bg-white/10 rounded-full mx-0.5 shrink-0" />
-
             {/* Month filter group */}
             <div className="flex items-center gap-1.5 shrink-0">
 
@@ -78,12 +62,6 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
                 ALL TIME
               </button>
 
-              {/*
-                UX-03: When selectedMonth === "ALL", render a plain button that
-                sets the month on click. When a month is already selected, render
-                the real <input type="month"> directly. This avoids the overlay
-                pattern that conflicted with the native picker on Firefox Android.
-              */}
               {selectedMonth === "ALL" ? (
                 <button
                   type="button"
@@ -109,14 +87,6 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
       </div>
 
       {/* ── Floating Bottom Nav ── */}
-      {/*
-        OPT-17: Bottom nav padding uses env(safe-area-inset-bottom) so it
-        clears the iPhone home indicator (34px on iPhone 12, 34px on 14 Plus).
-        The nav itself has `will-change: transform` via gpu-promote so the
-        tab-switcher pill animation composites entirely on the GPU.
-        min-h-[52px] on each tab button satisfies Apple HIG 44pt minimum
-        tap target requirement with comfortable extra room.
-      */}
       <div
         className="fixed z-50 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md pointer-events-none transition-all gpu-promote"
         style={{ bottom: 0, paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
@@ -130,7 +100,7 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
             backdropFilter: "blur(28px) saturate(2)",
           }}
         >
-          {/* Sliding Active Pill — gpu-promote so this translate composites off main thread */}
+          {/* Sliding Active Pill */}
           <div
             className="absolute top-2 bottom-2 bg-white/[0.08] rounded-full border border-white/[0.05] pointer-events-none gpu-promote"
             style={{
