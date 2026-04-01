@@ -25,26 +25,31 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
     <>
       {/* ── Top Bar ── */}
       <div className="sticky top-0 z-40 w-full bg-[#080b12]/60 backdrop-blur-3xl saturate-[2] border-b border-white/5 pt-[max(1rem,env(safe-area-inset-top))] pb-3 px-4 flex justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all">
-        <div className="flex items-center gap-3">
+        
+        {/* Unified Command Bar Container */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-full bg-[#161b27]/60 backdrop-blur-md border border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_10px_30px_rgba(0,0,0,0.5)] ring-1 ring-white/5">
 
           {/* User toggle pill */}
           <button
             onClick={toggleUser}
             aria-label={`Active user: ${currentUser}. Tap to switch.`}
-            className={`click-pop no-select flex items-center gap-1.5 rounded-full border px-4 py-3 text-[11px] font-bold italic transition-all duration-300 shadow-lg cursor-pointer
+            className={`click-pop no-select flex items-center shrink-0 gap-1.5 rounded-full border px-4 py-2.5 text-[11px] font-bold italic transition-all duration-300 shadow-lg cursor-pointer
               ${currentUser === "DASUN"
                 ? "border-sky-500/30 bg-sky-500/10 text-white hover:bg-sky-500/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.3)]"
                 : "border-purple-500/40 bg-purple-500/20 text-white hover:bg-purple-500/30 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"}`}
           >
-            <span className="relative flex h-1.5 w-1.5">
+            <span className="relative flex h-1.5 w-1.5 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
             </span>
             {currentUser}
           </button>
 
+          {/* Minimal Separator */}
+          <div className="w-[1px] h-5 bg-white/10 rounded-full mx-0.5 shrink-0" />
+
           {/* Month filter group */}
-          <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] p-1 backdrop-blur-md shadow-inner">
+          <div className="flex items-center gap-1.5 shrink-0">
 
             {/* ALL TIME button */}
             <button
@@ -82,7 +87,6 @@ export default function Navbar({ activeTab, setActiveTab, currentUser, setCurren
               </div>
             )}
           </div>
-
         </div>
       </div>
 
