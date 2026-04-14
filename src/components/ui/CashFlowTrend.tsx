@@ -1,9 +1,19 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useTransactions } from "@/context/TransactionContext";
 
 function CashFlowTrend() {
   const { transactions } = useTransactions();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const getMonthData = () => {
     const months: { key: string; name: string; income: number; expense: number }[] = [];
@@ -63,10 +73,10 @@ function CashFlowTrend() {
   };
 
   return (
-    <div className="bg-[rgb(7,10,18)] border border-slate-800 rounded-[35px] p-8 shadow-2xl w-full">
-      <h3 className="text-xl font-black italic text-white uppercase tracking-wider mb-8 w-full text-center">3-MONTH CASH FLOW TREND</h3>
+    <div className="bg-[rgb(7,10,18)] border border-slate-800 rounded-[30px] md:rounded-[35px] p-6 md:p-8 shadow-2xl w-full">
+      <h3 className="text-lg md:text-xl font-black italic text-white uppercase tracking-wider mb-6 md:mb-8 w-full text-center">3-MONTH CASH FLOW TREND</h3>
       
-      <div className="w-full h-80 relative">
+      <div className="w-full h-64 md:h-80 relative">
         <ResponsiveContainer width="100%" height="100%" debounce={100}>
           <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
@@ -105,21 +115,21 @@ function CashFlowTrend() {
               fill="url(#bar-income)" 
               radius={[6, 6, 0, 0]} 
               filter="url(#bar-glow)"
-              barSize={40}
+              barSize={isMobile ? 25 : 40}
             />
             <Bar 
               dataKey="expense" 
               fill="url(#bar-expense)" 
               radius={[6, 6, 0, 0]} 
               filter="url(#bar-glow)"
-              barSize={40}
+              barSize={isMobile ? 25 : 40}
             />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       {/* Legend */}
-      <div className="flex justify-center gap-12 mt-8">
+      <div className="flex justify-center gap-6 md:gap-12 mt-6 md:mt-8">
         <div className="flex items-center gap-3">
           <div className="w-3 h-3 rounded-sm shadow-[0_0_10px_#B026FF]" style={{ background: 'linear-gradient(to bottom, #B026FF, #7000FF)' }} />
           <span className="text-[10px] font-black italic text-slate-400 uppercase tracking-widest">INCOME</span>

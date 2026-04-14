@@ -142,30 +142,30 @@ export default function TransactionForm({ onAdd }: Props) {
   };
 
   return (
-    <div className="bg-[rgb(7,10,18)] border border-slate-800 rounded-[35px] p-6 shadow-2xl relative h-full">
-      <form onSubmit={handleSubmit} className="flex gap-8 relative z-10">
+    <div className="bg-[rgb(7,10,18)] border border-slate-800 rounded-[30px] md:rounded-[35px] p-4 md:p-6 shadow-2xl relative h-full">
+      <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-5 md:gap-8 relative z-10">
         {/* Left Column: Type Selection */}
-        <div className="flex flex-col gap-4 w-84 shrink-0">
+        <div className="flex flex-row md:flex-col gap-3 md:gap-4 w-full md:w-84 shrink-0">
           <button
             type="button"
             onClick={() => setType("expense")}
-            className={`rounded-[35px] flex flex-col items-center justify-center gap-2 h-[160px] transition-all border text-[11px] leading-[16.5px] tracking-[1.1px] font-black italic ${type === "expense"
+            className={`rounded-[25px] md:rounded-[35px] flex flex-1 md:flex-initial flex-col items-center justify-center gap-1 md:gap-2 h-[100px] md:h-[160px] transition-all border text-[10px] md:text-[11px] leading-[15px] md:leading-[16.5px] tracking-[1px] md:tracking-[1.1px] font-black italic ${type === "expense"
               ? "bg-rose-500/20 text-white border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.1)]"
               : "bg-slate-800 text-slate-500 border-slate-700 hover:border-slate-600"
               }`}
           >
-            <TrendingDown size={24} className={`shrink-0 ${type === 'expense' ? 'animate-bounce' : ''}`} />
+            <TrendingDown size={20} className={`shrink-0 md:size-[24px] ${type === 'expense' ? 'animate-bounce' : ''}`} />
             EXPENSE
           </button>
           <button
             type="button"
             onClick={() => setType("income")}
-            className={`rounded-[35px] flex flex-col items-center justify-center gap-2 h-[160px] transition-all border text-[11px] leading-[16.5px] tracking-[1.1px] font-black italic ${type === "income"
+            className={`rounded-[25px] md:rounded-[35px] flex flex-1 md:flex-initial flex-col items-center justify-center gap-1 md:gap-2 h-[100px] md:h-[160px] transition-all border text-[10px] md:text-[11px] leading-[15px] md:leading-[16.5px] tracking-[1px] md:tracking-[1.1px] font-black italic ${type === "income"
               ? "bg-emerald-500/20 text-white border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
               : "bg-slate-800 text-slate-500 border-slate-700 hover:border-slate-600"
               }`}
           >
-            <TrendingUp size={24} className={`shrink-0 ${type === 'income' ? 'animate-bounce' : ''}`} />
+            <TrendingUp size={20} className={`shrink-0 md:size-[24px] ${type === 'income' ? 'animate-bounce' : ''}`} />
             INCOME
           </button>
         </div>
@@ -177,20 +177,22 @@ export default function TransactionForm({ onAdd }: Props) {
               <button
                 type="button"
                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                className="w-full bg-white/[0.03] backdrop-blur-xl border border-white/10 focus:border-white/20 focus:ring-1 focus:ring-white/10 rounded-3xl pl-[60px] pr-12 py-6 text-white outline-none transition-all font-black italic text-left hover:bg-white/[0.05] relative z-20 overflow-hidden"
+                className="w-full bg-white/[0.03] backdrop-blur-xl border border-white/10 focus:border-white/20 focus:ring-1 focus:ring-white/10 rounded-2xl md:rounded-3xl pl-12 md:pl-[60px] pr-10 md:pr-12 py-4 md:py-6 text-white outline-none transition-all font-black italic text-left hover:bg-white/[0.05] relative z-20 overflow-hidden text-[11px] md:text-sm"
               >
                 {category || "SELECT CATEGORY"}
               </button>
               <Filter 
-                className={`absolute left-6 top-1/2 -translate-y-1/2 transition-colors duration-300 pointer-events-none z-30 ${
+                className={`absolute left-4 md:left-6 top-1/2 -translate-y-1/2 transition-colors duration-300 pointer-events-none z-30 ${
                   type === 'income' ? 'text-emerald-500' : 'text-rose-500'
                 }`} 
-                size={20} 
+                size={16} 
+                md-size={20}
                 strokeWidth={3}
               />
               <ChevronDown 
-                className={`absolute right-6 top-1/2 -translate-y-1/2 transition-all duration-300 pointer-events-none z-30 ${isCategoryOpen ? 'rotate-180' : ''} text-slate-500`} 
-                size={20} 
+                className={`absolute right-4 md:right-6 top-1/2 -translate-y-1/2 transition-all duration-300 pointer-events-none z-30 ${isCategoryOpen ? 'rotate-180' : ''} text-slate-500`} 
+                size={16} 
+                md-size={20}
               />
               
               <AnimatePresence>
@@ -225,7 +227,7 @@ export default function TransactionForm({ onAdd }: Props) {
                 required
                 value={amount}
                 onChange={handleAmountChange}
-                className="w-full bg-[rgb(5,7,13)] border border-slate-800 focus:border-white/20 focus:ring-1 focus:ring-white/10 rounded-3xl px-[20px] py-6 text-white outline-none transition-all placeholder-slate-700 font-bold"
+                className="w-full bg-[rgb(5,7,13)] border border-slate-800 focus:border-white/20 focus:ring-1 focus:ring-white/10 rounded-2xl md:rounded-3xl px-5 md:px-[20px] py-4 md:py-6 text-white outline-none transition-all placeholder-slate-700 font-bold text-sm md:text-base"
                 placeholder="Amount (LKR)"
               />
             </div>
@@ -236,7 +238,7 @@ export default function TransactionForm({ onAdd }: Props) {
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value.toUpperCase())}
-              className="w-full bg-[rgb(5,7,13)] border border-slate-800 focus:border-white/20 focus:ring-1 focus:ring-white/10 rounded-3xl px-[20px] py-6 text-white outline-none transition-all placeholder-slate-700 font-bold"
+              className="w-full bg-[rgb(5,7,13)] border border-slate-800 focus:border-white/20 focus:ring-1 focus:ring-white/10 rounded-2xl md:rounded-3xl px-5 md:px-[20px] py-4 md:py-6 text-white outline-none transition-all placeholder-slate-700 font-bold text-sm md:text-base uppercase"
               placeholder="Details (Optional)"
             />
           </div>
@@ -246,18 +248,19 @@ export default function TransactionForm({ onAdd }: Props) {
               <button
                 type="button"
                 onClick={() => setIsDateOpen(!isDateOpen)}
-                className="w-full bg-white/[0.03] backdrop-blur-xl border border-white/10 focus:border-white/20 focus:ring-1 focus:ring-white/10 rounded-3xl pl-[60px] pr-12 py-6 text-white outline-none transition-all font-black italic text-left hover:bg-white/[0.05] relative z-20 overflow-hidden"
+                className="w-full bg-white/[0.03] backdrop-blur-xl border border-white/10 focus:border-white/20 focus:ring-1 focus:ring-white/10 rounded-2xl md:rounded-3xl pl-12 md:pl-[60px] pr-10 md:pr-12 py-4 md:py-6 text-white outline-none transition-all font-black italic text-left hover:bg-white/[0.05] relative z-20 overflow-hidden text-[11px] md:text-sm"
               >
                 {formatDisplayDate(date)}
               </button>
               <Calendar 
-                className={`absolute left-6 top-1/2 -translate-y-1/2 transition-colors duration-300 pointer-events-none z-30 ${
+                className={`absolute left-4 md:left-6 top-1/2 -translate-y-1/2 transition-colors duration-300 pointer-events-none z-30 ${
                   type === 'income' ? 'text-emerald-500' : 'text-rose-500'
                 }`} 
-                size={20} 
+                size={16} 
+                md-size={20}
                 strokeWidth={3}
               />
-              <ChevronDown className={`absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none z-30 transition-transform duration-300 ${isDateOpen ? 'rotate-180' : ''}`} size={20} />
+              <ChevronDown className={`absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none z-30 transition-transform duration-300 ${isDateOpen ? 'rotate-180' : ''}`} size={16} md-size={20} />
               
               <AnimatePresence>
                 {isDateOpen && (
@@ -337,15 +340,16 @@ export default function TransactionForm({ onAdd }: Props) {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full bg-white/[0.03] backdrop-blur-xl border border-white/10 focus:border-white/20 focus:ring-1 focus:ring-white/10 rounded-3xl pl-[60px] pr-12 py-6 text-white outline-none transition-all font-black italic text-left truncate hover:bg-white/[0.05] relative z-20 overflow-hidden"
+                className="w-full bg-white/[0.03] backdrop-blur-xl border border-white/10 focus:border-white/20 focus:ring-1 focus:ring-white/10 rounded-2xl md:rounded-3xl pl-12 md:pl-[60px] pr-10 md:pr-12 py-4 md:py-6 text-white outline-none transition-all font-black italic text-left truncate hover:bg-white/[0.05] relative z-20 overflow-hidden text-[11px] md:text-sm"
               >
                 {invoiceFile ? invoiceFile.name.toUpperCase() : "ATTACH INVOICE"}
               </button>
               <Paperclip 
-                className={`absolute left-6 top-1/2 -translate-y-1/2 transition-colors duration-300 pointer-events-none z-30 ${
+                className={`absolute left-4 md:left-6 top-1/2 -translate-y-1/2 transition-colors duration-300 pointer-events-none z-30 ${
                   type === 'income' ? 'text-emerald-500' : 'text-rose-500'
                 }`} 
-                size={20} 
+                size={16} 
+                md-size={20}
                 strokeWidth={3}
               />
               {invoiceFile && (

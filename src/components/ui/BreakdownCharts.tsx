@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useTransactions } from "@/context/TransactionContext";
 
@@ -20,6 +22,14 @@ const EXPENSE_GRADIENTS = [
 
 function BreakdownCharts() {
   const { transactions } = useTransactions();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const processData = (type: 'income' | 'expense') => {
     const filtered = transactions.filter(t => t.type === type);
@@ -60,9 +70,9 @@ function BreakdownCharts() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
       {/* Income Breakdown */}
-      <div className="bg-[rgb(7,10,18)] border border-slate-800 rounded-[35px] p-8 shadow-2xl flex flex-col items-center">
-        <h3 className="text-xl font-black italic text-white uppercase tracking-wider mb-8 w-full text-center">INCOME BREAKDOWN</h3>
-        <div className="w-full h-96 relative">
+      <div className="bg-[rgb(7,10,18)] border border-slate-800 rounded-[30px] md:rounded-[35px] p-6 md:p-8 shadow-2xl flex flex-col items-center">
+        <h3 className="text-lg md:text-xl font-black italic text-white uppercase tracking-wider mb-6 md:mb-8 w-full text-center">INCOME BREAKDOWN</h3>
+        <div className="w-full h-72 md:h-96 relative">
           {incomeData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%" debounce={100}>
               <PieChart>
@@ -88,8 +98,8 @@ function BreakdownCharts() {
                   data={incomeData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={100}
-                  outerRadius={130}
+                  innerRadius={isMobile ? 70 : 100}
+                  outerRadius={isMobile ? 95 : 130}
                   paddingAngle={5}
                   dataKey="value"
                   stroke="none"
@@ -127,9 +137,9 @@ function BreakdownCharts() {
       </div>
 
       {/* Expense Breakdown */}
-      <div className="bg-[rgb(7,10,18)] border border-slate-800 rounded-[35px] p-8 shadow-2xl flex flex-col items-center">
-        <h3 className="text-xl font-black italic text-white uppercase tracking-wider mb-8 w-full text-center">EXPENSE BREAKDOWN</h3>
-        <div className="w-full h-96 relative">
+      <div className="bg-[rgb(7,10,18)] border border-slate-800 rounded-[30px] md:rounded-[35px] p-6 md:p-8 shadow-2xl flex flex-col items-center">
+        <h3 className="text-lg md:text-xl font-black italic text-white uppercase tracking-wider mb-6 md:mb-8 w-full text-center">EXPENSE BREAKDOWN</h3>
+        <div className="w-full h-72 md:h-96 relative">
           {expenseData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%" debounce={100}>
               <PieChart>
@@ -155,8 +165,8 @@ function BreakdownCharts() {
                   data={expenseData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={100}
-                  outerRadius={130}
+                  innerRadius={isMobile ? 70 : 100}
+                  outerRadius={isMobile ? 95 : 130}
                   paddingAngle={5}
                   dataKey="value"
                   stroke="none"

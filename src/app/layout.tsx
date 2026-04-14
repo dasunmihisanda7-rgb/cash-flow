@@ -38,9 +38,9 @@ export default function RootLayout({
               <TransactionProvider>
                 <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full relative z-10 flex flex-col gap-8">
                   <div className="space-y-1 text-center w-full flex flex-col items-center justify-center">
-                    <h1 className="text-6xl font-black italic tracking-[-3px] uppercase text-white">CASH<span className="text-[#9810FA]">FLOW</span></h1>
+                    <h1 className="text-4xl md:text-6xl font-black italic tracking-[-2px] md:tracking-[-3px] uppercase text-white transition-all">CASH<span className="text-[#9810FA]">FLOW</span></h1>
                     <p 
-                      className="text-[10px] leading-[15px] tracking-[8px] italic font-black uppercase"
+                      className="text-[7px] md:text-[10px] leading-[10px] md:leading-[15px] tracking-[3px] md:tracking-[8px] italic font-black uppercase transition-all"
                       style={{ color: "lab(35.5623 -1.74978 -15.4316)", fontStyle: "italic" }}
                     >
                       INCOME & EXPENSE TRACKER - BY DASUN MIHISANDA

@@ -11,7 +11,7 @@ A modern, high-performance financial tracking application built with Next.js, Fr
 ## Deployment Status
 The project is ready for deployment. All local changes have been synced to GitHub.
 
-- **GitHub Repository**: [asusexpertbookpro7-oss/cash-flow](https://github.com/asusexpertbookpro7-oss/cash-flow)
+- **GitHub Repository**: [dasunmihisanda7-rgb/cash-flow](https://github.com/dasunmihisanda7-rgb/cash-flow)
 
 ## Deployment Instructions (Vercel)
 
