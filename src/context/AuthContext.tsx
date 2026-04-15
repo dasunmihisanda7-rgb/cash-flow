@@ -22,23 +22,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const setData = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error getting session:', error);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          // If the refresh token is missing or invalid, treat as signed out
+          if (error.message.includes('Refresh Token Not Found') || error.message.includes('refresh_token_not_found')) {
+            setSession(null);
+            setUser(null);
+          } else {
+            console.error('Error getting session:', error);
+          }
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+      } catch (err) {
+        console.error('Unexpected auth error:', err);
+      } finally {
+        setIsLoading(false);
       }
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
     };
 
     setData();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
       
       if (_event === 'SIGNED_IN') {
+        router.refresh();
+      } else if (_event === 'SIGNED_OUT') {
+        // Clear cookies on sign out to ensure middleware redirects correctly
         router.refresh();
       }
     });

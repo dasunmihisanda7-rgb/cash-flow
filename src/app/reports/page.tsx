@@ -86,9 +86,9 @@ export default function LedgerPage() {
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1">
-          <div className="relative flex-1 max-w-xs group">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-5 md:gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:flex-1">
+          <div className="relative flex-1 max-w-none md:max-w-xs group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-white transition-colors" size={16} />
             <input
               type="text"
@@ -146,13 +146,14 @@ export default function LedgerPage() {
           </div>
         </div>
 
-        <p className="text-[10px] font-black italic tracking-widest text-slate-500 shrink-0 uppercase">
+        <p className="text-[10px] w-full md:w-auto text-center md:text-left font-black italic tracking-widest text-slate-500 shrink-0 uppercase mt-2 md:mt-0">
           SHOWING <span className="text-[#9810FA]">{displayData.length}</span> LEDGER ENTRIES
         </p>
       </div>
 
-      <div className="bg-[rgb(7,10,18)] border border-slate-800 rounded-[35px] overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
+      <div className="bg-[rgb(7,10,18)] border border-slate-800 rounded-[30px] md:rounded-[35px] overflow-hidden shadow-2xl">
+        {/* Desktop View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-white/[0.02] border-b border-slate-800">
@@ -225,8 +226,66 @@ export default function LedgerPage() {
           {displayData.length > visibleCount && (
             <div className="p-8 flex justify-center border-t border-slate-800/50">
               <button
-                onClick={() => setVisibleCount(prev => prev + 20)}
+                onClick={() => setVisibleCount((prev) => prev + 20)}
                 className="px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black italic tracking-widest text-slate-400 hover:text-white transition-all uppercase"
+              >
+                Load More Records
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile View */}
+        <div className="md:hidden flex flex-col divide-y divide-slate-800/50">
+          {displayData.slice(0, visibleCount).map((row) => (
+            <div key={row.id} className="p-6 flex flex-col gap-4 relative bg-white/[0.01]">
+              <div className="flex justify-between items-start gap-4">
+                <div className="flex flex-col max-w-[65%]">
+                  <span className="text-sm font-black italic text-[#9810FA] uppercase tracking-tight break-words">{row.category}</span>
+                  <span className="text-[10px] text-slate-500 uppercase font-black tracking-wider flex flex-wrap items-center gap-1.5 mt-1">
+                    {row.date.split('-').reverse().join('/')} <span className="text-slate-700">•</span> {row.refNo}
+                    {row.invoiceFile && <Paperclip size={10} className="text-purple-500 shrink-0" />}
+                  </span>
+                  {row.description && (
+                    <span className="text-[11px] font-bold text-slate-400 mt-1.5 line-clamp-2 uppercase">{row.description}</span>
+                  )}
+                </div>
+                <div className="flex flex-col items-end shrink-0">
+                  <span className={`text-base font-black italic ${row.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {row.type === 'income' ? '+' : '-'}{formatCurrency(row.amount)}
+                  </span>
+                  <span className={`text-[10px] font-black italic mt-1 tracking-widest uppercase ${row.runningBalance >= 0 ? 'text-slate-300' : 'text-rose-400'}`}>
+                    BAL: {formatCurrency(row.runningBalance)}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800/30">
+                <button 
+                  onClick={() => setEditingTransaction(row as any)} 
+                  className="px-4 py-2 bg-slate-800/50 hover:bg-purple-500/20 rounded-xl text-[10px] font-black italic tracking-widest text-slate-300 hover:text-purple-400 uppercase flex items-center gap-1.5 transition-colors"
+                >
+                  <Pencil size={12}/> Edit
+                </button>
+                <button 
+                  onClick={() => deleteTransaction(row.id)} 
+                  className="px-4 py-2 bg-slate-800/50 hover:bg-rose-500/20 rounded-xl text-[10px] font-black italic tracking-widest text-slate-300 hover:text-rose-500 uppercase flex items-center gap-1.5 transition-colors"
+                >
+                  <Trash2 size={12}/> Delete
+                </button>
+              </div>
+            </div>
+          ))}
+          {displayData.length === 0 && (
+            <div className="p-10 text-center text-slate-500 text-xs font-black italic tracking-widest uppercase">
+              NO TRANSACTION RECORDS FOUND
+            </div>
+          )}
+          {displayData.length > visibleCount && (
+            <div className="p-6 flex justify-center border-t border-slate-800/50">
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 20)}
+                className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black italic tracking-widest text-slate-400 hover:text-white transition-all uppercase"
               >
                 Load More Records
               </button>

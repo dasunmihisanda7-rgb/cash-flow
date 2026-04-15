@@ -40,7 +40,7 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', user.id);
 
       if (error) {
-        console.error('Supabase query era (Categories):', error.message, error.details);
+        console.error('Supabase query error (Categories):', error?.message || error);
         throw error;
       }
 
@@ -53,7 +53,10 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
         .select('name, type, user_id')
         .or(`user_id.eq.${user.id},user_id.is.null`);
 
-      if (allErr) throw allErr;
+      if (allErr) {
+        console.error('Failed to fetch categories with OR logic:', allErr?.message || allErr);
+        throw allErr;
+      }
 
       const needsClaiming = allData?.filter(c => c.user_id === null) || [];
       if (needsClaiming.length > 0) {
@@ -85,13 +88,20 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
           .from('categories')
           .insert(seeds);
         
-        if (seedError) throw seedError;
+        if (seedError) {
+          console.warn('Could not seed default categories to database:', seedError?.message || seedError);
+          // Don't throw, just fallback to local defaults so the app remains usable
+        }
         
         setIncomeCategories(DEFAULT_INCOME);
         setExpenseCategories(DEFAULT_EXPENSE);
       }
-    } catch (error) {
-      console.error('Error fetching categories:', error);
+    } catch (error: any) {
+      console.error('Error fetching categories:', error?.message || JSON.stringify(error) || String(error));
+      
+      // Fallback to defaults to prevent an empty state crash
+      setIncomeCategories(DEFAULT_INCOME);
+      setExpenseCategories(DEFAULT_EXPENSE);
     } finally {
       setIsLoading(false);
     }
